@@ -1,0 +1,36 @@
+plugins {
+    id "org.jetbrains.kotlin.jvm" version "1.3.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
+    versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
+    projectIds = ['group': 'teamcity-unity-plugin', 'version': versionNumber]
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2018.1'
+}
+
+group = projectIds.group
+version = projectIds.version
+
+allprojects {
+    group = projectIds.group
+    version = projectIds.version
+}
+
+subprojects {
+    apply plugin: "kotlin"
+
+    test.useTestNG()
+    jar.version = null
+
+    sourceCompatibility = "1.6"
+    targetCompatibility = "1.6"
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.9'
+}

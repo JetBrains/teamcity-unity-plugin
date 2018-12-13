@@ -1,0 +1,30 @@
+plugins {
+    id 'com.github.rodm.teamcity-server' version "1.1.1"
+}
+
+teamcity {
+    version = teamcityVersion
+
+    server {
+        descriptor = project.file('teamcity-plugin.xml')
+        tokens = [Plugin_Version: project.version]
+    }
+}
+
+dependencies {
+    compile project(':plugin-unity-common')
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    provided 'javax.servlet:jstl:1.1.2'
+    agent project(path: ':plugin-unity-agent', configuration: 'plugin')
+}
+
+serverPlugin.version = null
+
+compileKotlin {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}

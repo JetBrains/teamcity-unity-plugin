@@ -1,0 +1,3 @@
+rootProject.name='teamcity-unity-plugin'
+
+include 'plugin-unity-agent', 'plugin-unity-common', 'plugin-unity-server'
