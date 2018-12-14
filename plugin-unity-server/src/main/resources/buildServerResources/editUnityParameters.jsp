@@ -55,8 +55,11 @@
 <tr class="advancedSetting">
     <th><label for="${params.projectPath}">Project path:</label></th>
     <td>
-        <props:textProperty name="${params.projectPath}" className="longField"/>
-        <bs:vcsTree fieldId="${params.projectPath}" dirsOnly="true"/>
+        <props:textProperty name="${params.projectPath}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <bs:vcsTree fieldId="${params.projectPath}" dirsOnly="true"/>
+            </jsp:attribute>
+        </props:textProperty>
         <span class="error" id="error_${params.projectPath}"></span>
         <span class="smallNote">
             <span id="${params.projectPath}">Specify target project path to build.</span>
@@ -76,9 +79,12 @@
 <tr class="advancedSetting">
     <th><label for="${params.buildTarget}">Build target:</label></th>
     <td>
-        <props:textProperty name="${params.buildTarget}" className="longField"/>
-        <bs:projectData type="UnityBuildTarget" sourceFieldId="${params.projectPath}"
-                        targetFieldId="${params.buildTarget}" popupTitle="Select build target"/>
+        <props:textProperty name="${params.buildTarget}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <bs:projectData type="UnityBuildTarget" sourceFieldId="${params.projectPath}"
+                                targetFieldId="${params.buildTarget}" popupTitle="Select build target"/>
+            </jsp:attribute>
+        </props:textProperty>
         <span class="error" id="error_${params.buildTarget}"></span>
         <span class="smallNote">Specify the active build target before loading a project.</span>
     </td>
@@ -100,11 +106,14 @@
 <tr class="advancedSetting" style="display: none">
     <th class="noBorder"><label for="${params.buildPlayerPath}">Player output path: <l:star/></label></th>
     <td>
-        <props:textProperty name="${params.buildPlayerPath}" className="longField"/>
-        <c:if test="${not buildForm.template}">
-            <bs:agentArtifactsTree fieldId="${params.buildPlayerPath}" buildTypeId="${buildForm.externalId}"
-                                   filesOnly="true"/>
-        </c:if>
+        <props:textProperty name="${params.buildPlayerPath}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <c:if test="${not buildForm.template}">
+                    <bs:agentArtifactsTree fieldId="${params.buildPlayerPath}" buildTypeId="${buildForm.externalId}"
+                                           filesOnly="true"/>
+                </c:if>
+            </jsp:attribute>
+        </props:textProperty>
         <span class="error" id="error_${params.buildPlayerPath}"></span>
         <span class="smallNote">Specify the output path for player binary.</span>
     </td>
