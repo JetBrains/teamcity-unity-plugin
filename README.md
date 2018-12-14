@@ -1,12 +1,20 @@
-# TeamCity Unity support plugin
+# TeamCity Unity plugin
 
-It provides support for Unity projects build.
+[![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![build status](https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityUnityPlugin_Build)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityUnityPlugin_Build&guest=1)
+
+It provides support for building Unity projects on TeamCity.
 
 ## Features
 
 * Unity detection on build agents
 * Unity build runner
 * Automatic discovery of Unity build steps in repository
+
+# Download
+
+You can [download the plugin](https://teamcity.jetbrains.com/repository/download/TeamCityUnityPlugin_Build/.lastSuccessful/teamcity-unity-plugin.zip?guest=1) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
 
 # Compatibility
 
