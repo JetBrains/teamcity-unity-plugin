@@ -1,3 +1,6 @@
 rootProject.name='teamcity-unity-plugin'
 
-include 'plugin-unity-agent', 'plugin-unity-common', 'plugin-unity-server'
+include 'csharp-parser'
+include 'plugin-unity-agent'
+include 'plugin-unity-common'
+include 'plugin-unity-server'

@@ -13,6 +13,7 @@ teamcity {
 
 dependencies {
     compile project(':plugin-unity-common')
+    compile project(':csharp-parser')
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided 'javax.servlet:jstl:1.1.2'
     agent project(path: ':plugin-unity-agent', configuration: 'plugin')

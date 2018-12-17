@@ -1,0 +1,26 @@
+apply plugin: 'antlr'
+apply plugin: 'idea'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    antlr "org.antlr:antlr4:4.7.1"
+    compile "org.antlr:antlr4-runtime:4.7.1"
+    testCompile 'junit:junit:4.12'
+}
+
+// generate java from the ANTLR g4 files
+generateGrammarSource {
+    arguments = ['-visitor', '-package', 'org.jetbrains.unity', "-Xexact-output-dir"]
+}
+
+// mark the generated source as such for IntelliJ IDEA
+def generatedSrc = file("build/generated-src/antlr/main")
+sourceSets.main.java.srcDirs += generatedSrc
+idea {
+    module {
+        generatedSourceDirs += generatedSrc
+    }
+}

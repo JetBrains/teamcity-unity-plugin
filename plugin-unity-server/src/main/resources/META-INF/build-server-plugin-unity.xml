@@ -6,4 +6,5 @@
     <bean class="jetbrains.buildServer.unity.UnityRunnerRunType"/>
     <bean class="jetbrains.buildServer.unity.UnityRunnerDiscoveryExtension"/>
     <bean class="jetbrains.buildServer.unity.fetchers.UnityBuildTargetFetcher"/>
+    <bean class="jetbrains.buildServer.unity.fetchers.UnityStaticMethodFetcher"/>
 </beans>

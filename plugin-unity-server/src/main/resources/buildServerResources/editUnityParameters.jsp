@@ -70,9 +70,17 @@
 <tr>
     <th><label for="${params.executeMethod}">Execute method:</label></th>
     <td>
-        <props:textProperty name="${params.executeMethod}" className="longField"/>
+        <props:textProperty name="${params.executeMethod}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <bs:projectData type="UnityStaticMethod" sourceFieldId="${params.projectPath}" selectionMode="single"
+                                targetFieldId="${params.executeMethod}" popupTitle="Select method reference"/>
+            </jsp:attribute>
+        </props:textProperty>
         <span class="error" id="error_${params.executeMethod}"></span>
-        <span class="smallNote">Specify the static method reference to execute after project loading.</span>
+        <span class="smallNote">
+            Specify the static method reference to execute after project loading.<br/>
+            Class should be located under Assets/Editor project directory.
+        </span>
     </td>
 </tr>
 
@@ -81,7 +89,7 @@
     <td>
         <props:textProperty name="${params.buildTarget}" className="longField">
             <jsp:attribute name="afterTextField">
-                <bs:projectData type="UnityBuildTarget" sourceFieldId="${params.projectPath}"
+                <bs:projectData type="UnityBuildTarget" sourceFieldId="${params.projectPath}" selectionMode="single"
                                 targetFieldId="${params.buildTarget}" popupTitle="Select build target"/>
             </jsp:attribute>
         </props:textProperty>
