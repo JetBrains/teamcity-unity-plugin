@@ -7,17 +7,45 @@
 
 package jetbrains.buildServer.unity
 
-import jetbrains.buildServer.serverSide.discovery.BreadthFirstRunnerDiscoveryExtension
+import jetbrains.buildServer.serverSide.BuildTypeSettings
+import jetbrains.buildServer.serverSide.discovery.BuildRunnerDiscoveryExtension
 import jetbrains.buildServer.serverSide.discovery.DiscoveredObject
+import jetbrains.buildServer.util.browser.Browser
 import jetbrains.buildServer.util.browser.Element
-import java.util.*
 
 /**
  * Performs unity build steps discovery.
  */
-class UnityRunnerDiscoveryExtension : BreadthFirstRunnerDiscoveryExtension(1) {
-    override fun discoverRunnersInDirectory(dir: Element, filesAndDirs: MutableList<Element>): MutableList<DiscoveredObject> {
-        val result = ArrayList<DiscoveredObject>()
-        return result
+class UnityRunnerDiscoveryExtension : BuildRunnerDiscoveryExtension {
+
+    private val depthLimit = 3
+
+    override fun discover(settings: BuildTypeSettings, browser: Browser): MutableList<DiscoveredObject> {
+        return discoverRunners(browser.root, 0).toMutableList()
+    }
+
+    private fun discoverRunners(currentElement: Element, currentElementDepth: Int)
+            : Sequence<DiscoveredObject> = sequence {
+        if (currentElementDepth > depthLimit || currentElement.name.contains("rule")) {
+            return@sequence
+        }
+
+        val children = (currentElement.children?.filter { !it.isLeaf } ?: emptyList())
+        val directories = children.map { it.name }.toSet()
+        when {
+            directories.containsAll(PROJECTS_DIRS) -> yield(DiscoveredObject(UnityConstants.RUNNER_TYPE, mapOf(
+                    UnityConstants.PARAM_PROJECT_PATH to currentElement.fullName
+            )))
+            else -> {
+                // Scan nested directories
+                children.forEach {
+                        yieldAll(discoverRunners(it, currentElementDepth + 1))
+                }
+            }
+        }
+    }
+
+    companion object {
+        val PROJECTS_DIRS = setOf("Assets", "ProjectSettings")
     }
 }
