@@ -7,8 +7,6 @@
 
 package jetbrains.buildServer.unity
 
-import jetbrains.buildServer.requirements.Requirement
-import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
@@ -53,6 +51,36 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun describeParameters(parameters: Map<String, String>): String {
-        return "unity"
+        val builder = StringBuilder()
+        parameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Project path: $it")
+            }
+        }
+        parameters[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Execute method: $it")
+            }
+        }
+        parameters[UnityConstants.PARAM_BUILD_TARGET]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Build target: $it")
+            }
+        }
+        parameters[UnityConstants.PARAM_BUILD_PLAYER]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Build player: $it")
+            }
+        }
+        return builder.toString().trim()
+    }
+
+    private fun StringBuilder.addParameter(parameter: String) {
+        if (this.isNotEmpty()) {
+            append(" $parameter")
+        } else {
+            append(parameter)
+        }
+        append("\n")
     }
 }
