@@ -16,6 +16,29 @@
     </div>
 </c:if>
 
+<c:if test="${not empty propertiesBean.properties[params.buildTarget]}">
+    <div class="parameter">
+        Build target: <props:displayValue name="${params.buildTarget}"/>
+    </div>
+</c:if>
+
+<c:if test="${not empty propertiesBean.properties[params.buildPlayer]}">
+    <div class="parameter">
+        <c:forEach items="${params.buildPlayers}" var="type">
+            <c:if test="${propertiesBean.properties[params.buildPlayer] eq type.first}">
+                    Build player: <strong><c:out value="${type.second}"/></strong>
+            </c:if>
+        </c:forEach><br/>
+        Player output path: <props:displayValue name="${params.buildPlayerPath}"/>
+    </div>
+</c:if>
+
+<c:if test="${propertiesBean.properties[params.noGraphics]}">
+    <div class="parameter">
+        Do not initialize the graphics device: <strong>ON</strong>
+    </div>
+</c:if>
+
 <c:if test="${not empty propertiesBean.properties[params.arguments]}">
     <div class="parameter">
         Command line arguments: <props:displayValue name="${params.arguments}"/>
