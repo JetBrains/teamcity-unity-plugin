@@ -26,6 +26,8 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         else -> null
     }
 
+    private val unityVersions = mutableMapOf<String, String>()
+
     init {
         toolsRegistry.registerToolProvider(this)
         events.addListener(this)
@@ -33,26 +35,30 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
 
     override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
+        unityDetector?.findInstallations()?.let { versions ->
+            unityVersions.putAll(versions.sortedBy { it.first }.map {
+                it.first.toString() to it.second.absolutePath
+            }.toMap())
+        }
 
         // Report all Unity versions
-        val versions = unityDetector?.findInstallations()?.toMap() ?: return
-        versions.forEach { (version, path) ->
+        unityVersions.forEach { (version, path) ->
             LOG.info("Found Unity $version at $path")
             agent.configuration.apply {
                 val name = "${UnityConstants.UNITY_CONFIG_NAME}$version${UnityConstants.UNITY_CONFIG_PATH}"
-                addConfigurationParameter(name, path.absolutePath)
+                addConfigurationParameter(name, path)
             }
         }
 
         // Report maximum Unity version
-        versions.entries.maxBy { it.key }?.let { (version, path) ->
+        unityVersions.entries.maxBy { it.key }?.let { (version, path) ->
             agent.configuration.apply {
                 val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_VERSION}"
-                addConfigurationParameter(name, version.toString())
+                addConfigurationParameter(name, version)
             }
             agent.configuration.apply {
                 val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_PATH}"
-                addConfigurationParameter(name, path.absolutePath)
+                addConfigurationParameter(name, path)
             }
         }
     }
@@ -74,7 +80,6 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
                          runner: BuildRunnerContext): String {
         if (unityDetector == null) throw ToolCannotBeFoundException(toolName)
 
-        val unityVersions = getUnityVersions(build)
         val unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]
 
         val unityPath = if (unityVersion.isNullOrEmpty()) {
@@ -84,19 +89,6 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         } ?: throw ToolCannotBeFoundException("$toolName, version $unityVersion")
 
         return unityDetector.getEditorPath(File(unityPath)).absolutePath
-    }
-
-    private fun getUnityVersions(build: AgentRunningBuild): Map<String, String> {
-        return build.agentConfiguration.configurationParameters.filter { it ->
-            it.key.startsWith(UnityConstants.UNITY_CONFIG_NAME) && it.key.endsWith(UnityConstants.UNITY_CONFIG_PATH)
-                    && it.key.length > UnityConstants.UNITY_CONFIG_NAME.length + UnityConstants.UNITY_CONFIG_PATH.length
-
-        }.mapKeys { it ->
-            it.key.substring(
-                    UnityConstants.UNITY_CONFIG_NAME.length,
-                    it.key.length - UnityConstants.UNITY_CONFIG_PATH.length
-            )
-        }
     }
 
     companion object {
