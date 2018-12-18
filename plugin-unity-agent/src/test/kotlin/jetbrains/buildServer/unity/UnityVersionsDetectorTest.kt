@@ -11,6 +11,7 @@ class UnityVersionsDetectorTest {
         val detector = when {
             SystemInfo.isWindows -> WindowsUnityDetector()
             SystemInfo.isMac -> MacOsUnityDetector()
+            SystemInfo.isLinux -> LinuxUnityDetector()
             else -> null
         } ?: throw SkipException("Not supported platform")
 

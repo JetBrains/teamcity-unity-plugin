@@ -23,6 +23,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     private val unityDetector = when {
         SystemInfo.isWindows -> WindowsUnityDetector()
         SystemInfo.isMac -> MacOsUnityDetector()
+        SystemInfo.isLinux -> LinuxUnityDetector()
         else -> null
     }
 
