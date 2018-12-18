@@ -70,7 +70,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
             }
         }
         parameters[UnityConstants.PARAM_BUILD_PLAYER]?.let {
-            if (it.isNotBlank()) {
+            UnityParametersProvider.BUILD_PLAYERS[it.trim()]?.let {
                 builder.addParameter("Build player: $it")
             }
         }
@@ -85,7 +85,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
                 requirements.add(Requirement(name, null, RequirementType.EXISTS))
             }
         }
-        if  (requirements.isEmpty()) {
+        if (requirements.isEmpty()) {
             val name = UnityConstants.RUNNER_TYPE + UnityConstants.UNITY_CONFIG_VERSION
             requirements.add(Requirement(name, null, RequirementType.EXISTS))
         }

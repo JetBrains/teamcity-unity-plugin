@@ -36,7 +36,10 @@ class UnityParametersProvider {
         get() = UnityConstants.PARAM_ARGUMENTS
 
     val buildPlayers: List<Pair<String, String>>
-        get() = listOf(
+        get() = BUILD_PLAYERS.map { it.toPair() }
+
+    companion object {
+        val BUILD_PLAYERS = mapOf(
                 "buildLinux32Player" to "Linux 32-bit",
                 "buildLinux64Player" to "Linux 64-bit",
                 "buildLinuxUniversalPlayer" to "Linux 32-bit and 64-bit",
@@ -46,4 +49,5 @@ class UnityParametersProvider {
                 "buildWindowsPlayer" to "Windows 32-bit",
                 "buildWindows64Player" to "Windows 64-bit"
         )
+    }
 }
