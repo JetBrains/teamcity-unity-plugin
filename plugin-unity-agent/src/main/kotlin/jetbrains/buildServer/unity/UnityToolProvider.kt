@@ -89,6 +89,8 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     private fun getUnityVersions(build: AgentRunningBuild): Map<String, String> {
         return build.agentConfiguration.configurationParameters.filter { it ->
             it.key.startsWith(UnityConstants.UNITY_CONFIG_NAME) && it.key.endsWith(UnityConstants.UNITY_CONFIG_PATH)
+                    && it.key.length > UnityConstants.UNITY_CONFIG_NAME.length + UnityConstants.UNITY_CONFIG_PATH.length
+
         }.mapKeys { it ->
             it.key.substring(
                     UnityConstants.UNITY_CONFIG_NAME.length,
