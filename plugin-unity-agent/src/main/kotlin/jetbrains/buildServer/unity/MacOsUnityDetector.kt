@@ -25,7 +25,7 @@ class MacOsUnityDetector : UnityDetector {
             // * rc - release candidate
             // * f  - final
             val version = config.getString("CFBundleVersion")
-                    ?.split("[abcfpr]")
+                    ?.split("a", "b", "p", "rc", "f")
                     ?.firstOrNull()
                     ?: return@forEach
             try {
