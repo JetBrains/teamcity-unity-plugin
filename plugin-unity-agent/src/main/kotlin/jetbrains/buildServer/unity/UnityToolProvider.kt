@@ -33,10 +33,25 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
 
     override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
-        unityDetector?.findInstallations()?.forEach { (version, path) ->
+
+        // Report all Unity versions
+        val versions = unityDetector?.findInstallations()?.toMap() ?: return
+        versions.forEach { (version, path) ->
             LOG.info("Found Unity $version at $path")
             agent.configuration.apply {
                 val name = "${UnityConstants.UNITY_CONFIG_NAME}$version${UnityConstants.UNITY_CONFIG_PATH}"
+                addConfigurationParameter(name, path.absolutePath)
+            }
+        }
+
+        // Report maximum Unity version
+        versions.entries.maxBy { it.key }?.let { (version, path) ->
+            agent.configuration.apply {
+                val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_VERSION}"
+                addConfigurationParameter(name, version.toString())
+            }
+            agent.configuration.apply {
+                val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_PATH}"
                 addConfigurationParameter(name, path.absolutePath)
             }
         }

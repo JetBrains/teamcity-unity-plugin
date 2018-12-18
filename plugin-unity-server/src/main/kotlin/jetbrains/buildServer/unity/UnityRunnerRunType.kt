@@ -7,6 +7,8 @@
 
 package jetbrains.buildServer.unity
 
+import jetbrains.buildServer.requirements.Requirement
+import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
@@ -73,6 +75,21 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
             }
         }
         return builder.toString().trim()
+    }
+
+    override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
+        val requirements = mutableListOf<Requirement>()
+        parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
+            if (it.isNotBlank()) {
+                val name = UnityConstants.UNITY_CONFIG_NAME + it.trim() + UnityConstants.UNITY_CONFIG_PATH
+                requirements.add(Requirement(name, null, RequirementType.EXISTS))
+            }
+        }
+        if  (requirements.isEmpty()) {
+            val name = UnityConstants.RUNNER_TYPE + UnityConstants.UNITY_CONFIG_VERSION
+            requirements.add(Requirement(name, null, RequirementType.EXISTS))
+        }
+        return requirements
     }
 
     private fun StringBuilder.addParameter(parameter: String) {
