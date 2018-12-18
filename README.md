@@ -11,6 +11,7 @@ It provides support for building Unity projects on TeamCity.
 * Unity versions detection on build agents
 * Unity build runner with smart completions
 * Automatic discovery of Unity build steps
+* Unity Editor tests reporting
 
 # Download
 
