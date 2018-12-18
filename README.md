@@ -8,9 +8,9 @@ It provides support for building Unity projects on TeamCity.
 
 ## Features
 
-* Unity detection on build agents
-* Unity build runner
-* Automatic discovery of Unity build steps in repository
+* Unity versions detection on build agents
+* Unity build runner with smart completions
+* Automatic discovery of Unity build steps
 
 # Download
 
@@ -23,7 +23,8 @@ The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/down
 # Configuration
 
 The plugin searches Unity installations in the following paths:
-* Mac OS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
+* macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
+* Linux: `~/Unity*` and `~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
 
 # Build
