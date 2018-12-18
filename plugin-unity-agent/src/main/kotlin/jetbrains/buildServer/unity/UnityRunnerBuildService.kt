@@ -10,7 +10,6 @@ package jetbrains.buildServer.unity
 import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
-import jetbrains.buildServer.util.FileUtil
 import jetbrains.buildServer.util.StringUtil
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
@@ -22,11 +21,12 @@ import java.io.File
 class UnityRunnerBuildService : BuildServiceAdapter() {
 
     private var unityLogFile: File? = null
+    private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val toolPath = getToolPath(UnityConstants.RUNNER_TYPE)
-        val arguments = mutableListOf("-batchmode", "-quit")
+        val arguments = mutableListOf("-batchmode")
 
         runnerParameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
@@ -52,6 +52,12 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             }
         }
 
+        runnerParameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.let {
+            if (it.toBoolean()) {
+                arguments.add(ARG_RUN_TESTS)
+            }
+        }
+
         runnerParameters[UnityConstants.PARAM_NO_GRAPHICS]?.let {
             if (it.toBoolean()) {
                 arguments.add("-nographics")
@@ -72,9 +78,28 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
         val logFile = unityLogFile
         if (logFile != null) {
-            arguments.addAll(listOf("-logFile", logFile.absolutePath))
+            arguments.addAll(listOf(ARG_LOG_FILE, logFile.absolutePath))
         } else {
-           arguments.add("-logFile")
+            arguments.add(ARG_LOG_FILE)
+        }
+
+        // -runEditorTests always executes -quit
+        if (!arguments.contains(ARG_RUN_TESTS)) {
+            arguments.add("-quit")
+        } else {
+            val index = arguments.indexOf(ARG_TESTS_FILE)
+            unityTestsReportFile = if (index > 0 && index + 1 < arguments.size) {
+                val testsResultPath = arguments[index + 1]
+                File(testsResultPath)
+            } else {
+                File.createTempFile(
+                        "unityTestResults-",
+                        "-${build.buildId}.xml",
+                        build.buildTempDirectory
+                ).apply {
+                    arguments.addAll(listOf(ARG_TESTS_FILE, this.absolutePath))
+                }
+            }
         }
 
         return createProgramCommandline(toolPath, arguments)
@@ -86,14 +111,13 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
         // On Windows unity could not write log into stdout
         // so we need to read a log file contents
         if (SystemInfo.isWindows) {
-            unityLogFile = File(build.buildTempDirectory, "unity.txt").apply {
-                if (exists()) {
-                    FileUtil.delete(this)
-                    createNewFile()
-                }
-            }
+            unityLogFile = File.createTempFile(
+                    "unityBuildLog-",
+                    "-${build.buildId}.txt",
+                    build.buildTempDirectory
+            )
 
-            unityLogFileTailer = Tailer.create(unityLogFile, object: TailerListenerAdapter() {
+            unityLogFileTailer = Tailer.create(unityLogFile, object : TailerListenerAdapter() {
                 override fun handle(line: String) {
                     logger.message(line)
                 }
@@ -111,9 +135,15 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             Thread.sleep(DEFAULT_DELAY_MILLIS)
             stop()
         }
+        unityTestsReportFile?.let {
+            logger.message("##teamcity[importData type='nunit' path='${it.absolutePath}']")
+        }
     }
 
     companion object {
-        private var DEFAULT_DELAY_MILLIS = 500L
+        private const val DEFAULT_DELAY_MILLIS = 500L
+        private const val ARG_LOG_FILE = "-logFile"
+        private const val ARG_RUN_TESTS = "-runEditorTests"
+        private const val ARG_TESTS_FILE = "-editorTestsResultFile"
     }
 }

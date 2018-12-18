@@ -130,6 +130,8 @@
 <tr class="advancedSetting">
     <th>Options:</th>
     <td>
+        <props:checkboxProperty name="${params.runEditorTests}"/>
+        <label for="${params.runEditorTests}">Run Editor tests from the project</label><br/>
         <props:checkboxProperty name="${params.noGraphics}"/>
         <label for="${params.noGraphics}">Do not initialize the graphics device</label>
     </td>

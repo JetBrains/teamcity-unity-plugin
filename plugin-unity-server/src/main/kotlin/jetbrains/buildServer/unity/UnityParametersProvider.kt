@@ -29,6 +29,9 @@ class UnityParametersProvider {
     val unityVersion: String
         get() = UnityConstants.PARAM_UNITY_VERSION
 
+    val runEditorTests: String
+        get() = UnityConstants.PARAM_RUN_EDITOR_TESTS
+
     val noGraphics: String
         get() = UnityConstants.PARAM_NO_GRAPHICS
 
