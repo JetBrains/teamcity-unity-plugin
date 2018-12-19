@@ -12,7 +12,7 @@ package jetbrains.buildServer.unity
  */
 object UnityConstants {
     const val RUNNER_TYPE = "unity"
-    const val RUNNER_DISPLAY_NAME = "Unity Build"
+    const val RUNNER_DISPLAY_NAME = "Unity"
     const val RUNNER_DESCRIPTION = "Provides build support for Unity projects"
     const val UNITY_CONFIG_NAME = "$RUNNER_TYPE."
     const val UNITY_CONFIG_PATH = ".path"

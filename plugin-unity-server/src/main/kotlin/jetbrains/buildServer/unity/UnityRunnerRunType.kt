@@ -18,19 +18,26 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor
  * Cargo runner definition.
  */
 class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
-                         runTypeRegistry: RunTypeRegistry) : RunType() {
+                         private val myRunTypeRegistry: RunTypeRegistry) : RunType() {
+
+    private val myDisplayName: String by lazy {
+        val runType = myRunTypeRegistry.findRunType("unityRunner")
+        if (runType == null) {
+            UnityConstants.RUNNER_DISPLAY_NAME
+        } else {
+            "${UnityConstants.RUNNER_DISPLAY_NAME} (JetBrains plugin)"
+        }
+    }
 
     init {
-        runTypeRegistry.registerRunType(this)
+        myRunTypeRegistry.registerRunType(this)
     }
 
     override fun getType(): String {
         return UnityConstants.RUNNER_TYPE
     }
 
-    override fun getDisplayName(): String {
-        return UnityConstants.RUNNER_DISPLAY_NAME
-    }
+    override fun getDisplayName() = myDisplayName
 
     override fun getDescription(): String {
         return UnityConstants.RUNNER_DESCRIPTION
