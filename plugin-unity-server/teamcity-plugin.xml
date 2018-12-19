@@ -6,7 +6,6 @@
         <display-name>Unity Support</display-name>
         <version>@Plugin_Version@</version>
         <description>Provides build facilities for Unity projects</description>
-        <download-url>https://github.com/dtretyakov/teamcity-unity-plugin</download-url>
         <vendor>
             <name>JetBrains, s.r.o.</name>
             <url>http://www.jetbrains.com/</url>
