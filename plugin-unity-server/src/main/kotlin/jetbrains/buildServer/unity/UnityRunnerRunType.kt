@@ -8,6 +8,7 @@
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.requirements.Requirement
+import jetbrains.buildServer.requirements.RequirementQualifier
 import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
@@ -88,15 +89,19 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         val requirements = mutableListOf<Requirement>()
         parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
             if (it.isNotBlank()) {
-                val name = UnityConstants.UNITY_CONFIG_NAME + it.trim() + UnityConstants.UNITY_CONFIG_PATH
-                requirements.add(Requirement(name, null, RequirementType.EXISTS))
+                val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME + it.trim()) + ".*"
+                requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
             }
         }
         if (requirements.isEmpty()) {
-            val name = UnityConstants.RUNNER_TYPE + UnityConstants.UNITY_CONFIG_VERSION
-            requirements.add(Requirement(name, null, RequirementType.EXISTS))
+            val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + ".+"
+            requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
         }
         return requirements
+    }
+
+    private fun escapeRegex(value: String): String {
+        return value.replace(".", "\\.")
     }
 
     private fun StringBuilder.addParameter(parameter: String) {

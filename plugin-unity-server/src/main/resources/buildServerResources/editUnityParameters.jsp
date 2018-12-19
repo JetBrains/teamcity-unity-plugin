@@ -152,7 +152,7 @@
     <td>
         <props:textProperty name="${params.unityVersion}" className="longField"/>
         <span class="error" id="error_${params.unityVersion}"></span>
-        <span class="smallNote">Specify the required Unity version.</span>
+        <span class="smallNote">Specify the required Unity version, e.g 2018.2.</span>
     </td>
 </tr>
 

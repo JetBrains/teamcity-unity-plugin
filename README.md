@@ -28,6 +28,8 @@ The plugin searches Unity installations in the following paths:
 * Linux: `~/Unity*` and `~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
 
+All detected Unity versions will be reported as a build agent configuration parameters with prefix: `unity.path.%unityVersion%`.
+
 # Build
 
 This project uses gradle as the build system. You can easily open it in [IntelliJ IDEA](https://www.jetbrains.com/idea/help/importing-project-from-gradle-model.html) or [Eclipse](http://gradle.org/eclipse/).

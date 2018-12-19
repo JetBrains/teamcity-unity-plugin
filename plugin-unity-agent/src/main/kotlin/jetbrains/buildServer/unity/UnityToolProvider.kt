@@ -46,19 +46,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         unityVersions.forEach { (version, path) ->
             LOG.info("Found Unity $version at $path")
             agent.configuration.apply {
-                val name = "${UnityConstants.UNITY_CONFIG_NAME}$version${UnityConstants.UNITY_CONFIG_PATH}"
-                addConfigurationParameter(name, path)
-            }
-        }
-
-        // Report maximum Unity version
-        unityVersions.entries.maxBy { it.key }?.let { (version, path) ->
-            agent.configuration.apply {
-                val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_VERSION}"
-                addConfigurationParameter(name, version)
-            }
-            agent.configuration.apply {
-                val name = "${UnityConstants.RUNNER_TYPE}${UnityConstants.UNITY_CONFIG_PATH}"
+                val name = "${UnityConstants.UNITY_CONFIG_NAME}$version"
                 addConfigurationParameter(name, path)
             }
         }
@@ -86,7 +74,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         val unityPath = if (unityVersion.isNullOrEmpty()) {
             unityVersions.entries.lastOrNull()?.value
         } else {
-            unityVersions[unityVersion]
+            unityVersions.entries.lastOrNull { it.key.startsWith(unityVersion) }?.value
         } ?: throw ToolCannotBeFoundException("$toolName, version $unityVersion")
 
         return unityDetector.getEditorPath(File(unityPath)).absolutePath

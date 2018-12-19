@@ -14,9 +14,7 @@ object UnityConstants {
     const val RUNNER_TYPE = "unity"
     const val RUNNER_DISPLAY_NAME = "Unity"
     const val RUNNER_DESCRIPTION = "Provides build support for Unity projects"
-    const val UNITY_CONFIG_NAME = "$RUNNER_TYPE."
-    const val UNITY_CONFIG_PATH = ".path"
-    const val UNITY_CONFIG_VERSION = ".version"
+    const val UNITY_CONFIG_NAME = "$RUNNER_TYPE.path."
 
     const val PARAM_PROJECT_PATH = "projectPath"
     const val PARAM_EXECUTE_METHOD = "executeMethod"
