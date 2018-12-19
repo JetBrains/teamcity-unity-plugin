@@ -52,7 +52,7 @@
     });
 </script>
 
-<tr class="advancedSetting">
+<tr>
     <th><label for="${params.projectPath}">Project path:</label></th>
     <td>
         <props:textProperty name="${params.projectPath}" className="longField">
@@ -85,7 +85,7 @@
 </tr>
 
 <tr class="advancedSetting">
-    <th><label for="${params.buildTarget}">Build target:</label></th>
+    <th><label for="${params.buildTarget}">Target:</label></th>
     <td>
         <props:textProperty name="${params.buildTarget}" className="longField">
             <jsp:attribute name="afterTextField">
@@ -98,8 +98,8 @@
     </td>
 </tr>
 
-<tr class="advancedSetting">
-    <th><label for="${params.buildPlayer}">Build player:</label></th>
+<tr>
+    <th><label for="${params.buildPlayer}">Standalone player:</label></th>
     <td>
         <props:selectProperty name="${params.buildPlayer}" enableFilter="true" className="mediumField">
             <props:option value="">&lt;Select&gt;</props:option>
@@ -111,7 +111,7 @@
     </td>
 </tr>
 
-<tr class="advancedSetting" style="display: none">
+<tr style="display: none">
     <th class="noBorder"><label for="${params.buildPlayerPath}">Player output path: <l:star/></label></th>
     <td>
         <props:textProperty name="${params.buildPlayerPath}" className="longField">
