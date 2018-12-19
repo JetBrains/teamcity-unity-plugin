@@ -62,7 +62,7 @@
         </props:textProperty>
         <span class="error" id="error_${params.projectPath}"></span>
         <span class="smallNote">
-            <span id="${params.projectPath}">Specify target project path to build.</span>
+            <span id="${params.projectPath}">Specify the path to the target project.</span>
         </span>
     </td>
 </tr>
@@ -73,13 +73,13 @@
         <props:textProperty name="${params.executeMethod}" className="longField">
             <jsp:attribute name="afterTextField">
                 <bs:projectData type="UnityStaticMethod" sourceFieldId="${params.projectPath}" selectionMode="single"
-                                targetFieldId="${params.executeMethod}" popupTitle="Select method reference"/>
+                                targetFieldId="${params.executeMethod}" popupTitle="Select a method reference"/>
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.executeMethod}"></span>
         <span class="smallNote">
-            Specify the static method reference to execute after project loading.<br/>
-            Class should be located under Assets/Editor project directory.
+            Specify a static method reference to execute after the project is loaded.<br/>
+            The class should be located in the Assets/Editor project directory.
         </span>
     </td>
 </tr>
@@ -94,7 +94,7 @@
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.buildTarget}"></span>
-        <span class="smallNote">Specify the active build target before loading a project.</span>
+        <span class="smallNote">Specify an active build target before loading the project.</span>
     </td>
 </tr>
 
@@ -123,7 +123,7 @@
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.buildPlayerPath}"></span>
-        <span class="smallNote">Specify the output path for player binary.</span>
+        <span class="smallNote">Specify the output path for the player binary.</span>
     </td>
 </tr>
 
@@ -142,7 +142,7 @@
     <td>
         <props:textProperty name="${params.arguments}" className="longField"/>
         <span class="error" id="error_${params.arguments}"></span>
-        <span class="smallNote">Specify the additional command line arguments for Unity<bs:help
+        <span class="smallNote">Specify additional command line arguments for Unity<bs:help
                 urlPrefix="https://docs.unity3d.com/Manual/CommandLineArguments.html" file=""/>.</span>
     </td>
 </tr>
