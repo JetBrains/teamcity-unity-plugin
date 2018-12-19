@@ -15,7 +15,7 @@ It provides support for building Unity projects on TeamCity.
 
 # Download
 
-You can [download the plugin](https://teamcity.jetbrains.com/repository/download/TeamCityUnityPlugin_Build/.lastSuccessful/teamcity-unity-plugin.zip?guest=1) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
+You can [download the plugin](https://plugins.jetbrains.com/plugin/11453-unity-support) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
 
 # Compatibility
 
