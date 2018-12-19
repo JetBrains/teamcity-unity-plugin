@@ -19,7 +19,7 @@ You can [download the plugin](https://plugins.jetbrains.com/plugin/11453-unity-s
 
 # Compatibility
 
-The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/download/) 2018.1.x and greater.
+The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/download/) 2018.1+ and was verified to work with Unity 2017+.
 
 # Configuration
 
