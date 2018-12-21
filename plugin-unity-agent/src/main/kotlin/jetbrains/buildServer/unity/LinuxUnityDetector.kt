@@ -5,7 +5,7 @@ import com.intellij.openapi.diagnostic.Logger
 import java.io.File
 import java.lang.Exception
 
-class LinuxUnityDetector : UnityDetector {
+class LinuxUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
         getHintPaths().forEach { path ->
@@ -37,26 +37,15 @@ class LinuxUnityDetector : UnityDetector {
     override fun getEditorPath(directory: File) = File(directory, "Editor/Unity")
 
     private fun getHintPaths() = sequence {
-        val userHome = System.getProperty("user.home")?: return@sequence
-        val directory = File(userHome)
-        if (!directory.exists()) return@sequence
-
-        // The convention to install multiple Unity versions is
-        // to use suffixes for Unity directory, e.g. Unity_4.0b7
-        directory.listFiles { file ->
-            file.isDirectory && file.name.startsWith("Unity")
-        }?.let { files ->
-            yieldAll(files.asSequence())
+        // Find installations within user profile
+        System.getProperty("user.home")?.let { userHome ->
+            if (userHome.isNotEmpty()) {
+                yieldAll(findUnityPaths(File(userHome)))
+            }
         }
 
-        // Unity Hub installs editors under Unity/Hub/Editor directory,
-        // e.g. Unity/Hub/Editor/2018.1.9f2
-        val unityHub = File(directory, "Unity/Hub/Editor")
-        unityHub.listFiles { file ->
-            file.isDirectory
-        }?.let { files ->
-            yieldAll(files.asSequence())
-        }
+        // deb packages are installing Unity in the /opt/Unity directory
+        yieldAll(findUnityPaths(File("/opt/")))
     }
 
     companion object {
