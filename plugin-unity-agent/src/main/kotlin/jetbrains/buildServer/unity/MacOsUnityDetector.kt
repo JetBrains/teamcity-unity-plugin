@@ -9,7 +9,7 @@ import java.lang.Exception
 class MacOsUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
-        getHintPaths().forEach { path ->
+        getHintPaths().distinct().forEach { path ->
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
 
@@ -38,7 +38,10 @@ class MacOsUnityDetector : UnityDetectorBase() {
 
     override fun getEditorPath(directory: File) = File(directory, "Unity.app/Contents/MacOS/Unity")
 
-    private fun getHintPaths() = findUnityPaths(File("/Applications"))
+    override fun getHintPaths() = sequence {
+        yieldAll(super.getHintPaths())
+        yieldAll(findUnityPaths(File("/Applications")))
+    }
 
     companion object {
         private val LOG = Logger.getInstance(MacOsUnityDetector::class.java.name)

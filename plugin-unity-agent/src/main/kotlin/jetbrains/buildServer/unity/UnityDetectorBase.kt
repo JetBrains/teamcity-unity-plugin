@@ -3,6 +3,18 @@ package jetbrains.buildServer.unity
 import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
+
+    protected open fun getHintPaths() = sequence {
+        // Get paths from "UNITY_HOME" environment variables
+        System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
+            if (unityHome.isNotEmpty()) {
+                yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
+                    File(path)
+                })
+            }
+        }
+    }
+
     protected fun findUnityPaths(directory: File) = sequence {
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7

@@ -28,6 +28,8 @@ The plugin searches for Unity installations in the following directories:
 * Linux: `~/Unity*` and `~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
 
+To add Unity installation located in custom path you could use `UNITY_HOME` environment variable. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
+
 All detected Unity versions will be reported as build agent configuration parameters with the `unity.path.%unityVersion%` prefix.
 
 # Build

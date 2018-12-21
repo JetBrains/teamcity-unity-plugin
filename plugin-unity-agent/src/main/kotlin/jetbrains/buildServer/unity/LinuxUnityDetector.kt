@@ -8,7 +8,7 @@ import java.lang.Exception
 class LinuxUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
-        getHintPaths().forEach { path ->
+        getHintPaths().distinct().forEach { path ->
             LOG.debug("Checking path $path")
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
@@ -36,7 +36,9 @@ class LinuxUnityDetector : UnityDetectorBase() {
 
     override fun getEditorPath(directory: File) = File(directory, "Editor/Unity")
 
-    private fun getHintPaths() = sequence {
+    override fun getHintPaths() = sequence {
+        yieldAll(super.getHintPaths())
+
         // Find installations within user profile
         System.getProperty("user.home")?.let { userHome ->
             if (userHome.isNotEmpty()) {

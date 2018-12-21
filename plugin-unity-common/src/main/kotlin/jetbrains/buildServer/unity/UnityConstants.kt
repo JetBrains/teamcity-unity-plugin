@@ -25,4 +25,6 @@ object UnityConstants {
     const val PARAM_NO_GRAPHICS = "noGraphics"
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_UNITY_VERSION = "unityVersion"
+
+    const val VAR_UNITY_HOME = "UNITY_HOME"
 }

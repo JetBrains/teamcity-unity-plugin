@@ -6,7 +6,7 @@ import java.io.File
 
 class WindowsUnityDetector : UnityDetectorBase() {
     override fun findInstallations() = sequence {
-        getHintPaths().forEach {  path ->
+        getHintPaths().distinct().forEach {  path ->
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
 
@@ -17,7 +17,9 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
     override fun getEditorPath(directory: File) = File(directory, "Editor/Unity.exe")
 
-    private fun getHintPaths() = sequence<File> {
+    override fun getHintPaths() = sequence {
+        yieldAll(super.getHintPaths())
+
         val programFiles = hashSetOf<String>()
 
         System.getenv("ProgramFiles")?.let {  programFiles.add(it)}
