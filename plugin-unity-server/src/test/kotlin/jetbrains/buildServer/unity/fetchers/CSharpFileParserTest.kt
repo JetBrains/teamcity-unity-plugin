@@ -19,7 +19,8 @@ class CSharpFileParserTest {
                         "BuildScript.Method2" to null,
                         "BuildScript.Method3" to null
                 )),
-                arrayOf("file5.cs", mapOf("BuildScript.CustomBuild" to "Description"))
+                arrayOf("file5.cs", mapOf("BuildScript.CustomBuild" to "Description")),
+                arrayOf("file6.cs", mapOf("Namespace.BuildScript.CustomBuild" to "Description"))
         )
     }
 

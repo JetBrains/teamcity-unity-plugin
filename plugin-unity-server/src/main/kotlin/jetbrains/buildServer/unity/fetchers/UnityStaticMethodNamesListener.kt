@@ -2,6 +2,7 @@ package jetbrains.buildServer.unity.fetchers
 
 import org.jetbrains.unity.CSharpParser
 import org.jetbrains.unity.CSharpParserBaseListener
+import java.lang.StringBuilder
 import java.util.*
 
 class UnityStaticMethodNamesListener : CSharpParserBaseListener() {
@@ -30,8 +31,18 @@ class UnityStaticMethodNamesListener : CSharpParserBaseListener() {
 
     private fun getMethodReference(classMember: CSharpParser.Class_member_declarationContext,
                                    method: CSharpParser.Method_declarationContext): String {
+        val builder = StringBuilder()
+
         val classDefinition = classMember.parent.parent.parent as CSharpParser.Class_definitionContext
-        return "${classDefinition.identifier().text}.${method.method_member_name().text}"
+        (classDefinition.parent?.parent?.parent?.parent?.parent as? CSharpParser.Namespace_declarationContext)?.let {
+            builder.append(it.qualified_identifier().text).append(".")
+        }
+
+        builder.append(classDefinition.identifier().text)
+        builder.append(".")
+        builder.append(method.method_member_name().text)
+
+        return builder.toString()
     }
 
     private fun getDescription(classMember: CSharpParser.Class_member_declarationContext): String? {
