@@ -21,10 +21,13 @@ object UnityConstants {
     const val PARAM_BUILD_TARGET = "buildTarget"
     const val PARAM_BUILD_PLAYER = "buildPlayer"
     const val PARAM_BUILD_PLAYER_PATH = "buildPlayerPath"
-    const val PARAM_RUN_EDITOR_TESTS = "runEditorTests"
     const val PARAM_NO_GRAPHICS = "noGraphics"
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_UNITY_VERSION = "unityVersion"
+    const val PARAM_RUN_EDITOR_TESTS = "runEditorTests"
+    const val PARAM_TEST_PLATFORM = "testPlatform"
+    const val PARAM_TEST_CATEGORIES = "testCategories"
+    const val PARAM_TEST_NAMES = "testNames"
 
     const val VAR_UNITY_HOME = "UNITY_HOME"
 }

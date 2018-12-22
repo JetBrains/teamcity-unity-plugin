@@ -100,6 +100,26 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
                     arguments.addAll(listOf(ARG_TESTS_FILE, this.absolutePath))
                 }
             }
+
+            runnerParameters[UnityConstants.PARAM_TEST_PLATFORM]?.let {
+                if (it.isNotEmpty()) {
+                    arguments.addAll(listOf("-testPlatform", it))
+                }
+            }
+
+            runnerParameters[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
+                if (it.isNotEmpty()) {
+                    val categories = StringUtil.split(it).joinToString(",")
+                    arguments.addAll(listOf("-editorTestsCategories", categories))
+                }
+            }
+
+            runnerParameters[UnityConstants.PARAM_TEST_NAMES]?.let {
+                if (it.isNotEmpty()) {
+                    val names = StringUtil.split(it).joinToString(",")
+                    arguments.addAll(listOf("-editorTestsFilter", names))
+                }
+            }
         }
 
         return createProgramCommandline(toolPath, arguments)

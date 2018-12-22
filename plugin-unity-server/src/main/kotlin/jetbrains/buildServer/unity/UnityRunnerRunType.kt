@@ -77,9 +77,14 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
                 builder.addParameter("Build target: $it")
             }
         }
-        parameters[UnityConstants.PARAM_BUILD_PLAYER]?.let {
-            UnityParametersProvider.BUILD_PLAYERS[it.trim()]?.let {
+        parameters[UnityConstants.PARAM_BUILD_PLAYER]?.let { value ->
+            UnityParametersProvider.BUILD_PLAYERS[value.trim()]?.let {
                 builder.addParameter("Build player: $it")
+            }
+        }
+        parameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.let {
+            if (it.toBoolean()) {
+                builder.addParameter("Run editor tests: ON")
             }
         }
         return builder.toString().trim()

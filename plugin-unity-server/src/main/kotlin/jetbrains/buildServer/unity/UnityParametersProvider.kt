@@ -29,14 +29,23 @@ class UnityParametersProvider {
     val unityVersion: String
         get() = UnityConstants.PARAM_UNITY_VERSION
 
-    val runEditorTests: String
-        get() = UnityConstants.PARAM_RUN_EDITOR_TESTS
-
     val noGraphics: String
         get() = UnityConstants.PARAM_NO_GRAPHICS
 
     val arguments: String
         get() = UnityConstants.PARAM_ARGUMENTS
+
+    val runEditorTests: String
+        get() = UnityConstants.PARAM_RUN_EDITOR_TESTS
+
+    val testPlatform: String
+        get() = UnityConstants.PARAM_TEST_PLATFORM
+
+    val testCategories: String
+        get() = UnityConstants.PARAM_TEST_CATEGORIES
+
+    val testNames: String
+        get() = UnityConstants.PARAM_TEST_NAMES
 
     val buildPlayers: List<Pair<String, String>>
         get() = BUILD_PLAYERS.map { it.toPair() }

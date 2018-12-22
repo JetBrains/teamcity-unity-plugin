@@ -26,16 +26,10 @@
     <div class="parameter">
         <c:forEach items="${params.buildPlayers}" var="type">
             <c:if test="${propertiesBean.properties[params.buildPlayer] eq type.first}">
-                    Build player: <strong><c:out value="${type.second}"/></strong>
+                    Standalone player: <strong><c:out value="${type.second}"/></strong>
             </c:if>
         </c:forEach><br/>
         Player output path: <props:displayValue name="${params.buildPlayerPath}"/>
-    </div>
-</c:if>
-
-<c:if test="${propertiesBean.properties[params.runEditorTests]}">
-    <div class="parameter">
-        Run Editor tests from the project: <strong>ON</strong>
     </div>
 </c:if>
 
@@ -43,6 +37,30 @@
     <div class="parameter">
         Do not initialize the graphics device: <strong>ON</strong>
     </div>
+</c:if>
+
+<c:if test="${propertiesBean.properties[params.runEditorTests]}">
+    <div class="parameter">
+        Run Editor tests from the project: <strong>ON</strong>
+    </div>
+
+    <c:if test="${not empty propertiesBean.properties[params.testPlatform]}">
+        <div class="parameter">
+            Test platform: <props:displayValue name="${params.testPlatform}"/>
+        </div>
+    </c:if>
+
+    <c:if test="${not empty propertiesBean.properties[params.testCategories]}">
+        <div class="parameter">
+            Test categories: <props:displayValue name="${params.testCategories}"/>
+        </div>
+    </c:if>
+
+    <c:if test="${not empty propertiesBean.properties[params.testNames]}">
+        <div class="parameter">
+            Test names: <props:displayValue name="${params.testNames}"/>
+        </div>
+    </c:if>
 </c:if>
 
 <c:if test="${not empty propertiesBean.properties[params.arguments]}">
