@@ -12,6 +12,13 @@ The plugin supports building Unity projects on TeamCity.
 * Unity build runner with smart completions
 * Automatic discovery of Unity build steps
 * Unity Editor tests reporting
+* Unity build settings feature
+
+### Unity build settings feature
+
+This [TeamCity build feature](https://confluence.jetbrains.com/display/TCDL/Adding+Build+Features) allows to **automatically activate and return Unity Editor license** before build start and after build completion.
+
+Also it allows to configure **Unity cache server** address in one place to use this setting within Unity build steps. 
 
 # Download
 

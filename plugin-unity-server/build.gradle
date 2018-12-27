@@ -19,6 +19,7 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided 'javax.servlet:jstl:1.1.2'
     agent project(path: ':plugin-unity-agent', configuration: 'plugin')
+    provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
 }
 
 serverPlugin.version = null

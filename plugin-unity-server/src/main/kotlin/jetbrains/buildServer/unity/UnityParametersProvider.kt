@@ -47,6 +47,21 @@ class UnityParametersProvider {
     val testNames: String
         get() = UnityConstants.PARAM_TEST_NAMES
 
+    val activateLicense: String
+        get() = UnityConstants.PARAM_ACTIVATE_LICENSE
+
+    val serialNumber: String
+        get() = UnityConstants.PARAM_SERIAL_NUMBER
+
+    val username: String
+        get() = UnityConstants.PARAM_USERNAME
+
+    val password: String
+        get() = UnityConstants.PARAM_PASSWORD
+
+    val cacheServer: String
+        get() = UnityConstants.PARAM_CACHE_SERVER
+
     val buildPlayers: List<Pair<String, String>>
         get() = BUILD_PLAYERS.map { it.toPair() }
 

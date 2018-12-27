@@ -6,7 +6,6 @@
 <jsp:useBean id="params" class="jetbrains.buildServer.unity.UnityParametersProvider"/>
 <jsp:useBean id="teamcityPluginResourcesPath" scope="request" type="java.lang.String"/>
 
-<link rel="stylesheet" href="${teamcityPluginResourcesPath}unity-settings.css">
 <script type="text/javascript">
     var buildPlayerId = BS.Util.escapeId('${params.buildPlayer}');
     var runTestsId = BS.Util.escapeId('${params.runEditorTests}');

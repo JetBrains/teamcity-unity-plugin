@@ -120,6 +120,15 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
                     arguments.addAll(listOf("-editorTestsFilter", names))
                 }
             }
+
+            // Append build feature parameters
+            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
+                feature.parameters[UnityConstants.PARAM_CACHE_SERVER]?.let {
+                    if (it.isNotEmpty()) {
+                        arguments.addAll(listOf("-CacheServerIPAddress", it.trim()))
+                    }
+                }
+            }
         }
 
         return createProgramCommandline(toolPath, arguments)

@@ -4,5 +4,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
     <bean class="jetbrains.buildServer.unity.UnityBuildSessionFactory"/>
+    <bean class="jetbrains.buildServer.unity.UnityLicenseManager"/>
     <bean class="jetbrains.buildServer.unity.UnityToolProvider"/>
 </beans>

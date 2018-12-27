@@ -57,25 +57,37 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     }
 
     override fun getPath(toolName: String): String {
-        if (!supports(toolName)) throw ToolCannotBeFoundException("Unsupported tool $toolName")
-
-        throw ToolCannotBeFoundException("""
-                Unable to locate tool $toolName in system. Please make sure to add it in the PATH variable
-                """.trimIndent())
+        return getUnityPath(toolName, null)
     }
 
     override fun getPath(toolName: String,
                          build: AgentRunningBuild,
                          runner: BuildRunnerContext): String {
-        if (unityDetector == null) throw ToolCannotBeFoundException(toolName)
+        var unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
+        if (unityVersion.isNullOrEmpty()) {
+            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
+                unityVersion = feature.parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
+            }
+        }
+        return getUnityPath(toolName, unityVersion)
+    }
 
-        val unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]
+    fun getUnityPath(toolName: String, unityVersion: String?): String {
+        if (!supports(toolName)) {
+            throw ToolCannotBeFoundException("Unsupported tool $toolName")
+        }
+
+        if (unityDetector == null) {
+            throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
+        }
 
         val unityPath = if (unityVersion.isNullOrEmpty()) {
             unityVersions.entries.lastOrNull()?.value
         } else {
             unityVersions.entries.lastOrNull { it.key.startsWith(unityVersion) }?.value
-        } ?: throw ToolCannotBeFoundException("$toolName, version $unityVersion")
+        } ?: throw ToolCannotBeFoundException("""
+                Unable to locate tool $toolName in system. Please make sure to specify UNITY_PATH environment variable
+                """.trimIndent())
 
         return unityDetector.getEditorPath(File(unityPath)).absolutePath
     }
