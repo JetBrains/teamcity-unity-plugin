@@ -32,7 +32,7 @@ The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/down
 
 The plugin searches for Unity installations in the following directories:
 * macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
-* Linux: `~/Unity*` and `~/Unity/Hub/Editor/*`
+* Linux: `/opt/Unity*`/`~/Unity*` and `/opt/Unity/Hub/Editor/*`/`~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
 
 To add Unity installation located in custom path you could use `UNITY_HOME` environment variable. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
