@@ -4,13 +4,27 @@ import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
 
+    protected abstract val editorPath: String
+
+    protected abstract val editorExecutable: String
+
+    override fun getEditorPath(directory: File) = File(directory, "$editorPath/$editorExecutable")
+
     protected open fun getHintPaths() = sequence {
         // Get paths from "UNITY_HOME" environment variables
         System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
-            if (unityHome.isNotEmpty()) {
-                yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
-                    File(path)
-                })
+            if (unityHome.isEmpty()) return@let
+            yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
+                File(path)
+            })
+        }
+        // Get paths from "PATH" variable
+        System.getenv("PATH")?.let { systemPath ->
+            if (systemPath.isEmpty()) return@let
+            systemPath.split(File.pathSeparatorChar).forEach { path ->
+                if (path.endsWith(editorPath, true)) {
+                    yield(File(path.removeRange(path.length - editorPath.length, path.length)))
+                }
             }
         }
     }
