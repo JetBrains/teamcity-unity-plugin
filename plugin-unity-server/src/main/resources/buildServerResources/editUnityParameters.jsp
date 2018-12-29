@@ -64,7 +64,7 @@
         </props:textProperty>
         <span class="error" id="error_${params.projectPath}"></span>
         <span class="smallNote">
-            <span id="${params.projectPath}">Specify the path to the target project.</span>
+            <span id="${params.projectPath}">Specify the path to the target project, if unspecified, we will use the working directory</span>
         </span>
     </td>
 </tr>
