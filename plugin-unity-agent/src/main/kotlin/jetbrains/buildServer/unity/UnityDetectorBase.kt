@@ -3,6 +3,7 @@ package jetbrains.buildServer.unity
 import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
+    private val additionalHintPaths: MutableCollection<File> = mutableListOf()
 
     protected open fun getHintPaths() = sequence {
         // Get paths from "UNITY_HOME" environment variables
@@ -13,13 +14,18 @@ abstract class UnityDetectorBase : UnityDetector {
                 })
             }
         }
+
+        // Get paths from "additional directories"
+        additionalHintPaths.forEach { hintPath ->
+            yieldAll(findUnityPaths(hintPath))
+        }
     }
 
     protected fun findUnityPaths(directory: File) = sequence {
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7
         directory.listFiles { file ->
-            file.isDirectory && file.name.startsWith("Unity")
+            file.isDirectory && (file.name.toLowerCase().startsWith("unity"))
         }?.let { files ->
             yieldAll(files.asSequence())
         }
@@ -32,5 +38,10 @@ abstract class UnityDetectorBase : UnityDetector {
         }?.let { files ->
             yieldAll(files.asSequence())
         }
+    }
+
+    fun registerAdditionalHintPath(hintPath: File)
+    {
+        additionalHintPaths.add(hintPath)
     }
 }

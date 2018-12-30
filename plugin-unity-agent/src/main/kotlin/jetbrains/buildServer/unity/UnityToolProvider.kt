@@ -34,8 +34,13 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         events.addListener(this)
     }
 
-    override fun beforeAgentConfigurationLoaded(agent: BuildAgent) {
+    override fun afterAgentConfigurationLoaded(agent: BuildAgent) {
+        super.afterAgentConfigurationLoaded(agent)
+
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
+
+        unityDetector?.registerAdditionalHintPath(agent.configuration.agentToolsDirectory)
+
         unityDetector?.findInstallations()?.let { versions ->
             unityVersions.putAll(versions.sortedBy { it.first }.map {
                 it.first.toString() to it.second.absolutePath

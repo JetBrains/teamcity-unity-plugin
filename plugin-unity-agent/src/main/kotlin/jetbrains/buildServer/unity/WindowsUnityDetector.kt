@@ -1,12 +1,14 @@
 package jetbrains.buildServer.unity
 
 import com.github.zafarkhaja.semver.Version
+import jetbrains.buildServer.agent.runner.JavaCommandLineBuilder.LOG
 import jetbrains.buildServer.util.PEReader.PEUtil
 import java.io.File
 
 class WindowsUnityDetector : UnityDetectorBase() {
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach {  path ->
+            LOG.info("Checking $path")
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
 
