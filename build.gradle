@@ -30,7 +30,3 @@ subprojects {
     sourceCompatibility = "1.6"
     targetCompatibility = "1.6"
 }
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.9'
-}
