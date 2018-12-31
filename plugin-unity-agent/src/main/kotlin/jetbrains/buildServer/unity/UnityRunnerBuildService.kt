@@ -31,7 +31,7 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
         var projectDir = workingDirectory
         runnerParameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
-                projectDir = File(it.trim())
+                projectDir = File(workingDirectory, it.trim())
             }
         }
         arguments.addAll(listOf("-projectPath", projectDir.absolutePath))
