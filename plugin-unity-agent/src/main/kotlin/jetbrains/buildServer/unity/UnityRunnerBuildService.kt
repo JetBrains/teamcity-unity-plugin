@@ -31,7 +31,7 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
         var workingDirectory = workingDirectory.absolutePath
         runnerParameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
-                val projectFile = File(runnerParameters[UnityConstants.PARAM_PROJECT_PATH])
+                val projectFile = File(it.trim())
                 workingDirectory = projectFile.absolutePath
             }
         }
