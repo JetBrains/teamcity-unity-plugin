@@ -22,6 +22,7 @@ class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
         myActivateUnityLicensePath = null
 
         val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull() ?: return
+        if (!build.buildRunners.any { isUnityRunner(it) }) return
 
         val parameters = feature.parameters
         parameters[UnityConstants.PARAM_ACTIVATE_LICENSE]?.let activate@{ activateLicense ->
@@ -83,6 +84,12 @@ class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
                 LOG.debug("Unity log:\n${logFile.readText()}")
             }
         }
+    }
+
+    private fun isUnityRunner(it: BuildRunnerSettings): Boolean {
+        if (!it.isEnabled) return false
+        if (it.runType != UnityConstants.RUNNER_TYPE) return false
+        return it.runnerParameters["plugin.docker.imageId"].isNullOrEmpty()
     }
 
     private fun <T> underLogBlock(blockName: String, logger: BuildProgressLogger, isVerbose: Boolean, block: () -> T): T {
