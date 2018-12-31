@@ -3,15 +3,31 @@ package jetbrains.buildServer.unity
 import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
-    private val additionalHintPaths: MutableCollection<File> = mutableListOf()
+
+    private val additionalHintPaths = mutableListOf<File>()
+
+    protected abstract val editorPath: String
+
+    protected abstract val editorExecutable: String
+
+    override fun getEditorPath(directory: File) = File(directory, "$editorPath/$editorExecutable")
 
     protected open fun getHintPaths() = sequence {
         // Get paths from "UNITY_HOME" environment variables
         System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
-            if (unityHome.isNotEmpty()) {
-                yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
-                    File(path)
-                })
+            if (unityHome.isEmpty()) return@let
+            yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
+                File(path)
+            })
+        }
+        
+        // Get paths from "PATH" variable
+        System.getenv("PATH")?.let { systemPath ->
+            if (systemPath.isEmpty()) return@let
+            systemPath.split(File.pathSeparatorChar).forEach { path ->
+                if (path.endsWith(editorPath, true)) {
+                    yield(File(path.removeRange(path.length - editorPath.length, path.length)))
+                }
             }
         }
 
@@ -25,7 +41,7 @@ abstract class UnityDetectorBase : UnityDetector {
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7
         directory.listFiles { file ->
-            file.isDirectory && (file.name.toLowerCase().startsWith("unity"))
+            file.isDirectory && (file.name.startsWith("Unity", true))
         }?.let { files ->
             yieldAll(files.asSequence())
         }
@@ -40,8 +56,7 @@ abstract class UnityDetectorBase : UnityDetector {
         }
     }
 
-    fun registerAdditionalHintPath(hintPath: File)
-    {
-        additionalHintPaths.add(hintPath)
+    fun registerAdditionalHintPath(hintPath: File) {
+        additionalHintPaths += hintPath
     }
 }
