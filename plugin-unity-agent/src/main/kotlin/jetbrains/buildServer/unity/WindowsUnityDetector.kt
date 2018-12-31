@@ -6,6 +6,13 @@ import jetbrains.buildServer.util.PEReader.PEUtil
 import java.io.File
 
 class WindowsUnityDetector : UnityDetectorBase() {
+
+    override val editorPath: String
+        get() = "Editor"
+
+    override val editorExecutable: String
+        get() = "Unity.exe"
+
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach {  path ->
             LOG.info("Checking $path")
@@ -16,8 +23,6 @@ class WindowsUnityDetector : UnityDetectorBase() {
             yield(Version.forIntegers(version.p1, version.p2, version.p3) to path)
         }
     }
-
-    override fun getEditorPath(directory: File) = File(directory, "Editor/Unity.exe")
 
     override fun getHintPaths() = sequence {
         yieldAll(super.getHintPaths())

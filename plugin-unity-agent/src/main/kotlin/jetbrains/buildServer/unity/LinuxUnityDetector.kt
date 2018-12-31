@@ -7,6 +7,12 @@ import java.lang.Exception
 
 class LinuxUnityDetector : UnityDetectorBase() {
 
+    override val editorPath: String
+        get() = "Editor"
+
+    override val editorExecutable: String
+        get() = "Unity"
+
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
             LOG.debug("Checking path $path")
@@ -33,8 +39,6 @@ class LinuxUnityDetector : UnityDetectorBase() {
             }
         }
     }
-
-    override fun getEditorPath(directory: File) = File(directory, "Editor/Unity")
 
     override fun getHintPaths() = sequence {
         yieldAll(super.getHintPaths())

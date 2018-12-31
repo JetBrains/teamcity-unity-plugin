@@ -20,7 +20,7 @@ abstract class UnityDetectorBase : UnityDetector {
                 File(path)
             })
         }
-        
+
         // Get paths from "PATH" variable
         System.getenv("PATH")?.let { systemPath ->
             if (systemPath.isEmpty()) return@let

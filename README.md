@@ -30,7 +30,7 @@ The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/down
 
 # Configuration
 
-The plugin searches for Unity installations in the following directories:
+The plugin searches for Unity installations in `PATH` variable and in the following directories:
 * macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
 * Linux: `/opt/Unity*`/`~/Unity*` and `/opt/Unity/Hub/Editor/*`/`~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`

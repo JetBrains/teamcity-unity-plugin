@@ -68,6 +68,10 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     override fun getPath(toolName: String,
                          build: AgentRunningBuild,
                          runner: BuildRunnerContext): String {
+        if (runner.isVirtualContext) {
+            return UnityConstants.RUNNER_TYPE
+        }
+
         var unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
         if (unityVersion.isNullOrEmpty()) {
             build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
