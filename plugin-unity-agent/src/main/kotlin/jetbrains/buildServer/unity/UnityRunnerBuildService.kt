@@ -28,14 +28,13 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
         val toolPath = getToolPath(UnityConstants.RUNNER_TYPE)
         val arguments = mutableListOf("-batchmode")
 
-        var workingDirectory = workingDirectory.absolutePath
+        var projectDir = workingDirectory
         runnerParameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
-                val projectFile = File(it.trim())
-                workingDirectory = projectFile.absolutePath
+                projectDir = File(it.trim())
             }
         }
-        arguments.addAll(listOf("-projectPath", workingDirectory))
+        arguments.addAll(listOf("-projectPath", projectDir.absolutePath))
 
         runnerParameters[UnityConstants.PARAM_BUILD_TARGET]?.let {
             if (it.isNotEmpty()) {
