@@ -41,7 +41,7 @@ abstract class UnityDetectorBase : UnityDetector {
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7
         directory.listFiles { file ->
-            file.isDirectory && (file.name.startsWith("Unity", true))
+            file.isDirectory && file.name.startsWith("Unity", true)
         }?.let { files ->
             yieldAll(files.asSequence())
         }
