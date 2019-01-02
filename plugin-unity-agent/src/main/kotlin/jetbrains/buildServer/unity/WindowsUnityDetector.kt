@@ -1,6 +1,7 @@
 package jetbrains.buildServer.unity
 
 import com.github.zafarkhaja.semver.Version
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.util.PEReader.PEUtil
 import java.io.File
 
@@ -14,6 +15,8 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach {  path ->
+            LOG.debug("Looking for Unity installation in $path")
+
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
 
@@ -35,5 +38,9 @@ class WindowsUnityDetector : UnityDetectorBase() {
             if (path.isEmpty()) return@forEach
             yieldAll(findUnityPaths(File(path)))
         }
+    }
+    
+    companion object {
+        private val LOG = Logger.getInstance(WindowsUnityDetector::class.java.name)
     }
 }

@@ -4,6 +4,8 @@ import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
 
+    private val additionalHintPaths = mutableListOf<File>()
+
     protected abstract val editorPath: String
 
     protected abstract val editorExecutable: String
@@ -18,6 +20,7 @@ abstract class UnityDetectorBase : UnityDetector {
                 File(path)
             })
         }
+
         // Get paths from "PATH" variable
         System.getenv("PATH")?.let { systemPath ->
             if (systemPath.isEmpty()) return@let
@@ -27,13 +30,18 @@ abstract class UnityDetectorBase : UnityDetector {
                 }
             }
         }
+
+        // Get paths from "additional directories"
+        additionalHintPaths.forEach { hintPath ->
+            yieldAll(findUnityPaths(hintPath))
+        }
     }
 
     protected fun findUnityPaths(directory: File) = sequence {
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7
         directory.listFiles { file ->
-            file.isDirectory && file.name.startsWith("Unity")
+            file.isDirectory && file.name.startsWith("Unity", true)
         }?.let { files ->
             yieldAll(files.asSequence())
         }
@@ -46,5 +54,9 @@ abstract class UnityDetectorBase : UnityDetector {
         }?.let { files ->
             yieldAll(files.asSequence())
         }
+    }
+
+    fun registerAdditionalHintPath(hintPath: File) {
+        additionalHintPaths += hintPath
     }
 }
