@@ -15,7 +15,8 @@ class LinuxUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
-            LOG.debug("Checking path $path")
+            LOG.debug("Looking for Unity installation in $path")
+
             val executable = getEditorPath(path)
             if (!executable.exists()) return@forEach
 
