@@ -34,6 +34,7 @@ The plugin searches for Unity installations in `PATH` variable and in the follow
 * macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
 * Linux: `/opt/Unity*`/`~/Unity*` and `/opt/Unity/Hub/Editor/*`/`~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
+* TeamCity agent tools location, which allows installing Unity as an [agent tool](https://confluence.jetbrains.com/display/TCDL/Installing+Agent+Tools). 
 
 To add Unity installation located in custom path you could use `UNITY_HOME` environment variable. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
 
