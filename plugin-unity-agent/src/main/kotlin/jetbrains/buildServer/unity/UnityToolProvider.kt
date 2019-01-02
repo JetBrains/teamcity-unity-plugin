@@ -35,16 +35,16 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     }
 
     override fun afterAgentConfigurationLoaded(agent: BuildAgent) {
-        super.afterAgentConfigurationLoaded(agent)
-
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
 
-        unityDetector?.registerAdditionalHintPath(agent.configuration.agentToolsDirectory)
-
-        unityDetector?.findInstallations()?.let { versions ->
-            unityVersions.putAll(versions.sortedBy { it.first }.map {
-                it.first.toString() to it.second.absolutePath
-            }.toMap())
+        unityDetector?.let { detector ->
+            detector.registerAdditionalHintPath(agent.configuration.agentToolsDirectory)
+            
+            detector.findInstallations().let { versions ->
+                unityVersions.putAll(versions.sortedBy { it.first }.map {
+                    it.first.toString() to it.second.absolutePath
+                }.toMap())
+            }
         }
 
         // Report all Unity versions
