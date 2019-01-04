@@ -1,0 +1,6 @@
+Warming cache for 534 main assets: 0.000933 seconds elapsed
+Initializing Unity extensions:
+ 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/UnityExtensions/Unity/UnityHoloLens/Editor/UnityEditor.HoloLens.dll'  GUID: 12fd8a0055b84bb59e84c9835a37e333
+ 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/UnityExtensions/Unity/Timeline/Runtime/UnityEngine.Timeline.dll'  GUID: 6a10b2909283487f913b00d94cd3faf5
+ 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/UnityExtensions/Unity/TestRunner/portable/nunit.framework.dll'  GUID: 405b9b51bb344a128608d968297df79c
+Ignoring menu item Build Android because it is in no submenu!

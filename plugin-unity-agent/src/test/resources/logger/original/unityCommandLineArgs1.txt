@@ -1,0 +1,25 @@
+[Package Manager] Server::Start -- Port 59915 was selected
+
+ COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\2019.1.0a12\Editor\Unity.exe
+-batchmode
+-projectPath
+C:\TeamCity\buildAgent\work\10862b5c871a2dc6
+-runEditorTests
+-executeMethod
+BuildScript.BuildAndroid
+-logFile
+C:\TeamCity\buildAgent\temp\buildTmp\unityBuildLog-6156996492803908737-20254.txt
+-editorTestsResultFile
+C:\TeamCity\buildAgent\temp\buildTmp\unityTestResults-8803371785633591232-20254.xml
+-editorTestsCategories
+category1,category2
+-editorTestsFilter
+name1,name2,name3,name4
+-CacheServerIPAddress
+localhost:8080
+Successfully changed project path to: C:\TeamCity\buildAgent\work\10862b5c871a2dc6
+C:/TeamCity/buildAgent/work/10862b5c871a2dc6
+Using Asset Import Pipeline V1.
+DisplayProgressbar: Unity Package Manager
+Loading GUID <-> Path mappings...0.000081 seconds

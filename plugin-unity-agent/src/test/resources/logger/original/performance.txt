@@ -1,0 +1,6 @@
+[Step 1/1] (Filename: C:/buildslave/unity/build/Extensions/TestRunner/UnityEngine.TestRunner/TestRunner/Callbacks/TestResultWriter.cs Line: 37)
+
+[Performance] ApplicationTickTimer          :        6 samples, Peak.  11.3 ms (2.2x), Avg.  5.15 ms, Total. 30.87 ms (0.6%)
+[Performance] ReloadAllUsedAssemblies       :        1 samples, Peak.   800 ns (1.0x), Avg.   800 ns, Total. 800.0 ns (0.0%)
+[Performance] Internal_SwitchSkin           :        7 samples, Peak.   100 ns (3.5x), Avg.  28.6 ns, Total. 200.0 ns (0.0%)
+Detecting if any assets need to be imported or removed ...

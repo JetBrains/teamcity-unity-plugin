@@ -1,0 +1,6 @@
+[ScriptCompilation] Recompiling all scripts because: Reload of assemblies failed, assemblies are invalid or forced recompiled
+- Starting compile Library/ScriptAssemblies/Unity.Timeline.dll
+- Starting compile Library/ScriptAssemblies/Unity.TextMeshPro.dll
+- Starting compile Library/ScriptAssemblies/Unity.Analytics.DataPrivacy.dll
+
+Line of text

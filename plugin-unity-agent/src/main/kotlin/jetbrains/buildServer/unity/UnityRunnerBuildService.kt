@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 JetBrains s.r.o.
+ * Copyright 2000-2019 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * See LICENSE in the project root for license information.
@@ -10,6 +10,7 @@ package jetbrains.buildServer.unity
 import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.unity.logging.UnityLoggingListener
 import jetbrains.buildServer.util.StringUtil
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
@@ -23,6 +24,9 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
     private var unityLogFile: File? = null
     private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
+    private val unityListeners by lazy {
+        listOf(UnityLoggingListener(logger))
+    }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val toolPath = getToolPath(UnityConstants.RUNNER_TYPE)
@@ -149,7 +153,9 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
             unityLogFileTailer = Tailer.create(unityLogFile, object : TailerListenerAdapter() {
                 override fun handle(line: String) {
-                    logger.message(line)
+                    listeners.forEach {
+                        it.onStandardOutput(line)
+                    }
                 }
 
                 override fun fileRotated() {
@@ -169,6 +175,8 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             logger.message("##teamcity[importData type='nunit' path='${it.absolutePath}']")
         }
     }
+
+    override fun getListeners() = unityListeners
 
     companion object {
         private const val DEFAULT_DELAY_MILLIS = 500L

@@ -1,0 +1,7 @@
+Line of text
+##teamcity[blockOpened name='Refresh']
+Detecting if any assets need to be imported or removed ...
+Elapses 0.015129 seconds (Nothing changed)
+Refresh completed in 0.015184 seconds.
+##teamcity[blockClosed name='Refresh']
+[Package Manager] Server::Kill -- Server was shutdown

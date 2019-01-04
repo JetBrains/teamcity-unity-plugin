@@ -1,0 +1,17 @@
+Loading GUID <-> Path mappings...0.000081 seconds
+Loading Asset Database...0.030632 seconds
+AssetDatabase consistency checks...0.049523 seconds
+[Package Manager] Done resolving packages in 3.48s seconds
+##teamcity[blockOpened name='Package Manager']
+Registering 3 packages:
+ * Package :  com.unity.ads@2.0.8
+    (location: C:\TeamCity\buildAgent\work\10862b5c871a2dc6\Library\PackageCache\com.unity.ads@2.0.8)
+ * Package :  com.unity.analytics@3.2.2
+    (location: C:\TeamCity\buildAgent\work\10862b5c871a2dc6\Library\PackageCache\com.unity.analytics@3.2.2)
+ * Package :  com.unity.collab-proxy@1.2.9
+    (location: C:\TeamCity\buildAgent\work\10862b5c871a2dc6\Library\PackageCache\com.unity.collab-proxy@1.2.9)
+Done registering packages in 0.02s seconds
+##teamcity[blockClosed name='Package Manager']
+Refreshing native plugins compatible for Editor in 346.28 ms, found 2 plugins.
+Preloading 0 native plugins for Editor in 0.00 ms.
+Initialize engine version: 2019.1.0a12 (5175bce2e5d4)

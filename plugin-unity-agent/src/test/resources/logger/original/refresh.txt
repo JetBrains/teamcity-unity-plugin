@@ -1,0 +1,5 @@
+Line of text
+Refresh: detecting if any assets need to be imported or removed ...
+Refresh: elapses 0.015129 seconds (Nothing changed)
+Refresh completed in 0.015184 seconds.
+[Package Manager] Server::Kill -- Server was shutdown

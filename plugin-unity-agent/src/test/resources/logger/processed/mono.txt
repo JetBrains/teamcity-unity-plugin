@@ -1,0 +1,13 @@
+Line of text
+##teamcity[blockOpened name='Initialize mono']
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/Mono/lib/mono/2.0'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/2018.2.19f1/Editor/Data/Mono/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,defer=y,address=0.0.0.0:56984
+Begin MonoManager ReloadAssembly
+Preloading 1 native plugins for Editor in 59.61 ms.
+Mono: successfully reloaded assembly
+##teamcity[blockClosed name='Initialize mono']
+- Completed reload, in  2.833 seconds
+Registering precompiled user dll's ...
+Registered in 0.049993 seconds.

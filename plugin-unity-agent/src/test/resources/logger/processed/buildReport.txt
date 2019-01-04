@@ -1,0 +1,6 @@
+-------------------------------------------------------------------------------
+##teamcity[blockOpened name='Build Report']
+Uncompressed usage by category (Percentages based on user generated assets only):
+ 0.1 kb	 0.0% Assets/Scripts/Utils.cs
+##teamcity[blockClosed name='Build Report']
+Unloading 25 Unused Serialized files (Serialized files now loaded: 0)

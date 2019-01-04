@@ -1,0 +1,11 @@
+- Finished compile Library/ScriptAssemblies/UnityEngine.SpatialTracking.dll
+
+-----Compiler Commandline Arguments:
+Filename: "C:/Program Files/Unity/Hub/Editor/2019.1.0a12/Editor/Data/MonoBleedingEdge/bin/mono.exe"
+Arguments: "C:/Program Files/Unity/Hub/Editor/2019.1.0a12/Editor/Data/MonoBleedingEdge/lib/mono/4.5/mcs.exe"  @Temp/UnityTempFile-ec4b235e9667cfe43a54d95c257c65ec
+-----CompilerOutput:-stdout--exitcode: 0--compilationhadfailure: False--outfile: Temp/Unity.Timeline.dll
+Compilation succeeded - 1 warning(s)
+-----CompilerOutput:-stderr----------
+C:/Program Files/Unity/Hub/Editor/2019.1.0a12/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.timeline/Runtime/AssetUpgrade/TrackUpgrade.cs(25,25): warning CS1635: Cannot restore warning `CS0169' because it was disabled globally
+-----EndCompilerOutput---------------
+- Finished compile Library/ScriptAssemblies/Unity.Timeline.dll
