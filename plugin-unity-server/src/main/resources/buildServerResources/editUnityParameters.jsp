@@ -54,6 +54,7 @@
 </script>
 
 <l:settingsGroup title="Build Parameters">
+<props:workingDirectory/>
 <tr>
     <th><label for="${params.projectPath}">Project path:</label></th>
     <td>
