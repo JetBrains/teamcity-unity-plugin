@@ -23,6 +23,6 @@ class CommandLineBlock : LogBlock {
 
     companion object {
         private val blockStart = Regex("\\s*COMMAND LINE ARGUMENTS:")
-        private val blockEnd = Regex("Successfully changed project path to:")
+        private val blockEnd = Regex("(Successfully changed|Couldn't set) project path to:")
     }
 }
