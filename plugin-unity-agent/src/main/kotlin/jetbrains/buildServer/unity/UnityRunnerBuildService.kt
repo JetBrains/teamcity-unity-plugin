@@ -155,6 +155,9 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
                     }
                 }
             }
+
+            // apply quiet mode for test xml reports watcher
+            runnerContext.addRunnerParameter("xmlReportParsing.quietMode", "true")
         }
 
         runnerParameters[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
@@ -199,7 +202,9 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             stop()
         }
         unityTestsReportFile?.let {
-            logger.message(ImportData("nunit", it.absolutePath).asString())
+            if (it.exists()) {
+                logger.message(ImportData("nunit", it.absolutePath).asString())
+            }
         }
     }
 
