@@ -1,0 +1,7 @@
+C:/Program Files/Unity/Hub/Editor/2019.1.0a12/Editor/Data/Resources/PackageManager/BuiltInPackages/com.unity.timeline/Runtime/AssetUpgrade/TrackUpgrade.cs(25,25): warning CS1635: Cannot restore warning `CS0169' because it was disabled globally
+Fatal Error! It looks like another Unity instance is running with this project open.
+WARNING: Shader Unsupported: 'AR/TangoARRender' - Setting to default shader.
+executeMethod method BuildScript.BuildAndroid threw exception.
+executeMethod class 'BuildScript' could not be found
+Couldn't set project path to: C:/buildAgent/work/10862b5c871a2dc6/foobar
+Cancelling DisplayDialog: Failed to activate/update license. Missing or bad username and password. Please try again using valid credentials or contact support@unity3d.com

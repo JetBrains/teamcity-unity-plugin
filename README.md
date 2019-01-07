@@ -11,6 +11,7 @@ The plugin supports building Unity projects on TeamCity.
 * Unity versions detection on build agents
 * Unity build runner with smart completions
 * Automatic discovery of Unity build steps
+* Structured build log with problems highlighting
 * Unity Editor tests reporting
 * Unity build settings feature
 
@@ -39,6 +40,18 @@ The plugin searches for Unity installations in `PATH` variable and in the follow
 To add Unity installation located in custom path you could use `UNITY_HOME` environment variable. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
 
 All detected Unity versions will be reported as build agent configuration parameters with the `unity.path.%unityVersion%` prefix.
+
+## Custom error logging settings
+
+The runner allows overriding default error logging settings by using "Line statuses file" parameter where you could specify the path to configuration file. Example file contents:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<lines>
+  <line level="warning" message="warning CS\d+" />
+  <line level="error" message="error CS\d+" />
+</lines>
+```
 
 # Build
 

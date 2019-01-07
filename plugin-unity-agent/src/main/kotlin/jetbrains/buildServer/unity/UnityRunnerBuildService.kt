@@ -7,10 +7,15 @@
 
 package jetbrains.buildServer.unity
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.messages.Status
+import jetbrains.buildServer.messages.serviceMessages.Message
+import jetbrains.buildServer.unity.logging.LineStatusProvider
 import jetbrains.buildServer.unity.logging.UnityLoggingListener
+import jetbrains.buildServer.unity.messages.ImportData
 import jetbrains.buildServer.util.StringUtil
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
@@ -24,8 +29,24 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
     private var unityLogFile: File? = null
     private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
+    private var unityLineStatusesFile: File? = null
     private val unityListeners by lazy {
-        listOf(UnityLoggingListener(logger))
+        val statusesFile = unityLineStatusesFile
+        val problemsProvider = try {
+            if (statusesFile != null && statusesFile.exists()) {
+                LineStatusProvider(statusesFile).apply {
+                    logger.message("Using line statuses file $statusesFile")
+                }
+            } else {
+                LineStatusProvider()
+            }
+        } catch (e: Exception) {
+            val message = "Failed to parse file $statusesFile with line statuses"
+            logger.message(Message(message, Status.WARNING.text, null).asString())
+            LOG.infoAndDebugDetails(message, e)
+            LineStatusProvider()
+        }
+        listOf(UnityLoggingListener(logger, problemsProvider))
     }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
@@ -136,6 +157,12 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             }
         }
 
+        runnerParameters[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
+            if (it.isNotEmpty()) {
+                unityLineStatusesFile = File(workingDirectory, it.trim())
+            }
+        }
+
         return createProgramCommandline(toolPath, arguments)
     }
 
@@ -172,13 +199,14 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             stop()
         }
         unityTestsReportFile?.let {
-            logger.message("##teamcity[importData type='nunit' path='${it.absolutePath}']")
+            logger.message(ImportData("nunit", it.absolutePath).asString())
         }
     }
 
     override fun getListeners() = unityListeners
 
     companion object {
+        private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
         private const val ARG_LOG_FILE = "-logFile"
         private const val ARG_RUN_TESTS = "-runEditorTests"

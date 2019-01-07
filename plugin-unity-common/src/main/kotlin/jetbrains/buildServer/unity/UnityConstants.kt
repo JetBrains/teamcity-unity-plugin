@@ -32,6 +32,7 @@ object UnityConstants {
     const val PARAM_TEST_PLATFORM = "testPlatform"
     const val PARAM_TEST_CATEGORIES = "testCategories"
     const val PARAM_TEST_NAMES = "testNames"
+    const val PARAM_LINE_STATUSES_FILE = "lineStatusesFile"
 
     const val PARAM_ACTIVATE_LICENSE = "activateLicense"
     const val PARAM_SERIAL_NUMBER = Constants.SECURE_PROPERTY_PREFIX + "serialNumber"

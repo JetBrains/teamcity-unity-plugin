@@ -204,6 +204,24 @@
         <span class="smallNote">Specify the required Unity version, e.g 2018.2.</span>
     </td>
 </tr>
+
+<tr class="advancedSetting">
+    <th>
+        <label for="${params.lineStatusesFile}">Line statuses file: <bs:help
+            urlPrefix="https://github.com/JetBrains/teamcity-unity-plugin#custom-error-logging-settings" file=""/></label>
+    </th>
+    <td>
+        <props:textProperty name="${params.lineStatusesFile}" className="longField">
+        <jsp:attribute name="afterTextField">
+            <bs:vcsTree fieldId="${params.lineStatusesFile}"/>
+        </jsp:attribute>
+        </props:textProperty>
+        <span class="error" id="error_${params.lineStatusesFile}"></span>
+        <span class="smallNote">
+            Specify the path to the line status file which could override default error logging settings.
+        </span>
+    </td>
+</tr>
 </l:settingsGroup>
 
 <script type="text/javascript">

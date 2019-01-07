@@ -36,7 +36,7 @@ class UnityLoggingListenerTest {
             }
         })
 
-        val listener = UnityLoggingListener(logger)
+        val listener = UnityLoggingListener(logger, LineStatusProvider())
 
         for (message in original) {
             listener.onStandardOutput(message)
@@ -74,7 +74,8 @@ class UnityLoggingListenerTest {
                 arrayOf<Any>("refresh.txt"),
                 arrayOf<Any>("scriptCompilation.txt"),
                 arrayOf<Any>("compile.txt"),
-                arrayOf<Any>("buildReport.txt")
+                arrayOf<Any>("buildReport.txt"),
+                arrayOf<Any>("buildProblems.txt")
         )
     }
 }

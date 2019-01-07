@@ -9,9 +9,15 @@ package jetbrains.buildServer.unity.logging
 
 import jetbrains.buildServer.agent.BuildProgressLogger
 import jetbrains.buildServer.agent.runner.ProcessListenerAdapter
+import jetbrains.buildServer.messages.Status
+import jetbrains.buildServer.messages.serviceMessages.BlockClosed
+import jetbrains.buildServer.messages.serviceMessages.BlockOpened
+import jetbrains.buildServer.messages.serviceMessages.Message
+import jetbrains.buildServer.unity.messages.BuildProblem
 import java.util.*
 
-class UnityLoggingListener(private val logger: BuildProgressLogger) : ProcessListenerAdapter() {
+class UnityLoggingListener(private val logger: BuildProgressLogger,
+                           private val problemsProvider: LineStatusProvider) : ProcessListenerAdapter() {
 
     private var blocks = Stack<LogBlock>()
     private val currentBlock: LogBlock
@@ -72,15 +78,22 @@ class UnityLoggingListener(private val logger: BuildProgressLogger) : ProcessLis
     }
 
     private fun logMessage(text: String) {
-        logger.message(currentBlock.getText(text))
+        val message = currentBlock.getText(text)
+        val status = problemsProvider.getLineStatus(message)
+        val serviceMessage = when (status) {
+            LineStatus.Warning -> Message(message, Status.WARNING.text, null).asString()
+            LineStatus.Error -> BuildProblem(message).asString()
+            else -> message
+        }
+        logger.message(serviceMessage)
     }
 
     private fun logBlockOpened(name: String) {
-        logger.message("##teamcity[blockOpened name='$name']")
+        logger.message(BlockOpened(name, null).asString())
     }
 
     private fun logBlockClosed(name: String) {
-        logger.message("##teamcity[blockClosed name='$name']")
+        logger.message(BlockClosed(name).asString())
     }
 
     companion object {

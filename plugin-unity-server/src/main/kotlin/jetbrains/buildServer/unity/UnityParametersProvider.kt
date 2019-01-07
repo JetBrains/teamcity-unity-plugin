@@ -47,6 +47,9 @@ class UnityParametersProvider {
     val testNames: String
         get() = UnityConstants.PARAM_TEST_NAMES
 
+    val lineStatusesFile: String
+        get() = UnityConstants.PARAM_LINE_STATUSES_FILE
+
     val activateLicense: String
         get() = UnityConstants.PARAM_ACTIVATE_LICENSE
 

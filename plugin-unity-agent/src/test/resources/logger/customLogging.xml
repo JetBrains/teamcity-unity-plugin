@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lines>
+    <line level="warning" message="customWarning:.*" />
+    <line level="error" message="customError:.*" />
+</lines>
