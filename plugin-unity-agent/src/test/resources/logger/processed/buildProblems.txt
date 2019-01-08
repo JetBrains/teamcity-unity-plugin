@@ -5,3 +5,4 @@
 ##teamcity[buildProblem description='executeMethod class |'BuildScript|' could not be found']
 ##teamcity[buildProblem description='Couldn|'t set project path to: C:/buildAgent/work/10862b5c871a2dc6/foobar']
 ##teamcity[buildProblem description='Cancelling DisplayDialog: Failed to activate/update license. Missing or bad username and password. Please try again using valid credentials or contact support@unity3d.com']
+##teamcity[buildProblem description='Error building player because build target was unsupported']

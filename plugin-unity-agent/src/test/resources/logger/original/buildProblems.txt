@@ -5,3 +5,4 @@ executeMethod method BuildScript.BuildAndroid threw exception.
 executeMethod class 'BuildScript' could not be found
 Couldn't set project path to: C:/buildAgent/work/10862b5c871a2dc6/foobar
 Cancelling DisplayDialog: Failed to activate/update license. Missing or bad username and password. Please try again using valid credentials or contact support@unity3d.com
+Error building player because build target was unsupported
