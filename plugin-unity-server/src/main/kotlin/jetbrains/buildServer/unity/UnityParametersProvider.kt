@@ -68,25 +68,12 @@ class UnityParametersProvider {
     val cacheServer: String
         get() = UnityConstants.PARAM_CACHE_SERVER
 
-    val buildPlayers: List<Pair<String, String>>
-        get() = BUILD_PLAYERS.map { it.toPair() }
+    val buildPlayers: List<StandalonePlayer>
+        get() = StandalonePlayer.values().toList()
 
     val verbosity: String
         get() = UnityConstants.PARAM_VERBOSITY
 
     val verbosityValues: List<Verbosity>
         get() = Verbosity.values().toList()
-
-    companion object {
-        val BUILD_PLAYERS = mapOf(
-                "buildLinux32Player" to "Linux 32-bit",
-                "buildLinux64Player" to "Linux 64-bit",
-                "buildLinuxUniversalPlayer" to "Linux 32-bit and 64-bit",
-                "buildOSXPlayer" to "Mac OSX 32-bit",
-                "buildOSX64Player" to "Mac OSX 64-bit",
-                "buildOSXUniversalPlayer" to "Mac OSX 32-bit and 64-bit",
-                "buildWindowsPlayer" to "Windows 32-bit",
-                "buildWindows64Player" to "Windows 64-bit"
-        )
-    }
 }

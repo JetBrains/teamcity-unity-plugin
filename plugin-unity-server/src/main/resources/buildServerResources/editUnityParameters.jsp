@@ -107,7 +107,7 @@
         <props:selectProperty name="${params.buildPlayer}" enableFilter="true" className="mediumField">
             <props:option value="">&lt;Select&gt;</props:option>
             <c:forEach var="item" items="${params.buildPlayers}">
-                <props:option value="${item.first}"><c:out value="${item.second}"/></props:option>
+                <props:option value="${item.id}"><c:out value="${item.description}"/></props:option>
             </c:forEach>
         </props:selectProperty>
         <span class="error" id="error_${params.buildPlayer}"></span>

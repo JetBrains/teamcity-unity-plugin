@@ -78,8 +78,8 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
             }
         }
         parameters[UnityConstants.PARAM_BUILD_PLAYER]?.let { value ->
-            UnityParametersProvider.BUILD_PLAYERS[value.trim()]?.let {
-                builder.addParameter("Build player: $it")
+            StandalonePlayer.tryParse(value)?.let {
+                builder.addParameter("Build player: ${it.description}")
             }
         }
         parameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.let {

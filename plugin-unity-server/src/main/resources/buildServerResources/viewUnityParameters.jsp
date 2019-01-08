@@ -25,8 +25,8 @@
 <c:if test="${not empty propertiesBean.properties[params.buildPlayer]}">
     <div class="parameter">
         <c:forEach items="${params.buildPlayers}" var="type">
-            <c:if test="${propertiesBean.properties[params.buildPlayer] eq type.first}">
-                    Standalone player: <strong><c:out value="${type.second}"/></strong>
+            <c:if test="${propertiesBean.properties[params.buildPlayer] eq type.id}">
+                Standalone player: <strong><c:out value="${type.description}"/></strong>
             </c:if>
         </c:forEach><br/>
         Player output path: <props:displayValue name="${params.buildPlayerPath}"/>
