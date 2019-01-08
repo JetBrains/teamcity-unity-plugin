@@ -39,6 +39,12 @@
     </div>
 </c:if>
 
+<c:if test="${propertiesBean.properties[params.silentCrashes]}">
+    <div class="parameter">
+        Do not display the error dialog when a standalone player crashes: <strong>ON</strong>
+    </div>
+</c:if>
+
 <c:if test="${propertiesBean.properties[params.runEditorTests]}">
     <div class="parameter">
         Run Editor tests from the project: <strong>ON</strong>

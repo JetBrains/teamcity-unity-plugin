@@ -102,6 +102,12 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             }
         }
 
+        runnerParameters[UnityConstants.PARAM_SILENT_CRASHES]?.let {
+            if (it.toBoolean()) {
+                arguments.add("-silent-crashes")
+            }
+        }
+
         runnerParameters[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
             if (it.isNotEmpty()) {
                 arguments.addAll(listOf("-executeMethod", it.trim()))

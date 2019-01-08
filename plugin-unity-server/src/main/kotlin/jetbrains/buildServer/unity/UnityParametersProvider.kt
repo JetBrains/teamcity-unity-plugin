@@ -47,6 +47,9 @@ class UnityParametersProvider {
     val testNames: String
         get() = UnityConstants.PARAM_TEST_NAMES
 
+    val silentCrashes: String
+        get() = UnityConstants.PARAM_SILENT_CRASHES
+
     val lineStatusesFile: String
         get() = UnityConstants.PARAM_LINE_STATUSES_FILE
 

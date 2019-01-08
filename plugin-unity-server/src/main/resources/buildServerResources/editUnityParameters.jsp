@@ -134,7 +134,9 @@
     <th>Options:</th>
     <td>
         <props:checkboxProperty name="${params.noGraphics}"/>
-        <label for="${params.noGraphics}">Do not initialize the graphics device</label>
+        <label for="${params.noGraphics}">Do not initialize the graphics device</label><br/>
+        <props:checkboxProperty name="${params.silentCrashes}"/>
+        <label for="${params.silentCrashes}">Do not display the error dialog when a standalone player crashes</label>
     </td>
 </tr>
 </l:settingsGroup>
