@@ -74,3 +74,19 @@
         Unity version: <props:displayValue name="${params.unityVersion}"/>
     </div>
 </c:if>
+
+<c:if test="${not empty propertiesBean.properties[params.lineStatusesFile]}">
+    <div class="parameter">
+        Line statuses file: <props:displayValue name="${params.lineStatusesFile}"/>
+    </div>
+</c:if>
+
+<c:if test="${not empty propertiesBean.properties[params.verbosity]}">
+    <div class="parameter">
+        <c:forEach items="${params.verbosityValues}" var="type">
+            <c:if test="${propertiesBean.properties[params.verbosity] eq type.id}">
+                Logging verbosity: <strong><c:out value="${type.description}"/></strong>
+            </c:if>
+        </c:forEach>
+    </div>
+</c:if>

@@ -223,6 +223,19 @@
         </span>
     </td>
 </tr>
+
+<tr class="advancedSetting">
+    <th><label for="${params.verbosity}">Logging verbosity:</label></th>
+    <td>
+        <props:selectProperty name="${params.verbosity}" enableFilter="true" className="mediumField">
+            <props:option value="">&lt;Default&gt;</props:option>
+            <c:forEach var="item" items="${params.verbosityValues}">
+                <props:option value="${item.id}"><c:out value="${item.description}"/></props:option>
+            </c:forEach>
+        </props:selectProperty>
+        <span class="error" id="error_${params.verbosity}"></span>
+    </td>
+</tr>
 </l:settingsGroup>
 
 <script type="text/javascript">

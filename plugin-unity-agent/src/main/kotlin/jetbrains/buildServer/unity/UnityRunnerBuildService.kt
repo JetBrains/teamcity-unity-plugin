@@ -49,6 +49,18 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
         listOf(UnityLoggingListener(logger, problemsProvider))
     }
 
+    private val verbosity: Verbosity by lazy {
+        runnerParameters[UnityConstants.PARAM_VERBOSITY]?.let {
+            Verbosity.tryParse(it)
+        } ?: Verbosity.Normal
+    }
+
+    private val verbosityArgument: String
+        get() = when (verbosity) {
+            Verbosity.Verbose -> "-logFile"
+            else -> "-cleanedLogFile"
+        }
+
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val toolPath = getToolPath(UnityConstants.RUNNER_TYPE)
         val arguments = mutableListOf("-batchmode")
@@ -104,9 +116,9 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
         val logFile = unityLogFile
         if (logFile != null) {
-            arguments.addAll(listOf(ARG_LOG_FILE, logFile.absolutePath))
+            arguments.addAll(listOf(verbosityArgument, logFile.absolutePath))
         } else {
-            arguments.add(ARG_LOG_FILE)
+            arguments.add(verbosityArgument)
         }
 
         // -runEditorTests always executes -quit
@@ -213,7 +225,6 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
-        private const val ARG_LOG_FILE = "-logFile"
         private const val ARG_RUN_TESTS = "-runEditorTests"
         private const val ARG_TESTS_FILE = "-editorTestsResultFile"
     }

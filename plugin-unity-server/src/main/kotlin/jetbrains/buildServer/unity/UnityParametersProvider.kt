@@ -68,6 +68,12 @@ class UnityParametersProvider {
     val buildPlayers: List<Pair<String, String>>
         get() = BUILD_PLAYERS.map { it.toPair() }
 
+    val verbosity: String
+        get() = UnityConstants.PARAM_VERBOSITY
+
+    val verbosityValues: List<Verbosity>
+        get() = Verbosity.values().toList()
+
     companion object {
         val BUILD_PLAYERS = mapOf(
                 "buildLinux32Player" to "Linux 32-bit",
