@@ -57,8 +57,8 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
     private val verbosityArgument: String
         get() = when (verbosity) {
-            Verbosity.Verbose -> "-logFile"
-            else -> "-cleanedLogFile"
+            Verbosity.Minimal -> "-cleanedLogFile"
+            else -> "-logFile"
         }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
@@ -192,7 +192,7 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
     override fun beforeProcessStarted() {
         // On Windows unity could not write log into stdout
         // so we need to read a log file contents
-        if (SystemInfo.isWindows) {
+        if (SystemInfo.isWindows || verbosity != Verbosity.Normal) {
             unityLogFile = File.createTempFile(
                     "unityBuildLog-",
                     "-${build.buildId}.txt",

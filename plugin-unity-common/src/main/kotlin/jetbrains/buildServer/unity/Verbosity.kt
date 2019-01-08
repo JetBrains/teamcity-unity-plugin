@@ -8,8 +8,8 @@
 package jetbrains.buildServer.unity
 
 enum class Verbosity(val id: String, val description: String) {
-    Normal("normal", "Normal"),
-    Verbose("verbose", "Verbose");
+    Minimal("minimal", "Minimal"),
+    Normal("normal", "Normal");
 
     companion object {
         fun tryParse(id: String): Verbosity? {
