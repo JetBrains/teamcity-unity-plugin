@@ -9,6 +9,7 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
+import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.util.EventDispatcher
 import java.io.File
@@ -27,7 +28,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         else -> null
     }
 
-    private val unityVersions = mutableMapOf<String, String>()
+    private val unityVersions = mutableMapOf<Semver, String>()
 
     init {
         toolsRegistry.registerToolProvider(this)
@@ -39,10 +40,10 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
 
         unityDetector?.let { detector ->
             detector.registerAdditionalHintPath(agent.configuration.agentToolsDirectory)
-            
+
             detector.findInstallations().let { versions ->
                 unityVersions.putAll(versions.sortedBy { it.first }.map {
-                    it.first.toString() to it.second.absolutePath
+                    it.first to it.second.absolutePath
                 }.toMap())
             }
         }
@@ -72,16 +73,11 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             return UnityConstants.RUNNER_TYPE
         }
 
-        var unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
-        if (unityVersion.isNullOrEmpty()) {
-            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
-                unityVersion = feature.parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
-            }
-        }
+        val unityVersion = getUnityVersion(runner, build)
         return getUnityPath(toolName, unityVersion)
     }
 
-    fun getUnityPath(toolName: String, unityVersion: String?): String {
+    fun getUnityPath(toolName: String, unityVersion: Semver?): String {
         if (!supports(toolName)) {
             throw ToolCannotBeFoundException("Unsupported tool $toolName")
         }
@@ -90,15 +86,54 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
         }
 
-        val unityPath = if (unityVersion.isNullOrEmpty()) {
-            unityVersions.entries.lastOrNull()?.value
+        val unity = getUnity(toolName, unityVersion)
+        return unityDetector.getEditorPath(File(unity.second)).absolutePath
+    }
+
+    fun getUnity(toolName: String,
+                 build: AgentRunningBuild,
+                 runner: BuildRunnerContext): Pair<Semver, String> {
+        if (runner.isVirtualContext) {
+            return Semver("2019.1.0") to UnityConstants.RUNNER_TYPE
+        }
+
+        val unityVersion = getUnityVersion(runner, build)
+        return getUnity(toolName, unityVersion)
+    }
+
+    private fun getUnity(toolName: String, unityVersion: Semver?): Pair<Semver, String> {
+        if (!supports(toolName)) {
+            throw ToolCannotBeFoundException("Unsupported tool $toolName")
+        }
+
+        if (unityDetector == null) {
+            throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
+        }
+
+        val unity = if (unityVersion == null) {
+            unityVersions.entries.lastOrNull()
         } else {
-            unityVersions.entries.lastOrNull { it.key.startsWith(unityVersion) }?.value
+            unityVersions.entries.lastOrNull { it.key >= unityVersion }
         } ?: throw ToolCannotBeFoundException("""
                 Unable to locate tool $toolName in system. Please make sure to specify UNITY_PATH environment variable
                 """.trimIndent())
 
-        return unityDetector.getEditorPath(File(unityPath)).absolutePath
+        return unity.key to unityDetector.getEditorPath(File(unity.value)).absolutePath
+    }
+
+    private fun getUnityVersion(runner: BuildRunnerContext, build: AgentRunningBuild): Semver? {
+        var unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
+        if (unityVersion.isNullOrEmpty()) {
+            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
+                unityVersion = feature.parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
+            }
+        }
+
+        if (unityVersion == null) {
+            return null
+        }
+
+        return Semver(unityVersion, Semver.SemverType.LOOSE)
     }
 
     companion object {

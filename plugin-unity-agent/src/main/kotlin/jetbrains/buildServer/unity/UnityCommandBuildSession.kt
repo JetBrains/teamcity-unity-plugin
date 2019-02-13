@@ -16,7 +16,8 @@ import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
 /**
  * Unity runner service.
  */
-class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext) : MultiCommandBuildSession {
+class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext,
+                               private val unityToolProvider: UnityToolProvider) : MultiCommandBuildSession {
 
     private var buildSteps: Iterator<CommandExecution>? = null
     private var lastCommands = arrayListOf<CommandExecutionAdapter>()
@@ -40,7 +41,7 @@ class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext) : 
     }
 
     private fun getSteps() = iterator<CommandExecution> {
-        yield(addCommand(UnityRunnerBuildService()))
+        yield(addCommand(UnityRunnerBuildService(unityToolProvider)))
     }
 
     private fun addCommand(buildService: CommandLineBuildService) = CommandExecutionAdapter(buildService.apply {

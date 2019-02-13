@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2019 JetBrains s.r.o.
+ * Copyright 2000-2018 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * See LICENSE in the project root for license information.
@@ -9,6 +9,7 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
+import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.messages.Status
@@ -24,9 +25,8 @@ import java.io.File
 /**
  * Unity runner service.
  */
-class UnityRunnerBuildService : BuildServiceAdapter() {
+class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) : BuildServiceAdapter() {
 
-    private var unityLogFile: File? = null
     private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
     private var unityLineStatusesFile: File? = null
@@ -58,11 +58,11 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
     private val verbosityArgument: String
         get() = when (verbosity) {
             Verbosity.Minimal -> "-cleanedLogFile"
-            else -> "-logFile"
+            else -> ARG_LOG_FILE
         }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
-        val toolPath = getToolPath(UnityConstants.RUNNER_TYPE)
+        val (version, toolPath) = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, build, runnerContext)
         val arguments = mutableListOf("-batchmode")
 
         var projectPath = "./"
@@ -98,7 +98,7 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
         runnerParameters[UnityConstants.PARAM_NO_GRAPHICS]?.let {
             if (it.toBoolean()) {
-                arguments.add("-nographics")
+                arguments.add(ARG_NO_GRAPHICS)
             }
         }
 
@@ -118,13 +118,6 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             if (it.isNotEmpty()) {
                 arguments.addAll(StringUtil.splitCommandArgumentsAndUnquote(it))
             }
-        }
-
-        val logFile = unityLogFile
-        if (logFile != null) {
-            arguments.addAll(listOf(verbosityArgument, logFile.absolutePath))
-        } else {
-            arguments.add(verbosityArgument)
         }
 
         // -runEditorTests always executes -quit
@@ -184,34 +177,12 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
             }
         }
 
+        appendLogArgument(arguments, version)
+
         return createProgramCommandline(toolPath, arguments)
     }
 
     override fun isCommandLineLoggingEnabled() = true
-
-    override fun beforeProcessStarted() {
-        // On Windows unity could not write log into stdout
-        // so we need to read a log file contents
-        if (SystemInfo.isWindows || verbosity != Verbosity.Normal) {
-            unityLogFile = File.createTempFile(
-                    "unityBuildLog-",
-                    "-${build.buildId}.txt",
-                    build.buildTempDirectory
-            )
-
-            unityLogFileTailer = Tailer.create(unityLogFile, object : TailerListenerAdapter() {
-                override fun handle(line: String) {
-                    listeners.forEach {
-                        it.onStandardOutput(line)
-                    }
-                }
-
-                override fun fileRotated() {
-                    unityLogFileTailer?.stop()
-                }
-            }, DEFAULT_DELAY_MILLIS, false)
-        }
-    }
 
     override fun afterProcessFinished() {
         unityLogFileTailer?.apply {
@@ -228,10 +199,48 @@ class UnityRunnerBuildService : BuildServiceAdapter() {
 
     override fun getListeners() = unityListeners
 
+    private fun appendLogArgument(arguments: MutableList<String>, version: Semver) {
+        val verbosityArg = verbosityArgument
+        arguments.add(verbosityArg)
+
+        if (!SystemInfo.isWindows) {
+            return
+        }
+
+        // On Windows unity could not write log into stdout, so we need to read a log file contents:
+        // https://issuetracker.unity3d.com/issues/command-line-logfile-with-no-parameters-outputs-to-screen-on-os-x-but-not-on-windows
+        // Was resolved in 2019.1 but only for -logFile with -nographics option
+        if (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS)) {
+            return
+        }
+
+        val logFile = File.createTempFile(
+                "unityBuildLog-",
+                "-${build.buildId}.txt",
+                build.buildTempDirectory
+        )
+
+        arguments.add(logFile.absolutePath)
+
+        unityLogFileTailer = Tailer.create(logFile, object : TailerListenerAdapter() {
+            override fun handle(line: String) {
+                listeners.forEach {
+                    it.onStandardOutput(line)
+                }
+            }
+            override fun fileRotated() {
+                unityLogFileTailer?.stop()
+            }
+        }, DEFAULT_DELAY_MILLIS, false)
+    }
+
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
         private const val ARG_RUN_TESTS = "-runEditorTests"
         private const val ARG_TESTS_FILE = "-editorTestsResultFile"
+        private const val ARG_LOG_FILE = "-logFile"
+        private const val ARG_NO_GRAPHICS = "-nographics"
+        private val UNITY_2019 = Semver("2019.1.0")
     }
 }
