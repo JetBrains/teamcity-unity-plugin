@@ -113,12 +113,20 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         val unity = if (unityVersion == null) {
             unityVersions.entries.lastOrNull()
         } else {
-            unityVersions.entries.lastOrNull { it.key >= unityVersion }
+            val upperVersion = getUpperVersion(unityVersion)
+            unityVersions.entries.lastOrNull {
+                it.key >= unityVersion && it.key < upperVersion
+            }
         } ?: throw ToolCannotBeFoundException("""
-                Unable to locate tool $toolName in system. Please make sure to specify UNITY_PATH environment variable
+                Unable to locate tool $toolName $unityVersion in system. Please make sure to specify UNITY_PATH environment variable
                 """.trimIndent())
 
         return unity.key to unityDetector.getEditorPath(File(unity.value)).absolutePath
+    }
+
+    private fun getUpperVersion(version: Semver): Semver = when {
+        version.minor == null -> version.toStrict().nextMajor()
+        else -> version.toStrict().nextMinor()
     }
 
     private fun getUnityVersion(runner: BuildRunnerContext, build: AgentRunningBuild): Semver? {
