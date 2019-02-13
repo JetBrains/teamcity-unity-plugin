@@ -71,7 +71,19 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
                 projectPath = it.trim()
             }
         }
-        arguments.addAll(listOf("-projectPath", projectPath))
+
+        if (version > UNITY_2018) {
+            arguments.addAll(listOf("-projectPath", projectPath))
+        } else {
+            // In Unity < 2018.1 we should specify project path argument with equals sign
+            // https://answers.unity.com/questions/622429/i-have-a-problem-the-log-is-couldnt-set-project-pa.html
+            val path = if (projectPath.contains(' ')) {
+                StringUtil.doubleQuote(projectPath)
+            } else {
+                projectPath
+            }
+            arguments.add("-projectPath=$path")
+        }
 
         runnerParameters[UnityConstants.PARAM_BUILD_TARGET]?.let {
             if (it.isNotEmpty()) {
@@ -241,6 +253,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         private const val ARG_TESTS_FILE = "-editorTestsResultFile"
         private const val ARG_LOG_FILE = "-logFile"
         private const val ARG_NO_GRAPHICS = "-nographics"
+        private val UNITY_2018 = Semver("2018.1.0")
         private val UNITY_2019 = Semver("2019.1.0")
     }
 }
