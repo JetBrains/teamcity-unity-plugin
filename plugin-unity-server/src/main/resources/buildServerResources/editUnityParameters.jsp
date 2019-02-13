@@ -146,7 +146,7 @@
         <th>Tests:</th>
         <td>
             <props:checkboxProperty name="${params.runEditorTests}"/>
-            <label for="${params.runEditorTests}">Run Editor tests from the project</label>
+            <label for="${params.runEditorTests}">Run tests from the project</label>
         </td>
     </tr>
 </tbody>

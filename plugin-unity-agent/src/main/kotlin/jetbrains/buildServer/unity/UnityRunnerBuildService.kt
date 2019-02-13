@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 JetBrains s.r.o.
+ * Copyright 2000-2019 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License").
  * See LICENSE in the project root for license information.
@@ -102,12 +102,6 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.let {
-            if (it.toBoolean()) {
-                arguments.add(ARG_RUN_TESTS)
-            }
-        }
-
         runnerParameters[UnityConstants.PARAM_NO_GRAPHICS]?.let {
             if (it.toBoolean()) {
                 arguments.add(ARG_NO_GRAPHICS)
@@ -132,66 +126,86 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             }
         }
 
-        // -runEditorTests always executes -quit
-        if (!arguments.contains(ARG_RUN_TESTS)) {
-            arguments.add("-quit")
-        } else {
-            val index = arguments.indexOf(ARG_TESTS_FILE)
-            unityTestsReportFile = if (index > 0 && index + 1 < arguments.size) {
-                val testsResultPath = arguments[index + 1]
-                File(testsResultPath)
-            } else {
-                File.createTempFile(
-                        "unityTestResults-",
-                        "-${build.buildId}.xml",
-                        build.buildTempDirectory
-                ).apply {
-                    arguments.addAll(listOf(ARG_TESTS_FILE, this.absolutePath))
-                }
-            }
+        appendRunTestsArguments(arguments)
 
-            runnerParameters[UnityConstants.PARAM_TEST_PLATFORM]?.let {
-                if (it.isNotEmpty()) {
-                    arguments.addAll(listOf("-testPlatform", it))
-                }
-            }
+        appendLogArgument(arguments, version)
 
-            runnerParameters[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
-                if (it.isNotEmpty()) {
-                    val categories = StringUtil.split(it).joinToString(",")
-                    arguments.addAll(listOf("-editorTestsCategories", categories))
-                }
-            }
-
-            runnerParameters[UnityConstants.PARAM_TEST_NAMES]?.let {
-                if (it.isNotEmpty()) {
-                    val names = StringUtil.split(it).joinToString(",")
-                    arguments.addAll(listOf("-editorTestsFilter", names))
-                }
-            }
-
-            // Append build feature parameters
-            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
-                feature.parameters[UnityConstants.PARAM_CACHE_SERVER]?.let {
-                    if (it.isNotEmpty()) {
-                        arguments.addAll(listOf("-CacheServerIPAddress", it.trim()))
-                    }
-                }
-            }
-
-            // apply quiet mode for test xml reports watcher
-            runnerContext.addRunnerParameter("xmlReportParsing.quietMode", "true")
-        }
-
+        // Use line statuses file if available
         runnerParameters[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
             if (it.isNotEmpty()) {
                 unityLineStatusesFile = File(workingDirectory, it.trim())
             }
         }
 
-        appendLogArgument(arguments, version)
+        // Append build feature parameters
+        build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
+            feature.parameters[UnityConstants.PARAM_CACHE_SERVER]?.let {
+                if (it.isNotEmpty()) {
+                    arguments.addAll(listOf("-CacheServerIPAddress", it.trim()))
+                }
+            }
+        }
 
         return createProgramCommandline(toolPath, arguments)
+    }
+
+    private fun appendRunTestsArguments(arguments: MutableList<String>) {
+        val runTests = runnerParameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
+        val testPlatform = runnerParameters[UnityConstants.PARAM_TEST_PLATFORM]
+
+        // For tests run we should not add -quit argument
+        val runTestIndex = arguments.indexOfFirst { RUN_TESTS_REGEX.matches(it) }
+        if (runTestIndex < 0) {
+            if (runTests) {
+                // Append -runTests argument if selected test platform
+                // otherwise use -runEditorTests argument
+                if (testPlatform.isNullOrEmpty()) {
+                    arguments.add(ARG_RUN_EDITOR_TESTS)
+                } else {
+                    arguments.addAll(listOf(ARG_RUN_TESTS, "-testPlatform", testPlatform))
+                }
+            } else {
+                arguments.add("-quit")
+                return
+            }
+        }
+
+        // Check test results argument
+        val index = arguments.indexOfFirst { RUN_TEST_RESULTS_REGEX.matches(it)}
+        unityTestsReportFile = if (index > 0 && index + 1 < arguments.size) {
+            val testsResultPath = arguments[index + 1]
+            File(testsResultPath)
+        } else {
+            File.createTempFile(
+                    "unityTestResults-",
+                    "-${build.buildId}.xml",
+                    build.buildTempDirectory
+            ).apply {
+                val testResultsArgument = if (testPlatform.isNullOrEmpty()) {
+                    ARG_EDITOR_TESTS_RESULT_FILE
+                } else {
+                    ARG_TEST_RESULTS_FILE
+                }
+                arguments.addAll(listOf(testResultsArgument, this.absolutePath))
+            }
+        }
+
+        runnerParameters[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
+            if (it.isNotEmpty()) {
+                val categories = StringUtil.split(it).joinToString(",")
+                arguments.addAll(listOf("-editorTestsCategories", categories))
+            }
+        }
+
+        runnerParameters[UnityConstants.PARAM_TEST_NAMES]?.let {
+            if (it.isNotEmpty()) {
+                val names = StringUtil.split(it).joinToString(",")
+                arguments.addAll(listOf("-editorTestsFilter", names))
+            }
+        }
+
+        // apply quiet mode for test xml reports watcher
+        runnerContext.addRunnerParameter("xmlReportParsing.quietMode", "true")
     }
 
     override fun isCommandLineLoggingEnabled() = true
@@ -249,10 +263,14 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
-        private const val ARG_RUN_TESTS = "-runEditorTests"
-        private const val ARG_TESTS_FILE = "-editorTestsResultFile"
+        private const val ARG_RUN_TESTS = "-runTests"
+        private const val ARG_RUN_EDITOR_TESTS = "-runEditorTests"
+        private const val ARG_TEST_RESULTS_FILE = "-testResults"
+        private const val ARG_EDITOR_TESTS_RESULT_FILE = "-editorTestsResultFile"
         private const val ARG_LOG_FILE = "-logFile"
         private const val ARG_NO_GRAPHICS = "-nographics"
+        private val RUN_TESTS_REGEX = Regex("-run(Editor)?Tests")
+        private val RUN_TEST_RESULTS_REGEX = Regex("-(editorTestsResultFile|testResults)")
         private val UNITY_2018 = Semver("2018.1.0")
         private val UNITY_2019 = Semver("2019.1.0")
     }
