@@ -37,7 +37,9 @@ The plugin searches for Unity installations in `PATH` variable and in the follow
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
 * TeamCity agent tools location, which allows installing Unity as an [agent tool](https://confluence.jetbrains.com/display/TCDL/Installing+Agent+Tools). 
 
-To add Unity installation located in custom path you could use `UNITY_HOME` environment variable. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
+To add Unity installation located in custom path you could use `UNITY_HOME` environment variable, e.g. `UNITY_HOME=C:\Tools\Unity_2018.1\`. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
+
+To search Unity installation directories in custom path matching `Unity*` pattern you could use `UNITY_HINT_PATH` environment variable, e.g. `UNITY_HINT_PATH=C:\Tools`. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
 
 All detected Unity versions will be reported as build agent configuration parameters with the `unity.path.%unityVersion%` prefix.
 

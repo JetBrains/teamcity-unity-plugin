@@ -12,13 +12,21 @@ abstract class UnityDetectorBase : UnityDetector {
 
     override fun getEditorPath(directory: File) = File(directory, "$editorPath/$editorExecutable")
 
-    protected open fun getHintPaths() = sequence {
+    protected open fun getHintPaths(): Sequence<File> = sequence {
         // Get paths from "UNITY_HOME" environment variables
         System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
             if (unityHome.isEmpty()) return@let
             yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
                 File(path)
             })
+        }
+
+        // Get paths from "UNITY_HINT_PATH" environment variables
+        System.getenv(UnityConstants.VAR_UNITY_HINT_PATH)?.let { unityHintPaths ->
+            if (unityHintPaths.isEmpty()) return@let
+            unityHintPaths.split(File.pathSeparatorChar).forEach { path ->
+                yieldAll(findUnityPaths(File(path)))
+            }
         }
 
         // Get paths from "PATH" variable

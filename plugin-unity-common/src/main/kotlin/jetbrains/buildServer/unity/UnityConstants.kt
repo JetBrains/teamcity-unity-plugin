@@ -43,4 +43,5 @@ object UnityConstants {
     const val PARAM_CACHE_SERVER = "cacheServer"
 
     const val VAR_UNITY_HOME = "UNITY_HOME"
+    const val VAR_UNITY_HINT_PATH = "UNITY_HINT_PATH"
 }
