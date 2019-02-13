@@ -1,10 +1,9 @@
 package jetbrains.buildServer.unity
 
-import com.github.zafarkhaja.semver.Version
 import com.intellij.openapi.diagnostic.Logger
-import java.io.File
+import com.vdurmont.semver4j.Semver
 import org.apache.commons.configuration.plist.XMLPropertyListConfiguration
-import java.lang.Exception
+import java.io.File
 
 class MacOsUnityDetector : UnityDetectorBase() {
 
@@ -37,7 +36,7 @@ class MacOsUnityDetector : UnityDetectorBase() {
                     ?.firstOrNull()
                     ?: return@forEach
             try {
-                yield(Version.valueOf(version) to path)
+                yield(Semver(version, Semver.SemverType.LOOSE) to path)
             } catch (e: Exception) {
                 LOG.infoAndDebugDetails("Invalid Unity version $version in directory $path", e)
             }

@@ -1,9 +1,8 @@
 package jetbrains.buildServer.unity
 
-import com.github.zafarkhaja.semver.Version
 import com.intellij.openapi.diagnostic.Logger
+import com.vdurmont.semver4j.Semver
 import java.io.File
-import java.lang.Exception
 
 class LinuxUnityDetector : UnityDetectorBase() {
 
@@ -34,7 +33,7 @@ class LinuxUnityDetector : UnityDetectorBase() {
 
             val version = versions.first().name
             try {
-                yield(Version.valueOf(version) to path)
+                yield(Semver(version, Semver.SemverType.LOOSE) to path)
             } catch (e: Exception) {
                 LOG.infoAndDebugDetails("Invalid Unity version $version in directory $path", e)
             }

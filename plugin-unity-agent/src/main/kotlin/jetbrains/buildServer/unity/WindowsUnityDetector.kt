@@ -1,7 +1,7 @@
 package jetbrains.buildServer.unity
 
-import com.github.zafarkhaja.semver.Version
 import com.intellij.openapi.diagnostic.Logger
+import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.util.PEReader.PEUtil
 import java.io.File
 
@@ -21,7 +21,7 @@ class WindowsUnityDetector : UnityDetectorBase() {
             if (!executable.exists()) return@forEach
 
             val version = PEUtil.getProductVersion(executable) ?: return@forEach
-            yield(Version.forIntegers(version.p1, version.p2, version.p3) to path)
+            yield(Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE) to path)
         }
     }
 

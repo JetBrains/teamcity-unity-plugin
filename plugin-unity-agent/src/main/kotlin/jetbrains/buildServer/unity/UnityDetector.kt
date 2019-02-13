@@ -1,9 +1,9 @@
 package jetbrains.buildServer.unity
 
-import com.github.zafarkhaja.semver.Version
+import com.vdurmont.semver4j.Semver
 import java.io.File
 
 interface UnityDetector {
-    fun findInstallations(): Sequence<Pair<Version, File>>
+    fun findInstallations(): Sequence<Pair<Semver, File>>
     fun getEditorPath(directory: File): File
 }
