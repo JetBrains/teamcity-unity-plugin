@@ -19,10 +19,11 @@ import java.io.File
 abstract class UnityDetectorBase : UnityDetector {
 
     private val additionalHintPaths = mutableListOf<File>()
+    protected val userHome = System.getProperty("user.home").trimEnd('/', '\\')
 
     protected abstract val editorPath: String
     protected abstract val editorExecutable: String
-    protected abstract val appConfigDir: String?
+    protected abstract val appConfigDir: String
 
     override fun getEditorPath(directory: File) = File(directory, "$editorPath/$editorExecutable")
 
@@ -63,7 +64,7 @@ abstract class UnityDetectorBase : UnityDetector {
         }
 
         // Find Editors installed by Unity Hub
-        appConfigDir?.let {
+        appConfigDir.let {
             yieldAll(findUnityHubEditors(it))
         }
     }

@@ -16,7 +16,7 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
     override val editorPath = "Editor"
     override val editorExecutable = "Unity.exe"
-    override val appConfigDir: String? = System.getenv("AppData")
+    override val appConfigDir = "$userHome/AppData/Roaming"
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->

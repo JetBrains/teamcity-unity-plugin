@@ -16,7 +16,7 @@ class MacOsUnityDetector : UnityDetectorBase() {
 
     override val editorPath = "Unity.app/Contents/MacOS"
     override val editorExecutable = "Unity"
-    override val appConfigDir = "~/Library/Application support"
+    override val appConfigDir = "$userHome/Library/Application support"
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->

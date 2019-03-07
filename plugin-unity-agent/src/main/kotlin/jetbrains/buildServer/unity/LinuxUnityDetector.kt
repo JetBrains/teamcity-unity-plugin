@@ -15,7 +15,7 @@ class LinuxUnityDetector : UnityDetectorBase() {
 
     override val editorPath = "Editor"
     override val editorExecutable = "Unity"
-    override val appConfigDir = "~/.config"
+    override val appConfigDir = "$userHome/.config"
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
