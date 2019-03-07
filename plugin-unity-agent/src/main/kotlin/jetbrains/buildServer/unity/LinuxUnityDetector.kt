@@ -1,3 +1,10 @@
+/*
+ * Copyright 2000-2019 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * See LICENSE in the project root for license information.
+ */
+
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
@@ -6,11 +13,9 @@ import java.io.File
 
 class LinuxUnityDetector : UnityDetectorBase() {
 
-    override val editorPath: String
-        get() = "Editor"
-
-    override val editorExecutable: String
-        get() = "Unity"
+    override val editorPath = "Editor"
+    override val editorExecutable = "Unity"
+    override val appConfigDir = "~/.config"
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->

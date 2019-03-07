@@ -1,3 +1,10 @@
+/*
+ * Copyright 2000-2019 JetBrains s.r.o.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * See LICENSE in the project root for license information.
+ */
+
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
@@ -7,14 +14,12 @@ import java.io.File
 
 class WindowsUnityDetector : UnityDetectorBase() {
 
-    override val editorPath: String
-        get() = "Editor"
-
-    override val editorExecutable: String
-        get() = "Unity.exe"
+    override val editorPath = "Editor"
+    override val editorExecutable = "Unity.exe"
+    override val appConfigDir: String? = System.getenv("AppData")
 
     override fun findInstallations() = sequence {
-        getHintPaths().distinct().forEach {  path ->
+        getHintPaths().distinct().forEach { path ->
             LOG.debug("Looking for Unity installation in $path")
 
             val executable = getEditorPath(path)
@@ -30,16 +35,16 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
         val programFiles = hashSetOf<String>()
 
-        System.getenv("ProgramFiles")?.let {  programFiles.add(it)}
-        System.getenv("ProgramFiles(X86)")?.let {  programFiles.add(it)}
-        System.getenv("ProgramW6432")?.let {  programFiles.add(it)}
+        System.getenv("ProgramFiles")?.let { programFiles.add(it) }
+        System.getenv("ProgramFiles(X86)")?.let { programFiles.add(it) }
+        System.getenv("ProgramW6432")?.let { programFiles.add(it) }
 
         programFiles.forEach { path ->
             if (path.isEmpty()) return@forEach
             yieldAll(findUnityPaths(File(path)))
         }
     }
-    
+
     companion object {
         private val LOG = Logger.getInstance(WindowsUnityDetector::class.java.name)
     }

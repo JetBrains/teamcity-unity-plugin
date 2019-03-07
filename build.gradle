@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.3.0"
+    id "org.jetbrains.kotlin.jvm" version "1.3.21"
 }
 
 repositories {
@@ -23,6 +23,11 @@ allprojects {
 
 subprojects {
     apply plugin: "kotlin"
+
+    repositories {
+        mavenCentral()
+        maven { url "https://kotlin.bintray.com/kotlinx" }
+    }
 
     test.useTestNG()
     jar.version = null
