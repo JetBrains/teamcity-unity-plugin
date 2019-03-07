@@ -31,7 +31,7 @@ The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/down
 
 # Configuration
 
-The plugin searches for Unity installations in `PATH` variable and in the following directories:
+The plugin automatically detects Editors installed via Unity Hub. Also it searches Editors in the `PATH` environment variable and in the following well-known directories:
 * macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
 * Linux: `/opt/Unity*`/`~/Unity*` and `/opt/Unity/Hub/Editor/*`/`~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
@@ -54,6 +54,12 @@ The runner allows overriding default error logging settings by using "Line statu
   <line level="error" message="error CS\d+" />
 </lines>
 ```
+
+## Common problems
+
+### Unmet requirements: Exists=>unity.path.xxx
+
+This problem indicates that the Unity Editor installation was not found on any of build agent machines. Check that you have [installed Editor](https://unity3d.com/get-unity/download) on your build agents and machines were [properly configured](#configuration).
 
 # Build
 
