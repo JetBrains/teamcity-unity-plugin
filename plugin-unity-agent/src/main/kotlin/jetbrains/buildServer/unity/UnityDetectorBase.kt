@@ -10,6 +10,7 @@ package jetbrains.buildServer.unity
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.unity.unityhub.Editor
 import jetbrains.buildServer.unity.unityhub.HubInfo
+import jetbrains.buildServer.util.FileUtil
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.internal.StringSerializer
 import kotlinx.serialization.json.Json
@@ -64,9 +65,7 @@ abstract class UnityDetectorBase : UnityDetector {
         }
 
         // Find Editors installed by Unity Hub
-        appConfigDir.let {
-            yieldAll(findUnityHubEditors(it))
-        }
+        yieldAll(findUnityHubEditors(appConfigDir))
     }
 
     protected fun findUnityPaths(directory: File) = sequence {
@@ -94,14 +93,17 @@ abstract class UnityDetectorBase : UnityDetector {
 
         // Enumerate Editors in Unity Hub directory
         tryParse(HubInfo.serializer(), File(unityHub, "hubInfo.json"))?.let { hubInfo ->
-            yieldAll(listDirectories(File(hubInfo.executablePath, "../Editor")))
+            val directory = FileUtil.getCanonicalFile(File(hubInfo.executablePath, "../Editor"))
+            yieldAll(listDirectories(directory))
         }
 
         // Enumerate installed Editors
         tryParse(mapSerializer, File(unityHub, "editors.json"))?.let { editors ->
             editors.values.forEach { editor ->
                 editor.location?.let { locations ->
-                    yieldAll(locations.map { location -> File(location, "../..") })
+                    yieldAll(locations.map { location ->
+                        FileUtil.getCanonicalFile(File(location, "../..") )
+                    })
                 }
             }
         }
