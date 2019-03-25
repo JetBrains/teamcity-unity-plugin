@@ -94,12 +94,12 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         val requirements = mutableListOf<Requirement>()
         parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
             if (it.isNotBlank()) {
-                val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME + it.trim()) + ".*"
+                val name = UnityConstants.UNITY_CONFIG_NAME + it.trim() + ".*"
                 requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
             }
         }
         if (requirements.isEmpty()) {
-            val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + ".+"
+            val name = UnityConstants.UNITY_CONFIG_NAME + ".+"
             requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
         }
         return requirements
