@@ -114,7 +114,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             unityVersions.entries.lastOrNull()
         } else {
             val upperVersion = getUpperVersion(unityVersion)
-            unityVersions.entries.lastOrNull {
+            unityVersions.entries.firstOrNull {
                 it.key >= unityVersion && it.key < upperVersion
             }
         } ?: throw ToolCannotBeFoundException("""
