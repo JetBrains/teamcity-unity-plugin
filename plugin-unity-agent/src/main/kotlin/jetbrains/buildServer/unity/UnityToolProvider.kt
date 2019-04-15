@@ -110,18 +110,23 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
         }
 
-        val unity = if (unityVersion == null) {
-            unityVersions.entries.lastOrNull()
+        val (version, path) = if (unityVersion == null) {
+            unityVersions.entries.lastOrNull()?.toPair()
         } else {
-            val upperVersion = getUpperVersion(unityVersion)
-            unityVersions.entries.lastOrNull {
-                it.key >= unityVersion && it.key < upperVersion
+            val unityPath = unityVersions[unityVersion]
+            if (unityPath != null) {
+                unityVersion to unityPath
+            } else {
+                val upperVersion = getUpperVersion(unityVersion)
+                unityVersions.entries.lastOrNull {
+                    it.key >= unityVersion && it.key < upperVersion
+                }?.toPair()
             }
         } ?: throw ToolCannotBeFoundException("""
                 Unable to locate tool $toolName $unityVersion in system. Please make sure to specify UNITY_PATH environment variable
                 """.trimIndent())
 
-        return unity.key to unityDetector.getEditorPath(File(unity.value)).absolutePath
+        return version to unityDetector.getEditorPath(File(path)).absolutePath
     }
 
     private fun getUpperVersion(version: Semver): Semver = when {
