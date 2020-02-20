@@ -43,6 +43,7 @@ object UnityConstants {
     const val PARAM_TEST_NAMES = "testNames"
     const val PARAM_SILENT_CRASHES = "silentCrashes"
     const val PARAM_LINE_STATUSES_FILE = "lineStatusesFile"
+    const val PARAM_UNITY_LOG_FILE = "logFilePath"
     const val PARAM_VERBOSITY = "verbosity"
 
     const val PARAM_ACTIVATE_LICENSE = "activateLicense"

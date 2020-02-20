@@ -243,6 +243,15 @@
 </tr>
 
 <tr class="advancedSetting">
+    <th><label for="${params.logFilePath}">Unity version:</label></th>
+    <td>
+        <props:textProperty name="${params.logFilePath}" className="longField disableBuildTypeParams"/>
+        <span class="error" id="error_${params.logFilePath}"></span>
+        <span class="smallNote">Path for Unity log file</span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th><label for="${params.verbosity}">Logging verbosity:</label></th>
     <td>
         <props:selectProperty name="${params.verbosity}" enableFilter="true" className="mediumField">
