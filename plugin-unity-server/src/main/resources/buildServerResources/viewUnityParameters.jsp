@@ -103,6 +103,12 @@
     </div>
 </c:if>
 
+<c:if test="${not empty propertiesBean.properties[params.logFilePath]}">
+    <div class="parameter">
+        Log file path: <props:displayValue name="${params.logFilePath}"/>
+    </div>
+</c:if>
+
 <c:if test="${not empty propertiesBean.properties[params.verbosity]}">
     <div class="parameter">
         <c:forEach items="${params.verbosityValues}" var="type">

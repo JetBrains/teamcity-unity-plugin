@@ -62,6 +62,9 @@ class UnityParametersProvider {
     val lineStatusesFile: String
         get() = UnityConstants.PARAM_LINE_STATUSES_FILE
 
+    val logFilePath: String
+        get() = UnityConstants.PARAM_UNITY_LOG_FILE
+
     val activateLicense: String
         get() = UnityConstants.PARAM_ACTIVATE_LICENSE
 
