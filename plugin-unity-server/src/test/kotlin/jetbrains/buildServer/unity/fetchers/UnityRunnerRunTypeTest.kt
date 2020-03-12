@@ -40,8 +40,11 @@ class UnityRunnerRunTypeTest {
                 arrayOf<Any?>(
                         mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
                         listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2", UnityConstants.PARAM_UNITY_EXECUTABLE to "%system.teamcity.build.checkoutDir%\\SayHello.exe"),
+                        emptyList<Requirement>())
                 )
-        )
     }
 
     @Test(dataProvider = "runnerRequirementsData")

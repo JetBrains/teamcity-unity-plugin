@@ -37,6 +37,7 @@ object UnityConstants {
     const val PARAM_NO_GRAPHICS = "noGraphics"
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_UNITY_VERSION = "unityVersion"
+    const val PARAM_UNITY_EXECUTABLE = "unityExecutable"
     const val PARAM_RUN_EDITOR_TESTS = "runEditorTests"
     const val PARAM_TEST_PLATFORM = "testPlatform"
     const val PARAM_TEST_CATEGORIES = "testCategories"

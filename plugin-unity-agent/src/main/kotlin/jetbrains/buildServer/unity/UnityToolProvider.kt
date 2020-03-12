@@ -107,7 +107,14 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         }
 
         val unityVersion = getUnityVersion(runner, build)
-        return getUnity(toolName, unityVersion)
+        var explicitExecutable = runner.runnerParameters[UnityConstants.PARAM_UNITY_EXECUTABLE]?.trim()
+        if (explicitExecutable.isNullOrEmpty())
+            return getUnity(toolName, unityVersion)
+
+        if (unityVersion == null) {
+            return Semver("2019.1.0") to explicitExecutable
+        }
+        return unityVersion to explicitExecutable
     }
 
     private fun getUnity(toolName: String, unityVersion: Semver?): Pair<Semver, String> {

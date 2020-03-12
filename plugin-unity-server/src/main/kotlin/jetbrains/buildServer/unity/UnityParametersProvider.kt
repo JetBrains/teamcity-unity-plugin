@@ -38,6 +38,9 @@ class UnityParametersProvider {
     val unityVersion: String
         get() = UnityConstants.PARAM_UNITY_VERSION
 
+    val unityExecutable: String
+        get() = UnityConstants.PARAM_UNITY_EXECUTABLE
+
     val noGraphics: String
         get() = UnityConstants.PARAM_NO_GRAPHICS
 

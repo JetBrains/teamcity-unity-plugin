@@ -225,6 +225,15 @@
 </tr>
 
 <tr class="advancedSetting">
+    <th><label for="${params.unityExecutable}">Unity executable:</label></th>
+    <td>
+        <props:textProperty name="${params.unityExecutable}" className="longField"/>
+        <span class="error" id="error_${params.unityExecutable}"></span>
+        <span class="smallNote">Specify a direct path to the unity executable. Normally used to deploy Unity using agent tool or to provide a proxy executable in vcs.</span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th>
         <label for="${params.lineStatusesFile}">Line statuses file: <bs:help
             urlPrefix="https://github.com/JetBrains/teamcity-unity-plugin#custom-error-logging-settings" file=""/></label>

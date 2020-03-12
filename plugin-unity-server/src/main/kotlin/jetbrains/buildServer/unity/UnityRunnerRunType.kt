@@ -101,6 +101,12 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
 
     override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
         val requirements = mutableListOf<Requirement>()
+        parameters[UnityConstants.PARAM_UNITY_EXECUTABLE]?.let {
+            if (it.isNotBlank()) {
+                return requirements
+            }
+        }
+
         parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
             if (it.isNotBlank()) {
                 val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME + it.trim()) + ".*"
