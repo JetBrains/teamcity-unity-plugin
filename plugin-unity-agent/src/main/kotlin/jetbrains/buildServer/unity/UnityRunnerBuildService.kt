@@ -64,8 +64,8 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         } ?: Verbosity.Normal
     }
 
-    private val logFilePath: String
-        get() = runnerParameters[UnityConstants.PARAM_UNITY_LOG_FILE].toString()
+    private val logFilePath: String?
+        get() = runnerParameters[UnityConstants.PARAM_UNITY_LOG_FILE]?.trim()
 
     private val verbosityArgument: String
         get() = when (verbosity) {
@@ -241,25 +241,25 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         val verbosityArg = verbosityArgument
         arguments.add(verbosityArg)
 
-        if (!SystemInfo.isWindows && logFilePath.isEmpty()) {
+        if (!SystemInfo.isWindows && logFilePath.isNullOrEmpty()) {
             return
         }
 
         // On Windows unity could not write log into stdout, so we need to read a log file contents:
         // https://issuetracker.unity3d.com/issues/command-line-logfile-with-no-parameters-outputs-to-screen-on-os-x-but-not-on-windows
         // Was resolved in 2019.1 but only for -logFile with -nographics option
-        if (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS) && logFilePath.isEmpty()) {
+        if (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS) && logFilePath.isNullOrEmpty()) {
             return
         }
 
-        val logFile = if(logFilePath.isNotEmpty()){
-            File(logFilePath)
-        }else{
+        val logFile = if (logFilePath.isNullOrEmpty()) {
             File.createTempFile(
                     "unityBuildLog-",
                     ".txt",
                     build.buildTempDirectory
             )
+        } else {
+            File(logFilePath)
         }
 
         arguments.add(logFile.absolutePath)
