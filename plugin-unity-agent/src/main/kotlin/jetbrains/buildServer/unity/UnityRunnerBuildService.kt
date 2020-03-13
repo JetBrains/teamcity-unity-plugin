@@ -204,14 +204,14 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
 
         runnerParameters[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
             if (it.isNotEmpty()) {
-                val categories = StringUtil.split(it).joinToString(",")
+                val categories = StringUtil.split(it).joinToString(";")
                 arguments.addAll(listOf("-editorTestsCategories", categories))
             }
         }
 
         runnerParameters[UnityConstants.PARAM_TEST_NAMES]?.let {
             if (it.isNotEmpty()) {
-                val names = StringUtil.split(it).joinToString(",")
+                val names = StringUtil.split(it).joinToString(";")
                 arguments.addAll(listOf("-editorTestsFilter", names))
             }
         }
