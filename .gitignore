@@ -46,8 +46,7 @@ fabric.properties
 build
 
 # gradle-teamcity-plugin
-data/
-servers/
+.teamcity/
 
 # OS specific files
 *.DS_Store
