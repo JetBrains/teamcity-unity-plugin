@@ -31,21 +31,11 @@ class LinuxUnityDetector : UnityDetectorBase() {
             LOG.debug("Looking for Unity installation in $path")
 
             val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
-
-            LOG.debug("Looking for package manager in $path")
-            val packageVersions = File(path, "Editor/Data/PackageManager/Unity/PackageManager")
-            if (!packageVersions.exists()) return@forEach
-
-            val versions = packageVersions.listFiles { file ->
-                file.isDirectory
-            } ?: return@forEach
-
-            if (versions.size != 1) {
-                LOG.warn("Multiple Unity versions found in directory $path")
-            }
-
-            val version = versions.first().name
+            if (!executable.exists()) return@forEach                                                       
+            
+            // Use last segment (version)
+            val version = path.name
+                                           
             try {
                 yield(Semver(version, Semver.SemverType.LOOSE) to path)
             } catch (e: Exception) {
