@@ -54,6 +54,15 @@ class WindowsUnityDetector : UnityDetectorBase() {
         }
     }
 
+    override fun getVersionFromInstall(editorRoot: File): Semver? {
+        val executable = getEditorPath(editorRoot)
+        if(!executable.exists()) {
+            return null
+        }
+
+        val version = PEUtil.getProductVersion(executable) ?: return null
+        return Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE)
+    }
     companion object {
         private val LOG = Logger.getInstance(WindowsUnityDetector::class.java.name)
     }

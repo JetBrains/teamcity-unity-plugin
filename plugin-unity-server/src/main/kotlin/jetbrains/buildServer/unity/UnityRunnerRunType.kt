@@ -54,7 +54,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getRunnerPropertiesProcessor(): PropertiesProcessor? {
-        return PropertiesProcessor { emptyList() }
+        return UnityRunnerRunTypePropertiesProcessor()
     }
 
     override fun getEditRunnerParamsJspFilePath(): String? {
@@ -65,8 +65,11 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return myPluginDescriptor.getPluginResourcesPath("viewUnityParameters.jsp")
     }
 
-    override fun getDefaultRunnerProperties(): Map<String, String>? {
-        return emptyMap()
+    override fun getDefaultRunnerProperties(): MutableMap<String, String> {
+        val parameters = mutableMapOf<String,String>()
+        parameters[UnityConstants.PARAM_DETECTION_MODE] = UnityConstants.DETECTION_MODE_AUTO
+
+        return parameters
     }
 
     override fun describeParameters(parameters: Map<String, String>): String {

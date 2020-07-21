@@ -19,12 +19,14 @@
   --%>
 
 <jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
+<jsp:useBean id="constants" class="jetbrains.buildServer.unity.UnityConstantsProvider"/>
 <jsp:useBean id="params" class="jetbrains.buildServer.unity.UnityParametersProvider"/>
 <jsp:useBean id="teamcityPluginResourcesPath" scope="request" type="java.lang.String"/>
 
 <script type="text/javascript">
     var buildPlayerId = BS.Util.escapeId('${params.buildPlayer}');
     var runTestsId = BS.Util.escapeId('${params.runEditorTests}');
+    var detectionModeId = BS.Util.escapeId('${params.detectionMode}');
 
     BS.UnityParametersForm = {
         clearInputValues: function (row) {
@@ -60,13 +62,42 @@
                 BS.UnityParametersForm.clearInputValues($buildPlayerPath);
             }
             $j(".tests").toggle($j(runTestsId).is(':checked'));
+
+            var $autoRow = $j(BS.Util.escapeId('unity-auto-settings'));
+            var $manualRow = $j(BS.Util.escapeId('unity-manual-settings'));
+
+            var detectionMode = $j(detectionModeId).val();
+            switch(detectionMode) {
+                case "auto":
+                    $autoRow.toggleClass('hidden', false);
+                    $manualRow.toggleClass('hidden', true);
+                    BS.UnityParametersForm.clearInputValues($manualRow);
+                    break;
+
+                case "manual":
+                    $autoRow.toggleClass('hidden', true);
+                    $manualRow.toggleClass('hidden', false);
+
+                    BS.UnityParametersForm.clearInputValues($autoRow);
+
+                    break;
+
+                default:
+                    $autoRow.toggleClass('hidden', false);
+                    $manualRow.toggleClass('hidden', false);
+                    break;
+            }
             BS.MultilineProperties.updateVisible();
         }
     };
 
-    $j(document).on('change', buildPlayerId + "," + runTestsId, function () {
+    $j(document).on('change', buildPlayerId + "," + runTestsId + "," + detectionModeId, function () {
         BS.UnityParametersForm.updateElements();
     });
+
+      $j(document).on('ready', detectionModeId, function () {
+        BS.UnityParametersForm.updateElements();
+      });
 </script>
 
 <l:settingsGroup title="Build Parameters">
@@ -198,7 +229,39 @@
         </td>
     </tr>
 </tbody>
-<tbody>
+</l:settingsGroup>
+
+<l:settingsGroup title="Unity Installation">
+<tr>
+  <th class="noBorder"><label for="${params.detectionMode}">Detection mode:</label></th>
+  <td>
+    <props:selectProperty name="${params.detectionMode}" enableFilter="true" className="mediumField">
+      <props:option value="">&lt;Default&gt;</props:option>
+      <c:forEach var="item" items="${params.detectionModeValues}">
+        <props:option value="${item.id}"><c:out value="${item.description}"/></props:option>
+      </c:forEach>
+    </props:selectProperty>
+    <span class="error" id="error_${params.detectionMode}"></span>
+  </td>
+</tr>
+<tbody id="unity-auto-settings" class="hidden">
+  <tr>
+    <th><label for="${params.unityVersion}">Unity version:</label></th>
+    <td>
+        <props:textProperty name="${params.unityVersion}" className="longField disableBuildTypeParams"/>
+        <span class="error" id="error_${params.unityVersion}"></span>
+        <span class="smallNote" id="${params.unityVersion}-hint">Specify the required Unity version, e.g 2018.2.</span>
+    </td>
+  </tr>
+</tbody>
+<tbody id="unity-manual-settings" class="hidden">
+    <tr>
+        <th><label>Unity:<l:star/></label></th>
+        <td>
+            <jsp:include page="/tools/selector.html?toolType=${constants.unityToolName}&versionParameterName=${params.unityRoot}&class=longField"/>
+        </td>
+    </tr>
+</tbody>
 </l:settingsGroup>
 
 <l:settingsGroup title="Unity Parameters" className="advancedSetting">
@@ -214,16 +277,6 @@
         <span class="smallNote">Specify additional command line arguments for Unity.</span>
     </td>
 </tr>
-
-<tr class="advancedSetting">
-    <th><label for="${params.unityVersion}">Unity version:</label></th>
-    <td>
-        <props:textProperty name="${params.unityVersion}" className="longField disableBuildTypeParams"/>
-        <span class="error" id="error_${params.unityVersion}"></span>
-        <span class="smallNote">Specify the required Unity version, e.g 2018.2.</span>
-    </td>
-</tr>
-
 <tr class="advancedSetting">
     <th>
         <label for="${params.lineStatusesFile}">Line statuses file: <bs:help

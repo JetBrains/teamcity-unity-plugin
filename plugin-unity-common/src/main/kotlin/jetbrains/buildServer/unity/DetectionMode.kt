@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 JetBrains s.r.o.
+ * Copyright 2020 Aaron Zurawski
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package jetbrains.buildServer.unity
 
-import com.vdurmont.semver4j.Semver
-import java.io.File
+enum class DetectionMode(val id: String, val description:String) {
+    Auto("auto", "Auto"),
+    Manual("manual", "Manual");
 
-interface UnityDetector {
-    fun findInstallations(): Sequence<Pair<Semver, File>>
-    fun getEditorPath(directory: File): File
-    fun getVersionFromInstall(editorRoot: File): Semver?
+    companion object {
+        fun tryParse(id: String): DetectionMode? {
+            return values().singleOrNull { it.id.equals(id, true) }
+        }
+    }
 }

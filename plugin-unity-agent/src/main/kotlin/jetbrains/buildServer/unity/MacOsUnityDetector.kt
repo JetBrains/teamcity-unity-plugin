@@ -62,6 +62,33 @@ class MacOsUnityDetector : UnityDetectorBase() {
         yieldAll(findUnityPaths(File("/Applications")))
     }
 
+    override fun getVersionFromInstall(editorRoot: File): Semver? {
+        val executable = getEditorPath(editorRoot)
+        if (!executable.exists()) return null
+
+        val plistFile = File(editorRoot, "Unity.app/Contents/Info.plist")
+        if (!plistFile.exists()) return null
+        val config = XMLPropertyListConfiguration(plistFile)
+
+        // Unity version looks like that: 2017.1.1f1
+        // where suffix could be the following:
+        // * a  - alpha
+        // * b  - beta
+        // * p  - patch
+        // * rc - release candidate
+        // * f  - final
+        val version = config.getString("CFBundleVersion")
+                ?.split("a", "b", "p", "rc", "f")
+                ?.firstOrNull()
+                ?: return null
+
+        return try {
+            Semver(version, Semver.SemverType.LOOSE)
+        } catch (e: Exception) {
+            LOG.infoAndDebugDetails("Invalid Unity version $version in directory $editorRoot", e)
+            null
+        }
+    }
     companion object {
         private val LOG = Logger.getInstance(MacOsUnityDetector::class.java.name)
     }

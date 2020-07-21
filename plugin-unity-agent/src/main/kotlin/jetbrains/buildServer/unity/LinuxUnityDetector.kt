@@ -68,6 +68,30 @@ class LinuxUnityDetector : UnityDetectorBase() {
         yieldAll(findUnityPaths(File("/opt/")))
     }
 
+    override fun getVersionFromInstall(editorRoot: File): Semver? {
+        val executable = getEditorPath(editorRoot)
+        if (!executable.exists()) return null
+
+        LOG.debug("Looking for package manager in $editorRoot")
+        val packageVersions = File(editorRoot, "Editor/Data/PackageManager/Unity/PackageManager")
+        if (!packageVersions.exists()) return null
+
+        val versions = packageVersions.listFiles { file ->
+            file.isDirectory
+        } ?: return null
+
+        if (versions.size != 1) {
+            LOG.warn("Multiple Unity versions found in directory $editorRoot")
+        }
+
+        val version = versions.first().name
+        return try {
+            Semver(version, Semver.SemverType.LOOSE)
+        } catch (e: Exception) {
+            LOG.infoAndDebugDetails("Invalid Unity version $version in directory $editorRoot", e)
+            null
+        }
+    }
     companion object {
         private val LOG = Logger.getInstance(LinuxUnityDetector::class.java.name)
     }

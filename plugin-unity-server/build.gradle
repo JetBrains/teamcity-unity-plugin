@@ -20,7 +20,7 @@ plugins {
 }
 
 teamcity {
-    version = teamcityVersion
+    setVersion(teamcityVersion)
 
     server {
         descriptor = project.file('teamcity-plugin.xml')
@@ -47,6 +47,9 @@ dependencies {
     }
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
+
+    provided files("$project.teamcity.environments.baseHomeDir/TeamCity-$teamcityVersion/webapps/ROOT/WEB-INF/lib/server-tools.jar")
+    provided files("$project.teamcity.environments.baseHomeDir/TeamCity-$teamcityVersion/webapps/ROOT/WEB-INF/lib/common-tools.jar")
 }
 
 serverPlugin.version = null

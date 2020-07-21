@@ -44,6 +44,15 @@ class UnityRunnerRunTypeTest {
         )
     }
 
+    @DataProvider
+    fun runnerDefaultData(): Array<Array<Any?>> {
+        return arrayOf(
+                arrayOf<Any?>(
+                    mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO)
+                )
+        )
+    }
+
     @Test(dataProvider = "runnerRequirementsData")
     fun testRunnerRequirements(parameters: Map<String, String>, expectedRequirements: List<Requirement>) {
         val m = Mockery()
@@ -60,5 +69,23 @@ class UnityRunnerRunTypeTest {
 
         val requirements = runType.getRunnerSpecificRequirements(parameters)
         Assert.assertEquals(requirements, expectedRequirements)
+    }
+
+    @Test(dataProvider = "runnerDefaultData")
+    fun testDefaultParameters(expectedParameters: Map<String, String>) {
+        val m = Mockery()
+        val pluginDescriptor = m.mock(PluginDescriptor::class.java)
+        val runTypeRegistry = m.mock(RunTypeRegistry::class.java)
+
+        m.checking(object : Expectations() {
+            init {
+                oneOf(runTypeRegistry).registerRunType(with(any(UnityRunnerRunType::class.java)))
+            }
+        })
+
+        val runType = UnityRunnerRunType(pluginDescriptor, runTypeRegistry)
+
+        val defaultParameters = runType.defaultRunnerProperties
+        Assert.assertEquals(defaultParameters, expectedParameters)
     }
 }
