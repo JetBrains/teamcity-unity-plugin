@@ -95,14 +95,7 @@
   </td>
 </tr>
 
-<tr class="advancedSetting">
-    <th><label for="${params.unityVersion}">Unity version:</label></th>
-    <td>
-        <props:textProperty name="${params.unityVersion}" className="longField"/>
-        <span class="error" id="error_${params.unityVersion}"></span>
-        <span class="smallNote">Specify the required Unity version, e.g 2018.2.</span>
-    </td>
-</tr>
+<jsp:include page="${teamcityPluginResourcesPath}/editUnityInstallationParameter.jsp"/>
 
 <script type="text/javascript">
     BS.UnityBuildFeatureParametersForm.updateElements();
