@@ -29,13 +29,8 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
-            LOG.debug("Looking for Unity installation in $path")
-
-            val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
-
-            val version = PEUtil.getProductVersion(executable) ?: return@forEach
-            yield(Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE) to path)
+            val version = getVersionFromInstall(path) ?: return@forEach
+            yield(version to path)
         }
     }
 
@@ -55,6 +50,8 @@ class WindowsUnityDetector : UnityDetectorBase() {
     }
 
     override fun getVersionFromInstall(editorRoot: File): Semver? {
+        LOG.debug("Looking for Unity installation in $editorRoot")
+
         val executable = getEditorPath(editorRoot)
         if(!executable.exists()) {
             return null

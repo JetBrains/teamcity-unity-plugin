@@ -28,29 +28,8 @@ class LinuxUnityDetector : UnityDetectorBase() {
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
-            LOG.debug("Looking for Unity installation in $path")
-
-            val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
-
-            LOG.debug("Looking for package manager in $path")
-            val packageVersions = File(path, "Editor/Data/PackageManager/Unity/PackageManager")
-            if (!packageVersions.exists()) return@forEach
-
-            val versions = packageVersions.listFiles { file ->
-                file.isDirectory
-            } ?: return@forEach
-
-            if (versions.size != 1) {
-                LOG.warn("Multiple Unity versions found in directory $path")
-            }
-
-            val version = versions.first().name
-            try {
-                yield(Semver(version, Semver.SemverType.LOOSE) to path)
-            } catch (e: Exception) {
-                LOG.infoAndDebugDetails("Invalid Unity version $version in directory $path", e)
-            }
+            val version = getVersionFromInstall(path) ?: return@forEach
+            yield(version to path)
         }
     }
 
@@ -69,6 +48,7 @@ class LinuxUnityDetector : UnityDetectorBase() {
     }
 
     override fun getVersionFromInstall(editorRoot: File): Semver? {
+        LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
         if (!executable.exists()) return null
 
