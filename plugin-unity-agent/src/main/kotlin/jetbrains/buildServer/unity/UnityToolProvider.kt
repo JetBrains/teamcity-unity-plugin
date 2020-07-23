@@ -48,7 +48,6 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
 
         unityDetector?.let { detector ->
-            detector.registerAdditionalHintPath(agent.configuration.agentToolsDirectory)
 
             detector.findInstallations().let { versions ->
                 unityVersions.putAll(versions.sortedBy { it.first }.map {
