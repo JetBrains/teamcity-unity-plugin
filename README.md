@@ -14,6 +14,7 @@ The plugin supports building Unity projects on TeamCity.
 * Structured build log with problems highlighting
 * Unity Editor tests reporting
 * Unity build settings feature
+* Unity as Agent tool
 
 ### Unity build settings feature
 
@@ -35,13 +36,14 @@ The plugin automatically detects Editors installed via Unity Hub. Also it search
 * macOS: `/Applications/Unity*` and `/Applications/Unity/Hub/Editor/*`
 * Linux: `/opt/Unity*`/`~/Unity*` and `/opt/Unity/Hub/Editor/*`/`~/Unity/Hub/Editor/*`
 * Windows: `%Program Files%/Unity*` and `%Program Files%/Unity/Hub/Editor/*`
-* TeamCity agent tools location, which allows installing Unity as an [agent tool](https://confluence.jetbrains.com/display/TCDL/Installing+Agent+Tools). 
 
 **Note**: you need to start TeamCity build agent under the same user account which is used for Unity Hub installation.
 
 To add Unity installation located in custom path you could use `UNITY_HOME` environment variable, e.g. `UNITY_HOME=C:\Tools\Unity_2018.1\`. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
 
 To search Unity installation directories in custom path matching `Unity*` pattern you could use `UNITY_HINT_PATH` environment variable, e.g. `UNITY_HINT_PATH=C:\Tools`. Multiple paths could be specified by using [default path delimiter](https://docs.oracle.com/javase/7/docs/api/java/io/File.html#separator).
+
+You may also install Unity as a TeamCity agent tool. See [TeamCity Agent Tool Configuration](#teamcity-agent-tool-configuration) for more information.
 
 ## Agent configuration parameters
 
@@ -58,6 +60,26 @@ The runner allows overriding default error logging settings by using "Line statu
   <line level="error" message="error CS\d+" />
 </lines>
 ```
+## TeamCity Agent Tool Configuration
+
+This plugin supports optionally installing Unity as a TeamCity [agent tool](https://confluence.jetbrains.com/display/TCDL/Installing+Agent+Tools).
+
+### Creating Tool Zip Archive
+
+To create a tool zip file for Unity, do the following:
+1. Locally install (or extract) the desired version of Unity along with any/all desired Target Support (Android, iOS, Xbox, etc.)
+2. Zip the `Editor` folder into an archive named `Unity-<version>.zip` such as `Unity-2018.4.9f1.zip`
+    It should look like this:
+    ```
+    📁 Unity_2018.4.9f1.zip
+    |- 📂 Editor
+    │  |- 📂 BugReporter
+    │  |- 📂 Data
+    │  |- 📂 locales
+    │  |- 📄 Unity.exe
+    │  |- ...
+    ```
+3. Upload as a Unity Tool on the Administration > Tools page on TeamCity
 
 ## Common problems
 
