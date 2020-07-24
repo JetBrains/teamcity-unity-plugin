@@ -35,10 +35,30 @@ class UnityRunnerRunTypeTest {
         return arrayOf(
                 arrayOf<Any?>(
                         emptyMap<String, String>(),
+                        emptyList<Requirement>()
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                                UnityConstants.PARAM_UNITY_VERSION to ""),
                         listOf(Requirement("Exists=>unity\\.path\\..+", null, RequirementType.EXISTS))
                 ),
                 arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                                UnityConstants.PARAM_UNITY_ROOT to "C:\\My\\Custom\\Unity"),
+                        emptyList<Requirement>()
+                ),
+                arrayOf<Any?>(
                         mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
+                        listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
+                        emptyList<Requirement>()
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
                         listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
                 )
         )
