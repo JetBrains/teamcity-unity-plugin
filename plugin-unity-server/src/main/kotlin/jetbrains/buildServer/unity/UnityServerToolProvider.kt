@@ -39,7 +39,7 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
             return GetPackageVersionResult.error("Could not determine ${type.type} version based on its package file name ${toolPackage.name}.")
         }
 
-        return GetPackageVersionResult.version(SimpleToolVersion(type, version, version,type.displayName))
+        return GetPackageVersionResult.version(SimpleToolVersion(type, version, "${type.shortDisplayName}-${version}",type.displayName))
     }
 
     override fun unpackToolPackage(toolPackage: File, targetDirectory: File) {
