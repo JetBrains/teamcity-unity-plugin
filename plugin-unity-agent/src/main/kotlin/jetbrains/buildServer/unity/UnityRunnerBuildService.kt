@@ -30,6 +30,8 @@ import jetbrains.buildServer.util.StringUtil
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.RandomAccessFile
 
 /**
  * Unity runner service.
@@ -262,6 +264,8 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             File(logFilePath)
         }
 
+        trimLog(logFile)
+
         arguments.add(logFile.absolutePath)
 
         unityLogFileTailer = Tailer.create(logFile, object : TailerListenerAdapter() {
@@ -276,6 +280,25 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         }, DEFAULT_DELAY_MILLIS, false)
     }
 
+    private fun trimLog(logFile: File) {
+        var logFileAccess: RandomAccessFile? = null
+        try {
+            logFileAccess = RandomAccessFile(logFile, LOG_FILE_ACCESS_MODE)
+            logFileAccess.setLength(0)
+        }
+        catch (e: FileNotFoundException) {
+            return
+        }
+        catch(e: Throwable) {
+            val message = "Failed to truncate log file $logFile"
+            logger.message(Message(message, Status.WARNING.text, null).asString())
+            LOG.infoAndDebugDetails(message, e)
+        }
+        finally {
+            logFileAccess?.close()
+        }
+    }
+
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
@@ -285,6 +308,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         private const val ARG_EDITOR_TESTS_RESULT_FILE = "-editorTestsResultFile"
         private const val ARG_LOG_FILE = "-logFile"
         private const val ARG_NO_GRAPHICS = "-nographics"
+        private const val LOG_FILE_ACCESS_MODE = "rw"
         private val RUN_TESTS_REGEX = Regex("-run(Editor)?Tests")
         private val RUN_TEST_RESULTS_REGEX = Regex("-(editorTestsResultFile|testResults)")
         private val UNITY_2018_2 = Semver("2018.2.0")
