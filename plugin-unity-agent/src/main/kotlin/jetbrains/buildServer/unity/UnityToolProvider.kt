@@ -95,8 +95,7 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
         }
 
-        val unity = getUnity(toolName, unityVersion)
-        return unityDetector.getEditorPath(File(unity.second)).absolutePath
+        return File(getUnity(toolName, unityVersion).second).absolutePath
     }
 
     fun getUnity(toolName: String,

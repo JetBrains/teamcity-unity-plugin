@@ -193,7 +193,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             File.createTempFile(
                     "unityTestResults-",
                     ".xml",
-                    build.buildTempDirectory
+                    build.agentTempDirectory
             ).apply {
                 val testResultsArgument = if (testPlatform.isNullOrEmpty()) {
                     ARG_EDITOR_TESTS_RESULT_FILE
@@ -258,7 +258,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             File.createTempFile(
                     "unityBuildLog-",
                     ".txt",
-                    build.buildTempDirectory
+                    build.agentTempDirectory
             )
         } else {
             File(logFilePath)
