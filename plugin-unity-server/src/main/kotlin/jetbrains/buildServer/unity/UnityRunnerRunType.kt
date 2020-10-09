@@ -103,7 +103,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         val requirements = mutableListOf<Requirement>()
         parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
             if (it.isNotBlank()) {
-                val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME + it.trim()) + ".*"
+                val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + escapeRegex(it.trim()) + ".*"
                 requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
             }
         }
@@ -114,9 +114,8 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return requirements
     }
 
-    private fun escapeRegex(value: String): String {
-        return value.replace(".", "\\.")
-    }
+    private fun escapeRegex(value: String) =
+        if(value.contains('%')) value else value.replace(".", "\\.")
 
     private fun StringBuilder.addParameter(parameter: String) {
         if (this.isNotEmpty()) {
