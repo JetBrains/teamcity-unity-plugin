@@ -19,10 +19,12 @@ package jetbrains.buildServer.unity
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.messages.serviceMessages.Message
+import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_PLATFORM
 import jetbrains.buildServer.unity.logging.LineStatusProvider
 import jetbrains.buildServer.unity.logging.UnityLoggingListener
 import jetbrains.buildServer.unity.messages.ImportData
@@ -36,7 +38,10 @@ import java.io.RandomAccessFile
 /**
  * Unity runner service.
  */
-class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) : BuildServiceAdapter() {
+class UnityRunnerBuildService(
+        private val unityToolProvider: UnityToolProvider,
+        private val overridedRunnerParameters: Map<String, String>)
+    : BuildServiceAdapter() {
 
     private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
@@ -60,14 +65,22 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         listOf(UnityLoggingListener(logger, problemsProvider))
     }
 
+    private val parameters: Lazy<MutableMap<String, String>>
+        get() = lazy {
+        val parameters = mutableMapOf<String, String>()
+        parameters.putAll(runnerParameters)
+        parameters.putAll(overridedRunnerParameters)
+        parameters
+    }
+
     private val verbosity: Verbosity by lazy {
-        runnerParameters[UnityConstants.PARAM_VERBOSITY]?.let {
+        parameters.value[UnityConstants.PARAM_VERBOSITY]?.let {
             Verbosity.tryParse(it)
         } ?: Verbosity.Normal
     }
 
     private val logFilePath: String?
-        get() = runnerParameters[UnityConstants.PARAM_UNITY_LOG_FILE]?.trim()
+        get() = parameters.value[UnityConstants.PARAM_UNITY_LOG_FILE]?.trim()
 
     private val verbosityArgument: String
         get() = when (verbosity) {
@@ -80,7 +93,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         val arguments = mutableListOf("-batchmode")
 
         var projectPath = "./"
-        runnerParameters[UnityConstants.PARAM_PROJECT_PATH]?.let {
+        parameters.value[UnityConstants.PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
                 projectPath = it.trim()
             }
@@ -99,14 +112,14 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             arguments.add("-projectPath=$path")
         }
 
-        runnerParameters[UnityConstants.PARAM_BUILD_TARGET]?.let {
+        parameters.value[UnityConstants.PARAM_BUILD_TARGET]?.let {
             if (it.isNotEmpty()) {
                 arguments.addAll(listOf("-buildTarget", it.trim()))
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_BUILD_PLAYER]?.let {
-            val playerPath = runnerParameters[UnityConstants.PARAM_BUILD_PLAYER_PATH]
+        parameters.value[UnityConstants.PARAM_BUILD_PLAYER]?.let {
+            val playerPath = parameters.value[UnityConstants.PARAM_BUILD_PLAYER_PATH]
             if (it.isNotEmpty() && !playerPath.isNullOrEmpty()) {
                 var playerFile = File(playerPath.trim())
                 if (!playerFile.isAbsolute) {
@@ -116,25 +129,25 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_NO_GRAPHICS]?.let {
+        parameters.value[UnityConstants.PARAM_NO_GRAPHICS]?.let {
             if (it.toBoolean()) {
                 arguments.add(ARG_NO_GRAPHICS)
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_SILENT_CRASHES]?.let {
+        parameters.value[UnityConstants.PARAM_SILENT_CRASHES]?.let {
             if (it.toBoolean()) {
                 arguments.add("-silent-crashes")
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
+        parameters.value[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
             if (it.isNotEmpty()) {
                 arguments.addAll(listOf("-executeMethod", it.trim()))
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_ARGUMENTS]?.let {
+        parameters.value[UnityConstants.PARAM_ARGUMENTS]?.let {
             if (it.isNotEmpty()) {
                 arguments.addAll(StringUtil.splitCommandArgumentsAndUnquote(it))
             }
@@ -145,7 +158,7 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         appendLogArgument(arguments, version)
 
         // Use line statuses file if available
-        runnerParameters[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
+        parameters.value[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
             if (it.isNotEmpty()) {
                 unityLineStatusesFile = File(workingDirectory, it.trim())
             }
@@ -164,8 +177,8 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
     }
 
     private fun appendRunTestsArguments(arguments: MutableList<String>) {
-        val runTests = runnerParameters[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
-        val testPlatform = runnerParameters[UnityConstants.PARAM_TEST_PLATFORM]
+        val runTests = parameters.value[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
+        val testPlatform = parameters.value[UnityConstants.PARAM_TEST_PLATFORM]
 
         // For tests run we should not add -quit argument
         val runTestIndex = arguments.indexOfFirst { RUN_TESTS_REGEX.matches(it) }
@@ -204,14 +217,14 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
+        parameters.value[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
             if (it.isNotEmpty()) {
                 val categories = StringUtil.split(it).joinToString(";")
                 arguments.addAll(listOf("-editorTestsCategories", categories))
             }
         }
 
-        runnerParameters[UnityConstants.PARAM_TEST_NAMES]?.let {
+        parameters.value[UnityConstants.PARAM_TEST_NAMES]?.let {
             if (it.isNotEmpty()) {
                 val names = StringUtil.split(it).joinToString(";")
                 arguments.addAll(listOf("-editorTestsFilter", names))
@@ -313,5 +326,21 @@ class UnityRunnerBuildService(private val unityToolProvider: UnityToolProvider) 
         private val RUN_TEST_RESULTS_REGEX = Regex("-(editorTestsResultFile|testResults)")
         private val UNITY_2018_2 = Semver("2018.2.0")
         private val UNITY_2019 = Semver("2019.1.0")
+
+        fun createAdapters(unityToolProvider: UnityToolProvider, context: BuildRunnerContext) =
+                getParameterVariants(context)
+                        .ifEmpty {
+                            sequenceOf(emptyMap<String, String>())
+                        }
+                        .map {
+                            UnityRunnerBuildService(unityToolProvider, it)
+                        }
+
+        private fun getParameterVariants(context: BuildRunnerContext) = sequence<Map<String, String>> {
+            if("all".equals(context.runnerParameters[PARAM_TEST_PLATFORM], true)) {
+                yield(mapOf(PARAM_TEST_PLATFORM to "editmode"))
+                yield(mapOf(PARAM_TEST_PLATFORM to "playmode"))
+            }
+        }
     }
 }

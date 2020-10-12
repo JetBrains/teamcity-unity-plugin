@@ -49,13 +49,14 @@ class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext,
         return lastCommands.last().result
     }
 
-    private fun getSteps() = iterator<CommandExecution> {
-        yield(addCommand(UnityRunnerBuildService(unityToolProvider)))
-    }
-
-    private fun addCommand(buildService: CommandLineBuildService) = CommandExecutionAdapter(buildService.apply {
-            this.initialize(runnerContext.build, runnerContext)
-        }).apply {
-            lastCommands.add(this)
-        }
+    private fun getSteps(): Iterator<CommandExecution> =
+            UnityRunnerBuildService
+                    .createAdapters(unityToolProvider, runnerContext)
+                    .map {
+                        it.initialize(runnerContext.build, runnerContext)
+                        val command = CommandExecutionAdapter(it)
+                        lastCommands.add(command)
+                        command
+                    }
+                    .iterator()
 }

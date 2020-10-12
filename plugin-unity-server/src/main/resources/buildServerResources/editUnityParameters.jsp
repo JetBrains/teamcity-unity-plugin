@@ -175,8 +175,9 @@
         <td>
             <props:selectProperty name="${params.testPlatform}" enableFilter="true" className="mediumField">
                 <props:option value="">&lt;Default&gt;</props:option>
-                <props:option value="editmode">EditMode</props:option>
-                <props:option value="playmode">PlayMode</props:option>
+                <props:option value="editmode">Edit mode</props:option>
+                <props:option value="playmode">Play mode</props:option>
+                <props:option value="all">All modes in sequence</props:option>
             </props:selectProperty>
             <span class="error" id="error_${params.testPlatform}"></span>
         </td>
