@@ -44,16 +44,20 @@ abstract class UnityDetectorBase : UnityDetector {
     protected open fun getHintPaths(): Sequence<File> = sequence {
         // Get paths from "UNITY_HOME" environment variables
         System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
+            LOG.info("UNITY_HOME: $unityHome")
             if (unityHome.isEmpty()) return@let
             yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
+                LOG.info("UNITY_HOME path: $path")
                 File(path)
             })
         }
 
         // Get paths from "UNITY_HINT_PATH" environment variables
         System.getenv(UnityConstants.VAR_UNITY_HINT_PATH)?.let { unityHintPaths ->
+            LOG.info("UNITY_HINT_PATH: $unityHintPaths")
             if (unityHintPaths.isEmpty()) return@let
             unityHintPaths.split(File.pathSeparatorChar).forEach { path ->
+                LOG.info("UNITY_HINT_PATH path: $unityHintPaths")
                 yieldAll(findUnityPaths(File(path)))
             }
         }
@@ -63,13 +67,16 @@ abstract class UnityDetectorBase : UnityDetector {
             if (systemPath.isEmpty()) return@let
             systemPath.split(File.pathSeparatorChar).forEach { path ->
                 if (path.endsWith(editorPath, true)) {
-                    yield(File(path.removeRange(path.length - editorPath.length, path.length)))
+                    val envPath = File(path.removeRange(path.length - editorPath.length, path.length))
+                    LOG.info("PATH: $envPath")
+                    yield(envPath)
                 }
             }
         }
 
         // Get paths from "additional directories"
         additionalHintPaths.forEach { hintPath ->
+            LOG.info("Hint path: $hintPath")
             yieldAll(findUnityPaths(hintPath))
         }
 
@@ -78,27 +85,40 @@ abstract class UnityDetectorBase : UnityDetector {
     }
 
     protected fun findUnityPaths(directory: File) = sequence {
+        LOG.info("Looking in: $directory")
+
         // The convention to install multiple Unity versions is
         // to use suffixes for Unity directory, e.g. Unity_4.0b7
         directory.listFiles { file ->
             file.isDirectory && file.name.startsWith("Unity", true)
         }?.let { files ->
-            yieldAll(files.asSequence())
+            for (file in files) {
+                LOG.info("Found: $file")
+                yield(file)
+            }
         }
 
         // Unity Hub installs editors under Unity/Hub/Editor directory,
         // e.g. Unity/Hub/Editor/2018.1.9f2
         val unityHub = File(directory, "Unity/Hub/Editor")
+        LOG.info("Looking in: $unityHub")
         unityHub.listFiles { file ->
             file.isDirectory
         }?.let { files ->
-            yieldAll(files.asSequence())
+            for (file in files) {
+                LOG.info("Found: $file")
+                yield(file)
+            }
         }
     }
 
     private fun findUnityHubEditors(configDir: String) = sequence {
         val unityHub = File(configDir, "UnityHub")
-        if (!unityHub.exists()) return@sequence
+        LOG.info("Looking in: $unityHub")
+        if (!unityHub.exists()) {
+            LOG.info("$unityHub does not exist.")
+            return@sequence
+        }
 
         // Enumerate Editors in Unity Hub directory
         tryParse(HubInfo.serializer(), File(unityHub, "hubInfo.json"))?.let { hubInfo ->
@@ -111,7 +131,9 @@ abstract class UnityDetectorBase : UnityDetector {
             editors.values.forEach { editor ->
                 editor.location?.let { locations ->
                     yieldAll(locations.map { location ->
-                        FileUtil.getCanonicalFile(File(location, "../..") )
+                        val directory = FileUtil.getCanonicalFile(File(location, "../..") )
+                        LOG.info("Found: $directory")
+                        directory
                     })
                 }
             }
@@ -148,10 +170,14 @@ abstract class UnityDetectorBase : UnityDetector {
     }
 
     private fun listDirectories(directory: File) = sequence {
-        LOG.debug("Listing directories under $directory")
+        LOG.info("Listing directories under $directory")
         directory.listFiles { file ->
             file.isDirectory
         }?.let { directories ->
+            for (directory in directories) {
+                LOG.info("Found: $directory")
+                yield(directory)
+            }
             yieldAll(directories.asSequence())
         }
     }
