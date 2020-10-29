@@ -53,7 +53,7 @@ class UnityToolType : ToolTypeAdapter() {
 
     override fun getValidPackageDescription(): String? {
         return """Specify the path to a $displayName (.${UnityConstants.UNITY_TOOL_EXTENSION}).
-                <br/>Download <em>$type.&lt;VERSION&gt;.${UnityConstants.UNITY_TOOL_EXTENSION}</em> from
+                <br/>Download <em>$type-&lt;VERSION&gt;.${UnityConstants.UNITY_TOOL_EXTENSION}</em> from
                 <a href=\"https://unity3d.com/get-unity/download/archive\" target=\"_blank\" rel=\"noreferrer\">www.unity3d.com</a>"""
     }
 }
