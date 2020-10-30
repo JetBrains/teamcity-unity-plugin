@@ -53,18 +53,34 @@ class LinuxUnityDetector : UnityDetectorBase() {
         if (!executable.exists()) return null
 
         LOG.debug("Looking for package manager in $editorRoot")
+        var version : String
         val packageVersions = File(editorRoot, "Editor/Data/PackageManager/Unity/PackageManager")
-        if (!packageVersions.exists()) return null
+        if (packageVersions.exists()) {
+            val versions = packageVersions.listFiles { file ->
+                file.isDirectory
+            } ?: return null
 
-        val versions = packageVersions.listFiles { file ->
-            file.isDirectory
-        } ?: return null
+            if (versions.size != 1) {
+                LOG.warn("Multiple Unity versions found in directory $editorRoot")
+            }
 
-        if (versions.size != 1) {
-            LOG.warn("Multiple Unity versions found in directory $editorRoot")
+            version = versions.first().name
+        } else {
+            version = editorRoot.name
         }
 
-        val version = versions.first().name
+        // Unity version looks like that: 2017.1.1f1
+        // where suffix could be the following:
+        // * a  - alpha
+        // * b  - beta
+        // * p  - patch
+        // * rc - release candidate
+        // * f  - final
+        version = version
+                .split("a", "b", "p", "rc", "f")
+                .firstOrNull()
+                ?: return null
+
         return try {
             Semver(version, Semver.SemverType.LOOSE)
         } catch (e: Exception) {

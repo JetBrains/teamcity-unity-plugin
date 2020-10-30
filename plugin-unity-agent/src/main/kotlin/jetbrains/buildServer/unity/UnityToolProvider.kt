@@ -52,6 +52,9 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
             detector.findInstallations().let { versions ->
                 unityVersions.putAll(versions.sortedBy { it.first }.map {
                     it.first to it.second.absolutePath
+                }.map {
+                    LOG.info("${it.first} to ${it.second}")
+                    it
                 }.toMap())
             }
         }

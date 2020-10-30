@@ -122,7 +122,7 @@ class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
         return File.createTempFile(
                 "unityBuildLog-",
                 "-${build.buildId}.txt",
-                build.buildTempDirectory
+                build.agentTempDirectory
         )
     }
 

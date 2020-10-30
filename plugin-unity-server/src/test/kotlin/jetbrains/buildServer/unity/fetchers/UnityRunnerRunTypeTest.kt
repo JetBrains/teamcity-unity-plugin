@@ -52,6 +52,10 @@ class UnityRunnerRunTypeTest {
                         listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
                 ),
                 arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_UNITY_VERSION to "%SOME_VAR.1%"),
+                        listOf(Requirement("Exists=>unity\\.path\\.%SOME_VAR.1%.*", null, RequirementType.EXISTS))
+                ),
+                arrayOf<Any?>(
                         mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
                                 UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
                         emptyList<Requirement>()
