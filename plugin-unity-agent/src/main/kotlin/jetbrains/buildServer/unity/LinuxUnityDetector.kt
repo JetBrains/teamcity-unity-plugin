@@ -31,7 +31,10 @@ class LinuxUnityDetector : UnityDetectorBase() {
             LOG.debug("Looking for Unity installation in $path")
 
             val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
+            if (!executable.exists()) {
+                LOG.debug("Cannot find $executable")
+                return@forEach
+            }
 
             LOG.debug("Looking for package manager in $path")
             var version : String

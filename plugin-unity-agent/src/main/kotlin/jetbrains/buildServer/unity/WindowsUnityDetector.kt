@@ -32,10 +32,18 @@ class WindowsUnityDetector : UnityDetectorBase() {
             LOG.debug("Looking for Unity installation in $path")
 
             val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
+            if (!executable.exists()) {
+                LOG.debug("Cannot find $executable")
+                return@forEach
+            }
 
-            val version = PEUtil.getProductVersion(executable) ?: return@forEach
-            yield(Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE) to path)
+            val version = PEUtil.getProductVersion(executable)
+            if(version != null) {
+                yield(Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE) to path)
+            }
+            else {
+                LOG.debug("Cannot get version from $executable")
+            }
         }
     }
 

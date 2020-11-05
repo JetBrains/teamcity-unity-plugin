@@ -32,10 +32,17 @@ class MacOsUnityDetector : UnityDetectorBase() {
             LOG.debug("Looking for Unity installation in $path")
 
             val executable = getEditorPath(path)
-            if (!executable.exists()) return@forEach
+            if (!executable.exists()) {
+                LOG.debug("Cannot find $executable")
+                return@forEach
+            }
 
             val plistFile = File(path, "Unity.app/Contents/Info.plist")
-            if (!plistFile.exists()) return@forEach
+            if (!plistFile.exists()) {
+                LOG.debug("Cannot find $plistFile")
+                return@forEach
+            }
+
             val config = XMLPropertyListConfiguration(plistFile)
 
             // Unity version looks like that: 2017.1.1f1
