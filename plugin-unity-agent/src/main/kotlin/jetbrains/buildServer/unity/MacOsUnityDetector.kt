@@ -42,10 +42,17 @@ class MacOsUnityDetector : UnityDetectorBase() {
     override fun getVersionFromInstall(editorRoot: File): Semver? {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
-        if (!executable.exists()) return null
+        if (!executable.exists()) {
+          LOG.debug("Cannot find $executable")
+          return null
+        }
 
         val plistFile = File(editorRoot, "Unity.app/Contents/Info.plist")
-        if (!plistFile.exists()) return null
+        if (!plistFile.exists()) {
+          LOG.debug("Cannot find $plistFile")
+          return null
+        }
+      
         val config = XMLPropertyListConfiguration(plistFile)
 
         // Unity version looks like that: 2017.1.1f1

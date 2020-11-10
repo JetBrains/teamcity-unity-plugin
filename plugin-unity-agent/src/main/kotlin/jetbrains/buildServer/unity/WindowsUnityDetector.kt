@@ -54,11 +54,17 @@ class WindowsUnityDetector : UnityDetectorBase() {
 
         val executable = getEditorPath(editorRoot)
         if(!executable.exists()) {
+            LOG.debug("Cannot find $executable")
             return null
         }
 
-        val version = PEUtil.getProductVersion(executable) ?: return null
-        return Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE)
+        val version = PEUtil.getProductVersion(executable)
+        if(version != null) {
+            return Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE)
+        }
+        else {
+            LOG.debug("Cannot get version from $executable")
+        }
     }
     companion object {
         private val LOG = Logger.getInstance(WindowsUnityDetector::class.java.name)

@@ -50,7 +50,10 @@ class LinuxUnityDetector : UnityDetectorBase() {
     override fun getVersionFromInstall(editorRoot: File): Semver? {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
-        if (!executable.exists()) return null
+        if (!executable.exists()) {
+          LOG.debug("Cannot find $executable")
+          return null
+        }
 
         LOG.debug("Looking for package manager in $editorRoot")
         var version : String
