@@ -153,9 +153,9 @@
         <props:checkboxProperty name="${params.noGraphics}"/>
         <label for="${params.noGraphics}">Do not initialize the graphics device</label><br/>
         <props:checkboxProperty name="${params.silentCrashes}"/>
-        <label for="${params.silentCrashes}">Do not display the error dialog when a standalone player crashes</label>
-        <props:checkboxProperty name="${params.quit}" value="true"/>
-        <label for="${params.quit}">Quit the Unity Editor after other commands have finished executing</label>
+        <label for="${params.silentCrashes}">Do not display the error dialog when a standalone player crashes</label><br/>
+        <props:checkboxProperty name="${params.noQuit}"/>
+        <label for="${params.noQuit}">Do not quit the Unity Editor when execute method is complete</label>
     </td>
 </tr>
 </l:settingsGroup>

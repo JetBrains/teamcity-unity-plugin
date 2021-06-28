@@ -127,7 +127,7 @@ class UnityRunnerBuildServiceTest {
         // assert
         commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
-        commandString shouldBeEqual "-batchmode -projectPath /converted/project " +
+        commandString shouldBeEqual "-batchmode -quit -projectPath /converted/project " +
                 "-player /converted/player -nographics -logFile /converted/logs"
     }
 

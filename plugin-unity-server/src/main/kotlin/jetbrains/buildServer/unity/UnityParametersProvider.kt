@@ -41,8 +41,8 @@ class UnityParametersProvider {
     val noGraphics: String
         get() = UnityConstants.PARAM_NO_GRAPHICS
 
-    val quit: String
-        get() = UnityConstants.PARAM_QUIT
+    val noQuit: String
+        get() = UnityConstants.PARAM_NO_QUIT
 
     val arguments: String
         get() = UnityConstants.PARAM_ARGUMENTS

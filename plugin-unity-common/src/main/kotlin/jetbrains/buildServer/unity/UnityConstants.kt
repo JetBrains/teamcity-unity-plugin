@@ -35,7 +35,7 @@ object UnityConstants {
     const val PARAM_BUILD_PLAYER = "buildPlayer"
     const val PARAM_BUILD_PLAYER_PATH = "buildPlayerPath"
     const val PARAM_NO_GRAPHICS = "noGraphics"
-    const val PARAM_QUIT = "quit"
+    const val PARAM_NO_QUIT = "noQuit"
     const val PARAM_ARGUMENTS = "arguments"
     const val PARAM_UNITY_VERSION = "unityVersion"
     const val PARAM_UNITY_ROOT = "unityRoot"
