@@ -128,7 +128,7 @@ class UnityRunnerBuildServiceTest {
         commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
         commandString shouldBeEqual "-batchmode -projectPath /converted/project " +
-                "-player /converted/player -nographics -quit -logFile /converted/logs"
+                "-player /converted/player -nographics -logFile /converted/logs"
     }
 
     private inner class FakeUnityBuildFeature(
