@@ -37,9 +37,10 @@ class LinuxUnityDetector : UnityDetectorBase() {
             }
 
             LOG.debug("Looking for package manager in $path")
-            var version : String
+            var version : String? = null
             val packageVersions = File(path, "Editor/Data/PackageManager/Unity/PackageManager")
             if (packageVersions.exists()) {
+                LOG.debug("A package manager was found")
                 val versions = packageVersions.listFiles { file ->
                     file.isDirectory
                 } ?: return@forEach
@@ -48,11 +49,16 @@ class LinuxUnityDetector : UnityDetectorBase() {
                     LOG.warn("Multiple Unity versions found in directory $path")
                 }
 
-                version = versions.first().name
-            } else {
+                version = versions.firstOrNull()?.name
+                LOG.debug("Get version $version from package managers")
+            }
+
+            if (version == null) {
+                LOG.debug("A package manager was not found")
                 version = path.name
             }
 
+            LOG.debug("Version is $version")
             // Unity version looks like that: 2017.1.1f1
             // where suffix could be the following:
             // * a  - alpha
@@ -61,11 +67,13 @@ class LinuxUnityDetector : UnityDetectorBase() {
             // * rc - release candidate
             // * f  - final
             version = version
-                    .split("a", "b", "p", "rc", "f")
-                    .firstOrNull()
+                    ?.split("a", "b", "p", "rc", "f")
+                    ?.firstOrNull()
                     ?: return@forEach
 
+            LOG.debug("Version after splitting is $version")
             try {
+                LOG.debug("Reports version $version to $path")
                 yield(Semver(version, Semver.SemverType.LOOSE) to path)
             } catch (e: Exception) {
                 LOG.infoAndDebugDetails("Invalid Unity version $version in directory $path", e)
