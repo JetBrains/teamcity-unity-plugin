@@ -1,7 +1,7 @@
 import org.codehaus.groovy.runtime.GStringImpl
 
 /*
- * Copyright 2000-2020 JetBrains s.r.o.
+ * Copyright 2000-2021 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven { url "https://kotlin.bintray.com/kotlinx" }
+        jcenter()
     }
 
     test.useTestNG()
