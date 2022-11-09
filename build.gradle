@@ -26,7 +26,7 @@ ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-unity-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2018.1'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.10'
 }
 
 group = projectIds.group
