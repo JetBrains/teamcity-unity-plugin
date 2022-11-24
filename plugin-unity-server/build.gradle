@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-server' version "1.1.1"
+    id 'io.github.rodm.teamcity-server' version "1.5"
 }
 
 teamcity {
@@ -30,11 +30,11 @@ teamcity {
 dependencies {
     agent project(path: ':plugin-unity-agent', configuration: 'plugin')
 
-    compile project(':plugin-unity-common')
-    compile (project(':csharp-parser')) {
+    implementation project(':plugin-unity-common')
+    implementation (project(':csharp-parser')) {
         exclude group: 'com.ibm.icu'
     }
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
 }
 
