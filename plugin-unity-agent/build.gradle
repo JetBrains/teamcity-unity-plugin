@@ -21,8 +21,15 @@ plugins {
 
 teamcity {
     version = teamcityVersion
+
     agent {
         descriptor = project.file('teamcity-plugin.xml')
+    }
+
+    files {
+        into('tools') {
+            from('tools/pe-product-version-detector/binaries/PeProductVersionDetector.exe')
+        }
     }
 }
 

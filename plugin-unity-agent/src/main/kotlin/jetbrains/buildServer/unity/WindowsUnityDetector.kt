@@ -17,11 +17,11 @@
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
-import com.vdurmont.semver4j.Semver
-import jetbrains.buildServer.util.PEReader.PEUtil
 import java.io.File
 
-class WindowsUnityDetector : UnityDetectorBase() {
+class WindowsUnityDetector(
+    private val peProductVersionDetector: PEProductVersionDetector,
+) : UnityDetectorBase() {
 
     override val editorPath = "Editor"
     override val editorExecutable = "Unity.exe"
@@ -37,11 +37,10 @@ class WindowsUnityDetector : UnityDetectorBase() {
                 return@forEach
             }
 
-            val version = PEUtil.getProductVersion(executable)
-            if(version != null) {
-                yield(Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE) to path)
-            }
-            else {
+            val version = peProductVersionDetector.detect(executable)
+            if (version != null) {
+                yield(version to path)
+            } else {
                 LOG.debug("Cannot get version from $executable")
             }
         }
