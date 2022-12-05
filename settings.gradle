@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id == "kotlinx-serialization") {
-                useModule("org.jetbrains.kotlin:kotlin-serialization:${requested.version}")
-            }
-        }
-    }
-}
-
 rootProject.name='teamcity-unity-plugin'
 
 include 'csharp-parser'

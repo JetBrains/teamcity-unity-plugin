@@ -36,7 +36,7 @@ class UnityToolProvider(
 ) : AgentLifeCycleAdapter(),AgentParametersSupplier, ToolProvider {
 
     private val unityDetector = when {
-        SystemInfo.isWindows -> WindowsUnityDetector()
+        SystemInfo.isWindows -> WindowsUnityDetector(PEProductVersionDetector())
         SystemInfo.isMac -> MacOsUnityDetector()
         SystemInfo.isLinux -> LinuxUnityDetector()
         else -> null

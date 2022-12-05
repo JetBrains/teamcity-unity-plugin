@@ -6,8 +6,8 @@ repositories {
 }
 
 dependencies {
-    antlr "org.antlr:antlr4:4.7.2"
-    testCompile 'junit:junit:4.12'
+    antlr 'org.antlr:antlr4:4.11.1'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 /*
@@ -27,15 +27,19 @@ dependencies {
  */
 
 // generate java from the ANTLR g4 files
+def generatedSrc = file("./build/generated-src/antlr/main")
+
 generateGrammarSource {
     arguments = ['-visitor', '-package', 'org.jetbrains.unity', "-Xexact-output-dir"]
+    outputDirectory = generatedSrc
 }
 
 // mark the generated source as such for IntelliJ IDEA
-def generatedSrc = file("build/generated-src/antlr/main")
 sourceSets.main.java.srcDirs += generatedSrc
 idea {
     module {
         generatedSourceDirs += generatedSrc
     }
 }
+
+tasks.compileKotlin.dependsOn(generateGrammarSource)

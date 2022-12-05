@@ -15,27 +15,34 @@
  */
 
 plugins {
-    id 'com.github.rodm.teamcity-agent' version "1.1.1"
-    id 'kotlinx-serialization' version '1.3.20'
+    id 'io.github.rodm.teamcity-agent' version "1.5"
+    id 'org.jetbrains.kotlin.plugin.serialization' version '1.7.20'
 }
 
 teamcity {
     version = teamcityVersion
+
     agent {
         descriptor = project.file('teamcity-plugin.xml')
+    }
+
+    files {
+        into('tools') {
+            from('tools/pe-product-version-detector/binaries/PeProductVersionDetector.exe')
+        }
     }
 }
 
 dependencies {
-    compile project(':plugin-unity-common')
-    compile "org.jetbrains.kotlin:kotlin-stdlib"
-    compile "org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.10.0"
-    compile "com.vdurmont:semver4j:2.2.0"
-    compile "commons-configuration:commons-configuration:1.10"
-    compile "commons-io:commons-io:2.6"
+    implementation project(':plugin-unity-common')
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
+    implementation 'com.vdurmont:semver4j:3.1.0'
+    implementation "commons-configuration:commons-configuration:1.10"
+    implementation 'commons-io:commons-io:2.11.0'
     provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
-    testCompile 'org.testng:testng:6.8'
-    testCompile 'org.jmock:jmock:2.5.1'
+    testImplementation 'org.testng:testng:6.8'
+    testImplementation 'org.jmock:jmock:2.12.0'
 }
 
 agentPlugin.version = null

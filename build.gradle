@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.3.21"
+    id "org.jetbrains.kotlin.jvm" version "1.7.21"
 }
 
 repositories {
@@ -42,12 +42,11 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     test.useTestNG()
     jar.version = null
 
-    sourceCompatibility = "1.6"
-    targetCompatibility = "1.6"
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
