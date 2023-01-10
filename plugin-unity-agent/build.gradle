@@ -41,8 +41,9 @@ dependencies {
     implementation "commons-configuration:commons-configuration:1.10"
     implementation 'commons-io:commons-io:2.11.0'
     provided "org.jetbrains.teamcity.internal:agent:${teamcityVersion}"
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation "io.mockk:mockk:1.13.3"
     testImplementation 'org.testng:testng:6.8'
-    testImplementation 'org.jmock:jmock:2.12.0'
 }
 
 agentPlugin.version = null

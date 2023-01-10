@@ -22,4 +22,5 @@
     <bean class="jetbrains.buildServer.unity.UnityBuildSessionFactory"/>
     <bean class="jetbrains.buildServer.unity.UnityLicenseManager"/>
     <bean class="jetbrains.buildServer.unity.UnityToolProvider"/>
+    <bean class="jetbrains.buildServer.unity.util.SimpleCommandLineRunner"/>
 </beans>
