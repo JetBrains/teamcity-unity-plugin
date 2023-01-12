@@ -88,38 +88,38 @@ class UnityLicenseManagerTests {
         assertContains(parameterString, "-username ${fakeUnityBuildFeature.parameters[UnityConstants.PARAM_USERNAME]}")
         assertContains(parameterString, "-password ${fakeUnityBuildFeature.parameters[UnityConstants.PARAM_PASSWORD]}")
     }
-}
 
-class FakeUnityBuildFeature(
-    init: Map<String, String> = mapOf()
-) : AgentBuildFeature {
-    private val parameters: MutableMap<String, String>
-    init {
-        parameters = (mapOf(
-            UnityConstants.PARAM_ACTIVATE_LICENSE to true.toString(),
-            UnityConstants.PARAM_UNITY_VERSION to "2021.3.16",
-            UnityConstants.PARAM_SERIAL_NUMBER to "some-serial-number",
-            UnityConstants.PARAM_USERNAME to "some-username",
-            UnityConstants.PARAM_PASSWORD to "some-password",
-        ) + init).toMutableMap()
+    private class FakeUnityBuildFeature(
+        init: Map<String, String> = mapOf()
+    ) : AgentBuildFeature {
+        private val parameters: MutableMap<String, String>
+        init {
+            parameters = (mapOf(
+                UnityConstants.PARAM_ACTIVATE_LICENSE to true.toString(),
+                UnityConstants.PARAM_UNITY_VERSION to "2021.3.16",
+                UnityConstants.PARAM_SERIAL_NUMBER to "some-serial-number",
+                UnityConstants.PARAM_USERNAME to "some-username",
+                UnityConstants.PARAM_PASSWORD to "some-password",
+            ) + init).toMutableMap()
+        }
+        override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
+        override fun getParameters(): MutableMap<String, String> = parameters
     }
-    override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
-    override fun getParameters(): MutableMap<String, String> = parameters
-}
 
-fun generateBuildMock(
-    fakeUnityBuildFeature: FakeUnityBuildFeature,
-    tmpDir: Path
-) = mockk<AgentRunningBuild> {
-    every { getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(fakeUnityBuildFeature)
-    every { buildRunners } returns listOf(generateUnityBuildRunnerMock())
-    every { buildId } returns Random.nextLong(0, Long.MAX_VALUE)
-    every { agentTempDirectory } returns tmpDir.toFile()
-    every { buildLogger } returns mockk(relaxed = true)
-}
+    private fun generateBuildMock(
+        fakeUnityBuildFeature: FakeUnityBuildFeature,
+        tmpDir: Path
+    ) = mockk<AgentRunningBuild> {
+        every { getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(fakeUnityBuildFeature)
+        every { buildRunners } returns listOf(generateUnityBuildRunnerMock())
+        every { buildId } returns Random.nextLong(0, Long.MAX_VALUE)
+        every { agentTempDirectory } returns tmpDir.toFile()
+        every { buildLogger } returns mockk(relaxed = true)
+    }
 
-fun generateUnityBuildRunnerMock() = mockk<BuildRunnerSettings> {
-    every { isEnabled } returns true
-    every { runType } returns UnityConstants.RUNNER_TYPE
-    every { runnerParameters["plugin.docker.imageId"] } returns null
+    private fun generateUnityBuildRunnerMock() = mockk<BuildRunnerSettings> {
+        every { isEnabled } returns true
+        every { runType } returns UnityConstants.RUNNER_TYPE
+        every { runnerParameters["plugin.docker.imageId"] } returns null
+    }
 }

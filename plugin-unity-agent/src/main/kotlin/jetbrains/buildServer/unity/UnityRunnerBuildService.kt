@@ -40,7 +40,7 @@ import java.io.RandomAccessFile
  */
 class UnityRunnerBuildService(
         private val unityToolProvider: UnityToolProvider,
-        private val overridedRunnerParameters: Map<String, String>)
+        private val overriddenRunnerParameters: Map<String, String>)
     : BuildServiceAdapter() {
 
     private var unityTestsReportFile: File? = null
@@ -65,13 +65,8 @@ class UnityRunnerBuildService(
         listOf(UnityLoggingListener(logger, problemsProvider))
     }
 
-    private val parameters: Lazy<MutableMap<String, String>>
-        get() = lazy {
-        val parameters = mutableMapOf<String, String>()
-        parameters.putAll(runnerParameters)
-        parameters.putAll(overridedRunnerParameters)
-        parameters
-    }
+    private val parameters: Lazy<Map<String, String>>
+        get() = lazy { runnerParameters + overriddenRunnerParameters }
 
     private val verbosity: Verbosity by lazy {
         parameters.value[UnityConstants.PARAM_VERBOSITY]?.let {
@@ -256,14 +251,14 @@ class UnityRunnerBuildService(
         val verbosityArg = verbosityArgument
         arguments.add(verbosityArg)
 
-        if (!SystemInfo.isWindows && logFilePath.isNullOrEmpty()) {
-            return
-        }
-
         // On Windows unity could not write log into stdout, so we need to read a log file contents:
         // https://issuetracker.unity3d.com/issues/command-line-logfile-with-no-parameters-outputs-to-screen-on-os-x-but-not-on-windows
         // Was resolved in 2019.1 but only for -logFile with -nographics option
-        if (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS) && logFilePath.isNullOrEmpty()) {
+        fun currentSetupSupportsConsoleOutput() = !SystemInfo.isWindows
+                || (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS))
+
+        if (logFilePath.isNullOrEmpty() && currentSetupSupportsConsoleOutput()) {
+            arguments.add("-")
             return
         }
 
@@ -274,10 +269,10 @@ class UnityRunnerBuildService(
                     build.agentTempDirectory
             )
         } else {
-            File(logFilePath)
+            val file = File(logFilePath)
+            trimLog(file)
+            file
         }
-
-        trimLog(logFile)
 
         arguments.add(logFile.absolutePath)
 
@@ -330,13 +325,13 @@ class UnityRunnerBuildService(
         fun createAdapters(unityToolProvider: UnityToolProvider, context: BuildRunnerContext) =
                 getParameterVariants(context)
                         .ifEmpty {
-                            sequenceOf(emptyMap<String, String>())
+                            sequenceOf(emptyMap())
                         }
                         .map {
                             UnityRunnerBuildService(unityToolProvider, it)
                         }
 
-        private fun getParameterVariants(context: BuildRunnerContext) = sequence<Map<String, String>> {
+        private fun getParameterVariants(context: BuildRunnerContext) = sequence {
             if("all".equals(context.runnerParameters[PARAM_TEST_PLATFORM], true)) {
                 yield(mapOf(PARAM_TEST_PLATFORM to "editmode"))
                 yield(mapOf(PARAM_TEST_PLATFORM to "playmode"))
