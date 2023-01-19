@@ -99,23 +99,9 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return builder.toString().trim()
     }
 
-    override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
-        val requirements = mutableListOf<Requirement>()
-        parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
-            if (it.isNotBlank()) {
-                val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + escapeRegex(it.trim()) + ".*"
-                requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
-            }
-        }
-        if (requirements.isEmpty()) {
-            val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + ".+"
-            requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
-        }
-        return requirements
-    }
-
-    private fun escapeRegex(value: String) =
-        if(value.contains('%')) value else value.replace(".", "\\.")
+    override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> = listOf(
+            Requirements.Unity.create(parameters[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
+    )
 
     private fun StringBuilder.addParameter(parameter: String) {
         if (this.isNotEmpty()) {

@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.unity
 
+import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.serverSide.BuildFeature
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 
@@ -45,4 +46,8 @@ class UnityBuildFeature(descriptor: PluginDescriptor) : BuildFeature() {
         }
         return builder.toString().trim()
     }
+
+    override fun getRequirements(params: MutableMap<String, String>?): MutableCollection<Requirement> = mutableListOf(
+            Requirements.Unity.create(params.orEmpty()[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
+    )
 }

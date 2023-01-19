@@ -36,6 +36,8 @@ dependencies {
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation "io.mockk:mockk:1.13.3"
 }
 
 serverPlugin.version = null
