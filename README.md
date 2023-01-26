@@ -26,6 +26,8 @@ Also it allows to configure **Unity cache server** address in one place to use t
 
 You can [download the plugin](https://plugins.jetbrains.com/plugin/11453-unity-support) and install it as [an additional TeamCity plugin](https://confluence.jetbrains.com/display/TCDL/Installing+Additional+Plugins).
 
+**Note**: After installation, you need to restart TeamCity server by going to Administration => Diagnostics => Restart Server
+
 # Compatibility
 
 The plugin is compatible with [TeamCity](https://www.jetbrains.com/teamcity/download/) 2018.1+ and was verified to work with Unity 2017+.

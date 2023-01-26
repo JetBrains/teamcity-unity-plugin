@@ -18,14 +18,14 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.util.SystemInfo
 import org.testng.SkipException
-import org.testng.annotations.Test
+import kotlin.test.Test
 
 class UnityVersionsDetectorTest {
 
     @Test
     fun testFindInstallations() {
         val detector = when {
-            SystemInfo.isWindows -> WindowsUnityDetector()
+            SystemInfo.isWindows -> WindowsUnityDetector(PEProductVersionDetector())
             SystemInfo.isMac -> MacOsUnityDetector()
             SystemInfo.isLinux -> LinuxUnityDetector()
             else -> null

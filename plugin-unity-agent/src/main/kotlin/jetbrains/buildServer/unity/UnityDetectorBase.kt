@@ -21,9 +21,9 @@ import jetbrains.buildServer.unity.unityhub.Editor
 import jetbrains.buildServer.unity.unityhub.HubInfo
 import jetbrains.buildServer.util.FileUtil
 import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.internal.StringSerializer
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.map
 import java.io.File
 
 abstract class UnityDetectorBase : UnityDetector {
@@ -162,7 +162,7 @@ abstract class UnityDetectorBase : UnityDetector {
         if (!file.exists()) return null
         LOG.debug("Reading Unity Hub configuration file $file")
         return try {
-            parser.parse(deserializer, file.readText())
+            parser.decodeFromString(deserializer, file.readText())
         } catch (e: Exception) {
             LOG.debug("Unable to parse file $file", e)
             null
@@ -174,9 +174,9 @@ abstract class UnityDetectorBase : UnityDetector {
         directory.listFiles { file ->
             file.isDirectory
         }?.let { directories ->
-            for (directory in directories) {
-                LOG.info("Found: $directory")
-                yield(directory)
+            for (childDirectory in directories) {
+                LOG.info("Found: $childDirectory")
+                yield(childDirectory)
             }
             yieldAll(directories.asSequence())
         }
@@ -184,7 +184,12 @@ abstract class UnityDetectorBase : UnityDetector {
 
     companion object {
         private val LOG = Logger.getInstance(UnityDetectorBase::class.java.name)
-        private val parser = Json.nonstrict
-        private val mapSerializer = (StringSerializer to Editor.serializer()).map
+        private val parser = Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+            useArrayPolymorphism = true
+            encodeDefaults = true
+        }
+        private val mapSerializer = MapSerializer(String.serializer(), Editor.serializer())
     }
 }

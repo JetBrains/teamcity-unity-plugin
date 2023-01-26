@@ -1,5 +1,3 @@
-import org.codehaus.groovy.runtime.GStringImpl
-
 /*
  * Copyright 2000-2021 JetBrains s.r.o.
  *
@@ -17,8 +15,7 @@ import org.codehaus.groovy.runtime.GStringImpl
  */
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.3.21"
-    id "com.github.rodm.teamcity-server" version "1.3" apply false
+    id "org.jetbrains.kotlin.jvm" version "1.7.21"
 }
 
 repositories {
@@ -29,7 +26,7 @@ ext {
     def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-unity-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2018.1'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.10'
     teamcityBaseDir = project.hasProperty('teamcityBaseDir') ? property('teamcityBaseDir') : rootDir.absolutePath + '/.teamcity'
 }
 
@@ -46,12 +43,11 @@ subprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
     }
 
     test.useTestNG()
     jar.version = null
 
-    sourceCompatibility = "1.6"
-    targetCompatibility = "1.6"
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }

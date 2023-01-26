@@ -20,8 +20,8 @@ import com.intellij.openapi.diagnostic.Logger
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
-import org.jetbrains.unity.CSharpParser
 import org.jetbrains.unity.CSharpLexer
+import org.jetbrains.unity.CSharpParser
 import java.io.InputStream
 
 object CSharpFileParser {

@@ -19,19 +19,24 @@ package jetbrains.buildServer.unity
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
 import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.agent.*
+import jetbrains.buildServer.agent.config.AgentParametersSupplier
 import jetbrains.buildServer.util.EventDispatcher
 import java.io.File
 
 /**
  * Determines tool location.
  */
-class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
-                        events: EventDispatcher<AgentLifeCycleListener>)
-    : AgentLifeCycleAdapter(), ToolProvider {
+class UnityToolProvider(
+    private val agentConfiguration: BuildAgentConfiguration,
+    toolsRegistry: ToolProvidersRegistry,
+    extensionHolder: ExtensionHolder,
+    events: EventDispatcher<AgentLifeCycleListener>
+) : AgentLifeCycleAdapter(), AgentParametersSupplier, ToolProvider {
 
     private val unityDetector = when {
-        SystemInfo.isWindows -> WindowsUnityDetector()
+        SystemInfo.isWindows -> WindowsUnityDetector(PEProductVersionDetector())
         SystemInfo.isMac -> MacOsUnityDetector()
         SystemInfo.isLinux -> LinuxUnityDetector()
         else -> null
@@ -42,32 +47,41 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
     init {
         toolsRegistry.registerToolProvider(this)
         events.addListener(this)
+        extensionHolder.registerExtension(AgentParametersSupplier::class.java, this::class.java.simpleName, this)
     }
 
-    override fun afterAgentConfigurationLoaded(agent: BuildAgent) {
+    override fun agentStarted(agent: BuildAgent) {
+        // If unityVersions is empty, it may mean the agent was initialized from a state cache
+        if (unityVersions.isNotEmpty()){
+            return
+        }
+
+        val unityToolsParameters = agentConfiguration.configurationParameters
+            .filter { entry -> entry.key.startsWith(UnityConstants.UNITY_CONFIG_NAME) }
+            .map { entry ->
+                val version = entry.key.substring(UnityConstants.UNITY_CONFIG_NAME.length)
+                Semver(version) to entry.value
+            }.toMap()
+
+        unityVersions.putAll(unityToolsParameters)
+    }
+
+    override fun getParameters(): MutableMap<String, String> {
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
 
-        unityDetector?.let { detector ->
+        val detectedUnityVersions = unityDetector?.findInstallations()?.map { versionPair ->
+            LOG.info("Found Unity ${versionPair.first} at ${versionPair.second.absolutePath}")
+            versionPair.first to versionPair.second.absolutePath
+        }?.toMap() ?: emptyMap()
 
-            detector.findInstallations().let { versions ->
-                unityVersions.putAll(versions.sortedBy { it.first }.map {
-                    it.first to it.second.absolutePath
-                }.map {
-                    LOG.info("${it.first} to ${it.second}")
-                    it
-                }.toMap())
-            }
-        }
+        unityVersions.putAll(detectedUnityVersions)
 
-        // Report all Unity versions
-        unityVersions.forEach { (version, path) ->
-            LOG.info("Found Unity $version at $path")
-            agent.configuration.apply {
-                val name = "${UnityConstants.UNITY_CONFIG_NAME}$version"
-                addConfigurationParameter(name, path)
-            }
-        }
+        return unityVersions.map {
+            getParameterName(it.key) to it.value
+        }.toMap().toMutableMap()
     }
+
+    private fun getParameterName(version: Semver) = "${UnityConstants.UNITY_CONFIG_NAME}$version"
 
     override fun supports(toolName: String): Boolean {
         return UnityConstants.RUNNER_TYPE.equals(toolName, true)
@@ -77,15 +91,19 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
         return getUnity(toolName, mapOf()).second
     }
 
-    override fun getPath(toolName: String,
-                         build: AgentRunningBuild,
-                         runner: BuildRunnerContext): String {
+    override fun getPath(
+        toolName: String,
+        build: AgentRunningBuild,
+        runner: BuildRunnerContext
+    ): String {
         return getUnity(toolName, build, runner).second
     }
 
-    fun getUnity(toolName: String,
-                 build: AgentRunningBuild,
-                 runner: BuildRunnerContext): Pair<Semver, String> {
+    fun getUnity(
+        toolName: String,
+        build: AgentRunningBuild,
+        runner: BuildRunnerContext
+    ): Pair<Semver, String> {
         if (runner.isVirtualContext) {
             return Semver("2019.1.0") to UnityConstants.RUNNER_TYPE
         }
@@ -135,9 +153,11 @@ class UnityToolProvider(toolsRegistry: ToolProvidersRegistry,
                     it.key >= unityVersion && it.key < upperVersion
                 }?.toPair()
             }
-        } ?: throw ToolCannotBeFoundException("""
+        } ?: throw ToolCannotBeFoundException(
+            """
                 Unable to locate tool $toolName $unityVersion in system. Please make sure to specify UNITY_PATH environment variable
-                """.trimIndent())
+                """.trimIndent()
+        )
 
         return version to unityDetector.getEditorPath(File(path)).absolutePath
     }

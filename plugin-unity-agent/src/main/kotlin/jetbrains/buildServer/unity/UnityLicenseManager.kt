@@ -18,27 +18,29 @@ package jetbrains.buildServer.unity
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.SimpleCommandLineProcessRunner
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
 import jetbrains.buildServer.messages.DefaultMessagesInfo
+import jetbrains.buildServer.unity.util.CommandLineRunner
 import java.io.File
 
-class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
-                          eventDispatcher: AgentEventDispatcher)
-    : AgentLifeCycleAdapter() {
+class UnityLicenseManager(
+    private val unityToolProvider: UnityToolProvider,
+    private val commandLineRunner: CommandLineRunner,
+    eventDispatcher: AgentEventDispatcher
+) : AgentLifeCycleAdapter() {
 
-    private var myActivateUnityLicensePath: String? = null
+    private var unityEditorPath: String? = null
 
     init {
         eventDispatcher.addListener(this)
     }
 
     override fun buildStarted(build: AgentRunningBuild) {
-        myActivateUnityLicensePath = null
+        unityEditorPath = null
 
         val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull() ?: return
-        if (!build.buildRunners.any { isUnityRunner(it) }) return
+        if (!build.buildRunners.any(::isUnityRunner)) return
 
         val parameters = feature.parameters
         parameters[UnityConstants.PARAM_ACTIVATE_LICENSE]?.let activate@{ activateLicense ->
@@ -48,47 +50,60 @@ class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
 
             // Activate Unity license
             try {
-                myActivateUnityLicensePath = myUnityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, parameters).second
+                unityEditorPath = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, parameters).second
             } catch (e: ToolCannotBeFoundException) {
                 build.buildLogger.warning(e.message)
                 return
             }
 
-            val arguments = mutableListOf("-quit", "-batchmode", "-nographics")
-            parameters[UnityConstants.PARAM_SERIAL_NUMBER]?.let {
-                arguments.addAll(listOf("-serial", it.trim()))
-            }
-            parameters[UnityConstants.PARAM_USERNAME]?.let {
-                arguments.addAll(listOf("-username", it.trim()))
-            }
-            parameters[UnityConstants.PARAM_PASSWORD]?.let {
-                arguments.addAll(listOf("-password", it.trim()))
-            }
+            val arguments = listOf("-quit", "-batchmode", "-nographics",
+                *feature.produceArgsForEditor(sequenceOf(
+                    Pair("-serial", UnityConstants.PARAM_SERIAL_NUMBER),
+                    Pair("-username", UnityConstants.PARAM_USERNAME),
+                    Pair("-password", UnityConstants.PARAM_PASSWORD)
+                ))
+            )
 
             executeCommandLine("Activate Unity license", arguments, build)
         }
     }
 
     override fun buildFinished(build: AgentRunningBuild, buildStatus: BuildFinishedStatus) {
-        if (myActivateUnityLicensePath.isNullOrEmpty()) {
+        if (unityEditorPath.isNullOrEmpty()) {
             return
         }
 
-        val arguments = listOf("-quit", "-batchmode", "-nographics", "-returnlicense")
+        val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull() ?: return
+        val arguments = listOf("-quit", "-batchmode", "-nographics", "-returnlicense",
+            *feature.produceArgsForEditor(sequenceOf(
+                Pair("-username", UnityConstants.PARAM_USERNAME),
+                Pair("-password", UnityConstants.PARAM_PASSWORD)
+            ))
+        )
+
         executeCommandLine("Return Unity license", arguments, build)
     }
 
+    private fun AgentBuildFeature.produceArgsForEditor(args: Sequence<Pair<String, String>>) = sequence {
+        args.forEach { (editorArg, featureParameter) ->
+            this@produceArgsForEditor.parameters[featureParameter]?.let {
+                yield(editorArg)
+                yield(it.trim())
+            }
+        }
+    }.toList().toTypedArray()
+
     private fun executeCommandLine(command: String, arguments: List<String>, build: AgentRunningBuild) {
         val commandLine = GeneralCommandLine()
-        commandLine.exePath = myActivateUnityLicensePath
+        commandLine.exePath = unityEditorPath
         commandLine.addParameters(arguments)
-        val logFile = getLogFileName(build)
+        val logFile = generateLogFile(build)
         commandLine.addParameters("-logFile", logFile.absolutePath)
 
         underLogBlock(command, build.buildLogger, false) {
             build.buildLogger.message("Starting: $commandLine")
 
-            val result = SimpleCommandLineProcessRunner.runCommand(commandLine, null)
+            val result = commandLineRunner.run(commandLine)
             if (result.exitCode != 0) {
                 build.buildLogger.warning(
                         "Process exited with code ${result.exitCode}. Unity log:\n" + logFile.readText()
@@ -118,13 +133,11 @@ class UnityLicenseManager(private val myUnityToolProvider: UnityToolProvider,
         }
     }
 
-    private fun getLogFileName(build: AgentRunningBuild): File {
-        return File.createTempFile(
-                "unityBuildLog-",
-                "-${build.buildId}.txt",
-                build.agentTempDirectory
-        )
-    }
+    private fun generateLogFile(build: AgentRunningBuild): File = File.createTempFile(
+        "unityBuildLog-",
+        "-${build.buildId}.txt",
+        build.agentTempDirectory
+    )
 
     companion object {
         private val LOG = Logger.getInstance(UnityLicenseManager::class.java.name)

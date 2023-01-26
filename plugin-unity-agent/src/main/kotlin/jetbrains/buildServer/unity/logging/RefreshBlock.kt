@@ -16,6 +16,8 @@
 
 package jetbrains.buildServer.unity.logging
 
+import java.util.*
+
 class RefreshBlock : LogBlock {
 
     override val name = blockName
@@ -28,7 +30,8 @@ class RefreshBlock : LogBlock {
 
     override fun isBlockEnd(text: String) = text.isEmpty() || blockEnd.containsMatchIn(text)
 
-    override fun getText(text: String) = text.removePrefix(prefix).capitalize()
+    override fun getText(text: String) = text.removePrefix(prefix)
+        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
     companion object {
         private const val blockName = "Refresh"
