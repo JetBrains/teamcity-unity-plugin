@@ -71,9 +71,9 @@ This plugin supports optionally installing Unity as a TeamCity [agent tool](http
 To create a tool zip file for Unity, do the following:
 1. Locally install (or extract) the desired version of Unity along with any/all desired Target Support (Android, iOS, Xbox, etc.)
 2. Zip the `Editor` folder into an archive named `Unity-<version>.zip` such as `Unity-2018.4.9f1.zip`
-    It should look like this:
+    It should look like this (for Windows):
     ```
-    📁 Unity_2018.4.9f1.zip
+    📁 Unity-2018.4.9f1.zip
     |- 📂 Editor
     │  |- 📂 BugReporter
     │  |- 📂 Data
@@ -81,6 +81,7 @@ To create a tool zip file for Unity, do the following:
     │  |- 📄 Unity.exe
     │  |- ...
     ```
+   Note that the archive structure may vary for different platforms. For example, on MacOS, the top-level folder inside the archive should be `Unity.app`.
 3. Upload as a Unity Tool on the Administration > Tools page on TeamCity
 
 ## Common problems

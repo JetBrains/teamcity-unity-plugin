@@ -108,7 +108,7 @@ class UnityToolProvider(
             return Semver("2019.1.0") to UnityConstants.RUNNER_TYPE
         }
 
-        val parameters:Map<String?, String?> =
+        val parameters: Map<String?, String?> =
                 if (!runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION].isNullOrEmpty() ||
                     !runner.runnerParameters[UnityConstants.PARAM_UNITY_ROOT].isNullOrEmpty()) {
                     runner.runnerParameters

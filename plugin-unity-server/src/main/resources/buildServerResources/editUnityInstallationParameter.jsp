@@ -1,7 +1,6 @@
 <%@ taglib prefix="props" tagdir="/WEB-INF/tags/props" %>
 <%@ taglib prefix="l" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="bs" tagdir="/WEB-INF/tags" %>
 <%--
   ~ Copyright 2020 Aaron Zurawski
   ~
@@ -53,7 +52,7 @@
             var $manualRow = $j(BS.Util.escapeId('unity-manual-settings'));
 
             var detectionMode = $j(detectionModeId).val();
-            if(detectionMode == undefined) {
+            if(detectionMode === undefined) {
                 detectionMode = '';
             }
 

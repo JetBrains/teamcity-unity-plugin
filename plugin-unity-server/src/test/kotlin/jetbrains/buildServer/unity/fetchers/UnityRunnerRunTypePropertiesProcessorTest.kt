@@ -70,11 +70,8 @@ class UnityRunnerRunTypePropertiesProcessorTest {
 
         Assert.assertEquals(invalidProperties.count(), expectedInvalidProperties.count())
 
-        val invalidPropIter = invalidProperties.iterator()
-        val expectedInvalidPropIter = expectedInvalidProperties.iterator()
-
-        while (invalidPropIter.hasNext() && expectedInvalidPropIter.hasNext()) {
-           Assert.assertEquals(invalidPropIter.next().propertyName, expectedInvalidPropIter.next().propertyName)
+        for ((actual, expected) in invalidProperties.zip(expectedInvalidProperties)) {
+            Assert.assertEquals(actual.propertyName, expected.propertyName)
         }
     }
 }

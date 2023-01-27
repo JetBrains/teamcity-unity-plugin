@@ -32,9 +32,12 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
             return GetPackageVersionResult.error("Package file is invalid")
         }
 
-        val matchResult = Regex("${type.type}-(.+)").find(toolPackage.nameWithoutExtension)
+        val prefix = "${type.type}-"
+        if (!toolPackage.nameWithoutExtension.startsWith(prefix)) {
+            return GetPackageVersionResult.error("Could not determine ${type.type} version based on its package file name ${toolPackage.name}.")
+        }
 
-        val version = matchResult!!.groups[1]!!.value
+        val version = toolPackage.nameWithoutExtension.substring(prefix.length)
         if(version.isEmpty()) {
             return GetPackageVersionResult.error("Could not determine ${type.type} version based on its package file name ${toolPackage.name}.")
         }
@@ -47,8 +50,10 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
     }
 
     private fun createPackageFilter() =
-            FileFilter { packageFile ->
-                packageFile.isFile && packageFile.nameWithoutExtension.startsWith(type.type, true) && UnityConstants.UNITY_TOOL_EXTENSION.equals(packageFile.extension, true)
+            FileFilter {
+                it.isFile
+                        && it.nameWithoutExtension.startsWith(type.type, true)
+                        && UnityConstants.UNITY_TOOL_EXTENSION.equals(it.extension, true)
             }
 
     companion object {
