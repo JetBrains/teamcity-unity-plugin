@@ -35,7 +35,17 @@ class UnityRunnerRunTypeTest {
         return arrayOf(
                 arrayOf<Any?>(
                         emptyMap<String, String>(),
+                        emptyList<Requirement>()
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                                UnityConstants.PARAM_UNITY_VERSION to ""),
                         listOf(Requirement("Exists=>unity\\.path\\..+", null, RequirementType.EXISTS))
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                                UnityConstants.PARAM_UNITY_ROOT to "C:\\My\\Custom\\Unity"),
+                        emptyList<Requirement>()
                 ),
                 arrayOf<Any?>(
                         mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
@@ -44,6 +54,25 @@ class UnityRunnerRunTypeTest {
                 arrayOf<Any?>(
                         mapOf(UnityConstants.PARAM_UNITY_VERSION to "%SOME_VAR.1%"),
                         listOf(Requirement("Exists=>unity\\.path\\.%SOME_VAR.1%.*", null, RequirementType.EXISTS))
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
+                        emptyList<Requirement>()
+                ),
+                arrayOf<Any?>(
+                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
+                        listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
+                )
+        )
+    }
+
+    @DataProvider
+    fun runnerDefaultData(): Array<Array<Any?>> {
+        return arrayOf(
+                arrayOf<Any?>(
+                    mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO)
                 )
         )
     }
@@ -64,5 +93,23 @@ class UnityRunnerRunTypeTest {
 
         val requirements = runType.getRunnerSpecificRequirements(parameters)
         Assert.assertEquals(requirements, expectedRequirements)
+    }
+
+    @Test(dataProvider = "runnerDefaultData")
+    fun testDefaultParameters(expectedParameters: Map<String, String>) {
+        val m = Mockery()
+        val pluginDescriptor = m.mock(PluginDescriptor::class.java)
+        val runTypeRegistry = m.mock(RunTypeRegistry::class.java)
+
+        m.checking(object : Expectations() {
+            init {
+                oneOf(runTypeRegistry).registerRunType(with(any(UnityRunnerRunType::class.java)))
+            }
+        })
+
+        val runType = UnityRunnerRunType(pluginDescriptor, runTypeRegistry)
+
+        val defaultParameters = runType.defaultRunnerProperties
+        Assert.assertEquals(defaultParameters, expectedParameters)
     }
 }

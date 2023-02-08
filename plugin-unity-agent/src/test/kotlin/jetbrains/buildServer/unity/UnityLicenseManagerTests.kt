@@ -17,6 +17,7 @@
 package jetbrains.buildServer.unity
 
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.vdurmont.semver4j.Semver
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -37,7 +38,7 @@ class UnityLicenseManagerTests {
     private var tmpDir: Path? = null
 
     private val toolProviderMock = mockk<UnityToolProvider> {
-        every { getUnityPath(any(), any()) } returns editorPath
+        every { getUnity(any(), any()) } returns Pair(Semver("2022", Semver.SemverType.LOOSE), editorPath)
     }
     private val commandLineRunnerMock = mockk<CommandLineRunner>()
     private val eventDispatcherMock = mockk<AgentEventDispatcher> {

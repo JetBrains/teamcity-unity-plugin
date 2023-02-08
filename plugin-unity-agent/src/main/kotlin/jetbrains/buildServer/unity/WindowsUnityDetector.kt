@@ -17,6 +17,7 @@
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
+import com.vdurmont.semver4j.Semver
 import java.io.File
 
 class WindowsUnityDetector(
@@ -29,20 +30,8 @@ class WindowsUnityDetector(
 
     override fun findInstallations() = sequence {
         getHintPaths().distinct().forEach { path ->
-            LOG.debug("Looking for Unity installation in $path")
-
-            val executable = getEditorPath(path)
-            if (!executable.exists()) {
-                LOG.debug("Cannot find $executable")
-                return@forEach
-            }
-
-            val version = peProductVersionDetector.detect(executable)
-            if (version != null) {
-                yield(version to path)
-            } else {
-                LOG.debug("Cannot get version from $executable")
-            }
+            val version = getVersionFromInstall(path) ?: return@forEach
+            yield(version to path)
         }
     }
 
@@ -61,6 +50,21 @@ class WindowsUnityDetector(
         }
     }
 
+    override fun getVersionFromInstall(editorRoot: File): Semver? {
+        LOG.debug("Looking for Unity installation in $editorRoot")
+
+        val executable = getEditorPath(editorRoot)
+        if(!executable.exists()) {
+            LOG.debug("Cannot find $executable")
+            return null
+        }
+
+        val version = peProductVersionDetector.detect(executable)
+        if (version == null) {
+            LOG.debug("Cannot get version from $executable")
+        }
+        return version
+    }
     companion object {
         private val LOG = Logger.getInstance(WindowsUnityDetector::class.java.name)
     }

@@ -88,4 +88,13 @@ class UnityParametersProvider {
 
     val verbosityValues: List<Verbosity>
         get() = Verbosity.values().toList()
+
+    val detectionMode: String
+        get() = UnityConstants.PARAM_DETECTION_MODE
+
+    val detectionModeValues: List<DetectionMode>
+        get() = DetectionMode.values().toList()
+
+    val unityRoot: String
+        get() = UnityConstants.PARAM_UNITY_ROOT
 }

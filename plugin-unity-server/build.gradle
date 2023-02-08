@@ -16,14 +16,25 @@
 
 plugins {
     id 'io.github.rodm.teamcity-server' version "1.5"
+    id 'io.github.rodm.teamcity-environments' version "1.5"
 }
 
 teamcity {
-    version = teamcityVersion
+    setVersion(teamcityVersion)
 
     server {
         descriptor = project.file('teamcity-plugin.xml')
         tokens = [Plugin_Version: project.version]
+    }
+
+    environments {
+        downloadsDir = "$teamcityBaseDir/downloads"
+        baseHomeDir = file("$teamcityBaseDir/servers")
+        baseDataDir = file("$teamcityBaseDir/data")
+
+        "teamcity" {
+            version = teamcityVersion
+        }
     }
 }
 

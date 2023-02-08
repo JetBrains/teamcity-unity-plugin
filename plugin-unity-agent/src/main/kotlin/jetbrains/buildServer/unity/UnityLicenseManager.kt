@@ -18,7 +18,6 @@ package jetbrains.buildServer.unity
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.Logger
-import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
 import jetbrains.buildServer.messages.DefaultMessagesInfo
@@ -50,13 +49,10 @@ class UnityLicenseManager(
             }
 
             // Activate Unity license
-            val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
-                Semver(it, Semver.SemverType.LOOSE)
-            }
             try {
-                unityEditorPath = unityToolProvider.getUnityPath(UnityConstants.RUNNER_TYPE, unityVersion)
-            } catch (e: Exception) {
-                build.buildLogger.warning("Failed to find Unity version ${unityVersion ?: ""}")
+                unityEditorPath = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, parameters).second
+            } catch (e: ToolCannotBeFoundException) {
+                build.buildLogger.warning(e.message)
                 return
             }
 

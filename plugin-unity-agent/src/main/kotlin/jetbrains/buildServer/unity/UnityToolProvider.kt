@@ -33,7 +33,7 @@ class UnityToolProvider(
     toolsRegistry: ToolProvidersRegistry,
     extensionHolder: ExtensionHolder,
     events: EventDispatcher<AgentLifeCycleListener>
-) : AgentLifeCycleAdapter(),AgentParametersSupplier, ToolProvider {
+) : AgentLifeCycleAdapter(), AgentParametersSupplier, ToolProvider {
 
     private val unityDetector = when {
         SystemInfo.isWindows -> WindowsUnityDetector(PEProductVersionDetector())
@@ -69,14 +69,10 @@ class UnityToolProvider(
     override fun getParameters(): MutableMap<String, String> {
         LOG.info("Locating ${UnityConstants.RUNNER_DISPLAY_NAME} tools")
 
-        val detectedUnityVersions = unityDetector?.let { detector ->
-            detector.registerAdditionalHintPath(agentConfiguration.agentToolsDirectory)
-
-            detector.findInstallations().map { versionPair ->
-                LOG.info("Found Unity ${versionPair.first} at ${versionPair.second.absolutePath}")
-                versionPair.first to versionPair.second.absolutePath
-            }.toMap()
-        } ?: emptyMap()
+        val detectedUnityVersions = unityDetector?.findInstallations()?.map { versionPair ->
+            LOG.info("Found Unity ${versionPair.first} at ${versionPair.second.absolutePath}")
+            versionPair.first to versionPair.second.absolutePath
+        }?.toMap() ?: emptyMap()
 
         unityVersions.putAll(detectedUnityVersions)
 
@@ -92,7 +88,7 @@ class UnityToolProvider(
     }
 
     override fun getPath(toolName: String): String {
-        return getUnityPath(toolName, null)
+        return getUnity(toolName, mapOf()).second
     }
 
     override fun getPath(
@@ -100,24 +96,7 @@ class UnityToolProvider(
         build: AgentRunningBuild,
         runner: BuildRunnerContext
     ): String {
-        if (runner.isVirtualContext) {
-            return UnityConstants.RUNNER_TYPE
-        }
-
-        val unityVersion = getUnityVersion(runner, build)
-        return getUnityPath(toolName, unityVersion)
-    }
-
-    fun getUnityPath(toolName: String, unityVersion: Semver?): String {
-        if (!supports(toolName)) {
-            throw ToolCannotBeFoundException("Unsupported tool $toolName")
-        }
-
-        if (unityDetector == null) {
-            throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
-        }
-
-        return File(getUnity(toolName, unityVersion).second).absolutePath
+        return getUnity(toolName, build, runner).second
     }
 
     fun getUnity(
@@ -129,11 +108,18 @@ class UnityToolProvider(
             return Semver("2019.1.0") to UnityConstants.RUNNER_TYPE
         }
 
-        val unityVersion = getUnityVersion(runner, build)
-        return getUnity(toolName, unityVersion)
+        val parameters: Map<String?, String?> =
+                if (!runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION].isNullOrEmpty() ||
+                    !runner.runnerParameters[UnityConstants.PARAM_UNITY_ROOT].isNullOrEmpty()) {
+                    runner.runnerParameters
+                } else {
+                    val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()
+                    feature?.parameters ?: mapOf()
+                }
+        return getUnity(toolName, parameters)
     }
 
-    private fun getUnity(toolName: String, unityVersion: Semver?): Pair<Semver, String> {
+    fun getUnity(toolName: String, parameters: Map<String?, String?>): Pair<Semver, String> {
         if (!supports(toolName)) {
             throw ToolCannotBeFoundException("Unsupported tool $toolName")
         }
@@ -141,6 +127,19 @@ class UnityToolProvider(
         if (unityDetector == null) {
             throw ToolCannotBeFoundException(UnityConstants.RUNNER_TYPE)
         }
+
+        // Path has been specified by Tool dropdown or provided explicitly
+        val editorPath = parameters[UnityConstants.PARAM_UNITY_ROOT]
+        if(!editorPath.isNullOrEmpty()) {
+            val unityVersion = unityDetector.getVersionFromInstall(File(editorPath))
+                    ?: throw ToolCannotBeFoundException("""
+                        Unable to locate tool $toolName in system. Please make sure correct Unity binary tool is installed
+                        """.trimIndent())
+            return unityVersion to unityDetector.getEditorPath(File(editorPath)).absolutePath
+        }
+
+        // Path is to be discovered by UNITY_VERSION
+        val unityVersion = getUnityVersion(parameters)
 
         val (version, path) = if (unityVersion == null) {
             unityVersions.entries.lastOrNull()?.toPair()
@@ -168,17 +167,9 @@ class UnityToolProvider(
         else -> version.toStrict().nextMinor()
     }
 
-    private fun getUnityVersion(runner: BuildRunnerContext, build: AgentRunningBuild): Semver? {
-        var unityVersion = runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
-        if (unityVersion.isNullOrEmpty()) {
-            build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
-                unityVersion = feature.parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim()
-            }
-        }
 
-        if (unityVersion == null) {
-            return null
-        }
+    private fun getUnityVersion(parameters: Map<String?, String?>): Semver? {
+        val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim() ?: return null
 
         return Semver(unityVersion, Semver.SemverType.LOOSE)
     }

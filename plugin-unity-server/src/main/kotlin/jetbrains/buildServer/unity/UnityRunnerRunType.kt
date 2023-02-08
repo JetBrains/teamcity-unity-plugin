@@ -17,8 +17,6 @@
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.requirements.Requirement
-import jetbrains.buildServer.requirements.RequirementQualifier
-import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
@@ -54,7 +52,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getRunnerPropertiesProcessor(): PropertiesProcessor? {
-        return PropertiesProcessor { emptyList() }
+        return UnityRunnerRunTypePropertiesProcessor()
     }
 
     override fun getEditRunnerParamsJspFilePath(): String? {
@@ -65,8 +63,11 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return myPluginDescriptor.getPluginResourcesPath("viewUnityParameters.jsp")
     }
 
-    override fun getDefaultRunnerProperties(): Map<String, String>? {
-        return emptyMap()
+    override fun getDefaultRunnerProperties(): MutableMap<String, String> {
+        val parameters = mutableMapOf<String,String>()
+        parameters[UnityConstants.PARAM_DETECTION_MODE] = UnityConstants.DETECTION_MODE_AUTO
+
+        return parameters
     }
 
     override fun describeParameters(parameters: Map<String, String>): String {
@@ -99,9 +100,18 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         return builder.toString().trim()
     }
 
-    override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> = listOf(
-            Requirements.Unity.create(parameters[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
-    )
+    override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
+        val detectionMode = parameters[UnityConstants.PARAM_DETECTION_MODE]
+        val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]
+        return if (detectionMode != UnityConstants.DETECTION_MODE_MANUAL && unityVersion != null) {
+            listOf(Requirements.Unity.create(unityVersion))
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun escapeRegex(value: String) =
+        if(value.contains('%')) value else value.replace(".", "\\.")
 
     private fun StringBuilder.addParameter(parameter: String) {
         if (this.isNotEmpty()) {

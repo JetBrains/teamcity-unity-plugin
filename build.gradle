@@ -27,6 +27,7 @@ ext {
     versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
     projectIds = ['group': 'teamcity-unity-plugin', 'version': versionNumber]
     teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.10'
+    teamcityBaseDir = project.hasProperty('teamcityBaseDir') ? property('teamcityBaseDir') : rootDir.absolutePath + '/.teamcity'
 }
 
 group = projectIds.group

@@ -22,7 +22,7 @@ import jetbrains.buildServer.requirements.RequirementType
 
 object Requirements {
     object Unity {
-        fun create(unityVersion: String = ""): Requirement {
+        fun create(unityVersion: String): Requirement {
             val unityPath = buildString {
                 append(escapeRegex(UnityConstants.UNITY_CONFIG_NAME))
                 append(if (unityVersion.isNotBlank()) {
