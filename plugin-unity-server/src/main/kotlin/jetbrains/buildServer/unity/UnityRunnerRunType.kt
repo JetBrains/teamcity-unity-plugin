@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 JetBrains s.r.o.
+ * Copyright 2000-2023 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,6 @@
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.requirements.Requirement
-import jetbrains.buildServer.requirements.RequirementQualifier
-import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
@@ -103,20 +101,13 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
-        val requirements = mutableListOf<Requirement>()
         val detectionMode = parameters[UnityConstants.PARAM_DETECTION_MODE]
-        if(detectionMode != UnityConstants.DETECTION_MODE_MANUAL) {
-            parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
-                if (it.isNotBlank()) {
-                    val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + escapeRegex(it.trim()) + ".*"
-                    requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
-                } else {
-                    val name = escapeRegex(UnityConstants.UNITY_CONFIG_NAME) + ".+"
-                    requirements.add(Requirement(RequirementQualifier.EXISTS_QUALIFIER + name, null, RequirementType.EXISTS))
-                }
-            }
+        val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]
+        return if (detectionMode != UnityConstants.DETECTION_MODE_MANUAL && unityVersion != null) {
+            listOf(Requirements.Unity.create(unityVersion))
+        } else {
+            emptyList()
         }
-        return requirements
     }
 
     private fun escapeRegex(value: String) =

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 JetBrains s.r.o.
+ * Copyright 2000-2023 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package jetbrains.buildServer.unity
 
+import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.serverSide.BuildFeature
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 
@@ -45,4 +46,8 @@ class UnityBuildFeature(descriptor: PluginDescriptor) : BuildFeature() {
         }
         return builder.toString().trim()
     }
+
+    override fun getRequirements(params: MutableMap<String, String>?): MutableCollection<Requirement> = mutableListOf(
+            Requirements.Unity.create(params.orEmpty()[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
+    )
 }
