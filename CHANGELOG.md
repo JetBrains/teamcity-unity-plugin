@@ -16,7 +16,7 @@ As of now, the plugin is switching to SemVer versioning. This is the initial plu
 So if you used an old version of the plugin, please uninstall it before installing the new one.
 
 ### Added
-- Managing Unity as a TC tool support - Credits to @AaronZurawski
+- Managing Unity as a TC tool support - Credits to [AaronZurawski](https://github.com/AaronZurawski)
 
 ### Changed
 - Editor console output now fully captured by TC
