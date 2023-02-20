@@ -27,6 +27,6 @@
             <url>http://www.jetbrains.com/</url>
         </vendor>
     </info>
-    <requirements min-build="40000" />
+    <requirements min-build="@TeamCity_Min_Compatible_Build@" />
     <deployment use-separate-classloader="true"/>
 </teamcity-plugin>

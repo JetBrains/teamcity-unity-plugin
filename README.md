@@ -94,6 +94,8 @@ This problem indicates that the Unity Editor installation was not found on any o
 
 This project uses Gradle as the build system. You can easily open it in [IntelliJ IDEA](https://www.jetbrains.com/idea/help/importing-project-from-gradle-model.html) or [Eclipse](http://gradle.org/eclipse/).
 
-# Contributions
+# Documentation
 
-We appreciate all kinds of feedback, so please feel free to send a PR or submit an issue.
+- [Changelog](CHANGELOG.md)
+- [Contributor Guide](CONTRIBUTING.md)
+- [Maintainership](MAINTAINERSHIP.md)

@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
+import org.jetbrains.changelog.Changelog
+
 plugins {
     id 'io.github.rodm.teamcity-server' version "1.5"
     id 'io.github.rodm.teamcity-environments' version "1.5"
+    id 'org.jetbrains.changelog' version '2.0.0'
+}
+
+changelog {
+    path = file("../CHANGELOG.md").canonicalPath
+    groups = ["Added", "Changed", "Fixed"]
 }
 
 teamcity {
@@ -24,7 +32,18 @@ teamcity {
 
     server {
         descriptor = project.file('teamcity-plugin.xml')
-        tokens = [Plugin_Version: project.version]
+        tokens = [
+                Plugin_Version: project.version,
+                // the version below is chosen based on the latest version with noteworthy changes in API
+                // https://plugins.jetbrains.com/docs/teamcity/open-api-changes.html
+                // all build numbers: https://www.jetbrains.com/teamcity/download/other.html
+                TeamCity_Min_Compatible_Build: "78475" // 2020.1
+        ]
+
+        publish {
+            token = project.findProperty("jetbrains.marketplace.token")
+            notes = changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML)
+        }
     }
 
     environments {

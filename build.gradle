@@ -23,10 +23,12 @@ repositories {
 }
 
 ext {
-    def correctVersion = project.hasProperty('versionNumber') && property('versionNumber') ==~ /\d+\.\d+\.\d+.*/
-    versionNumber = correctVersion ? property('versionNumber') : 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
-    projectIds = ['group': 'teamcity-unity-plugin', 'version': versionNumber]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? property('teamcityVersion') : '2022.10'
+    project.version = project.findProperty("version") == "unspecified"
+            ? 'SNAPSHOT-' + new Date().format('yyyyMMddHHmmss')
+            : project.version
+
+    projectIds = ['group': 'teamcity-unity-plugin', 'version': project.version]
+    teamcityVersion = project.hasProperty('teamcityVersion') ? project.property('teamcityVersion') : '2022.10'
     teamcityBaseDir = project.hasProperty('teamcityBaseDir') ? property('teamcityBaseDir') : rootDir.absolutePath + '/.teamcity'
 }
 
