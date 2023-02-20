@@ -52,9 +52,11 @@ version = "2022.10"
 project {
     vcsRoot(TagReleaseVcs)
     vcsRoot(PullRequestVcs)
+    vcsRoot(MasterVcs)
 
     buildType(ReleaseBuildConfiguration)
     buildType(PullRequestBuildConfiguration)
+    buildType(MasterBuildConfiguration)
 }
 
 object TagReleaseVcs : GitVcsRoot({
@@ -88,8 +90,12 @@ object ReleaseBuildConfiguration : BuildType({
             arguments = "%teamcity.build.branch%"
         }
         gradle {
+            name = "build"
+            tasks = "clean build serverPlugin"
+        }
+        gradle {
             name = "publish to marketplace"
-            tasks = "clean build serverPlugin publishPlugin"
+            tasks = "publishPlugin"
         }
     }
 
@@ -104,6 +110,9 @@ object PullRequestVcs : GitVcsRoot({
     id("TeamCityUnityPlugin_PullRequestVcs")
     name = "PullRequestVcs"
     url = "https://github.com/JetBrains/teamcity-unity-plugin.git"
+    branchSpec = """
+        -:<default>
+    """.trimIndent()
 })
 
 object PullRequestBuildConfiguration : BuildType({
@@ -139,6 +148,35 @@ object PullRequestBuildConfiguration : BuildType({
                 }
             }
         }
+    }
+
+    triggers {
+        vcs {
+            branchFilter = "+:*"
+        }
+    }
+
+    steps {
+        gradle {
+            name = "build"
+            tasks = "clean build serverPlugin"
+        }
+    }
+})
+
+object MasterVcs : GitVcsRoot({
+    id("TeamCityUnityPlugin_MasterVcs")
+    name = "MasterVcs"
+    url = "https://github.com/JetBrains/teamcity-unity-plugin.git"
+    branch = "master"
+})
+
+object MasterBuildConfiguration : BuildType({
+    id("TeamCityUnityPlugin_MasterBuild")
+    name = "MasterBuild"
+
+    vcs {
+        root(MasterVcs)
     }
 
     triggers {
