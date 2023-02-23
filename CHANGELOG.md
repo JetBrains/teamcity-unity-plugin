@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
-- Correct minimal compatible TeamCity version was specified (2022.10)
 
 ### Fixed
+
+## 1.0.1 - 2023-02-23
+
+### Changed
+- Correct minimal compatible TeamCity version was specified (2022.10)
 
 ## 1.0.0 - 2023-02-20
 As of now, the plugin is switching to SemVer versioning. This is the initial plugin release with the new scheme.
