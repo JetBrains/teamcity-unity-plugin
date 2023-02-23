@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Changed
+- Correct minimal compatible TeamCity version was specified (2022.10)
 
 ### Fixed
 
