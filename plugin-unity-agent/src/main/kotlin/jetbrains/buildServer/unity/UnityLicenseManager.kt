@@ -36,7 +36,7 @@ class UnityLicenseManager(
         eventDispatcher.addListener(this)
     }
 
-    override fun buildStarted(build: AgentRunningBuild) {
+    override fun preparationFinished(build: AgentRunningBuild) {
         unityEditorPath = null
 
         val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull() ?: return

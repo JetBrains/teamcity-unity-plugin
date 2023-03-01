@@ -63,7 +63,7 @@ class UnityLicenseManagerTests {
     }
 
     @Test
-    fun buildStarted_happyPath_activateLicenseCommandIsGenerated() {
+    fun preparationFinished_happyPath_activateLicenseCommandIsGenerated() {
         // arrange
         val commandCapturingSlot = slot<GeneralCommandLine>()
         every { commandLineRunnerMock.run(capture(commandCapturingSlot)) } returns ExecResult()
@@ -71,7 +71,7 @@ class UnityLicenseManagerTests {
         val buildMock = generateBuildMock(fakeUnityBuildFeature, tmpDir!!)
 
         // act
-        UnityLicenseManager(toolProviderMock, commandLineRunnerMock, eventDispatcherMock).buildStarted(buildMock)
+        UnityLicenseManager(toolProviderMock, commandLineRunnerMock, eventDispatcherMock).preparationFinished(buildMock)
 
         // assert
         assertNotNull(commandCapturingSlot.captured)
@@ -92,7 +92,7 @@ class UnityLicenseManagerTests {
         val buildMock = generateBuildMock(fakeUnityBuildFeature, tmpDir!!)
 
         val sut = UnityLicenseManager(toolProviderMock, commandLineRunnerMock, eventDispatcherMock)
-        sut.buildStarted(buildMock)
+        sut.preparationFinished(buildMock)
         // act
         sut.buildFinished(buildMock, mockk())
 
