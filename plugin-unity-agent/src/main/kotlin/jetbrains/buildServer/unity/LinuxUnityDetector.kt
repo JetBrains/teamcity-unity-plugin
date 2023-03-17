@@ -18,6 +18,10 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.util.Completed
+import jetbrains.buildServer.unity.util.Error
+import jetbrains.buildServer.unity.util.Timeout
+import jetbrains.buildServer.unity.util.execute
 import java.io.File
 
 class LinuxUnityDetector : UnityDetectorBase() {
@@ -69,14 +73,17 @@ class LinuxUnityDetector : UnityDetectorBase() {
             }
 
             version = versions.firstOrNull()?.name
+        } else {
+            LOG.debug("A package manager was not found")
         }
 
+        version = version ?: getVersionFromEditor(executable)
+
         if (version == null) {
-            LOG.debug("A package manager was not found")
             version = editorRoot.name
         }
 
-        LOG.debug("Version is $version")
+        LOG.info("Version is $version")
         // Unity version looks like that: 2017.1.1f1
         // where suffix could be the following:
         // * a  - alpha
@@ -98,6 +105,24 @@ class LinuxUnityDetector : UnityDetectorBase() {
             null
         }
     }
+
+    private fun getVersionFromEditor(executable: File): String? {
+        when (val result = ProcessBuilder(executable.absolutePath, "-version").execute(timeoutSeconds = 3)) {
+            is Completed -> when (result.exitCode) {
+                0 -> {
+                    LOG.info("Version detected via editor: ${result.stdout}")
+                    return result.stdout.ifEmpty { null }
+                }
+                else -> LOG.info("Version detection process exited with non-zero code: ${result.exitCode}\n" +
+                        "Error: ${result.stderr}")
+            }
+            is Timeout -> LOG.info("Version detection timed out")
+            is Error -> LOG.info("Unable to detect version via editor binary", result.exception)
+        }
+
+        return null
+    }
+
     companion object {
         private val LOG = Logger.getInstance(LinuxUnityDetector::class.java.name)
     }

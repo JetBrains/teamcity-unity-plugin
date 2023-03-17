@@ -18,16 +18,17 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.util.Completed
+import jetbrains.buildServer.unity.util.Error
+import jetbrains.buildServer.unity.util.Timeout
+import jetbrains.buildServer.unity.util.execute
 import jetbrains.buildServer.util.PEReader.PEUtil
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.io.BufferedReader
 import java.io.File
-import java.lang.Exception
 import java.nio.file.Paths
-import java.util.concurrent.TimeUnit
 import kotlin.io.path.exists
 
 class PEProductVersionDetector {
@@ -58,36 +59,34 @@ class PEProductVersionDetector {
             return null
         }
 
-        val detector = ProcessBuilder(detectorPath.toString(), executable.absolutePath).start()
-
-        val detectionTimeoutSeconds = 3L
-        if (detector.waitFor(detectionTimeoutSeconds, TimeUnit.SECONDS)) {
-            return if (detector.exitValue() == 0) {
-                val versionJson = detector.inputStream
-                    .bufferedReader(Charsets.UTF_8)
-                    .use(BufferedReader::readText)
-
-                val versionObject = Json.decodeFromString<ProductVersion?>(versionJson)
+        fun parseStdoutToVersion(stdout: String): Semver? {
+            return try {
+                val versionObject = Json.decodeFromString<ProductVersion?>(stdout)
 
                 if (versionObject?.majorPart != null) {
                     Semver("${versionObject.majorPart}.${versionObject.minorPart}.${versionObject.buildPart}",
                         Semver.SemverType.LOOSE)
                 } else {
+                    LOG.info("version does not contain major part. stdout: $stdout")
                     null
                 }
-            } else {
-                val error = detector.errorStream
-                    .bufferedReader(Charsets.UTF_8)
-                    .use(BufferedReader::readText)
-
-                LOG.debug(error)
+            } catch (e: Throwable) {
+                LOG.info("Unable to parse stdout to version. stdout: $stdout")
                 null
             }
-        } else {
-            detector.destroyForcibly()
-            LOG.debug("PE product version detection timed out")
-            return null
         }
+
+        when (val result = ProcessBuilder(detectorPath.toString(), executable.absolutePath).execute(timeoutSeconds = 3)) {
+            is Completed -> when (result.exitCode) {
+                0 -> parseStdoutToVersion(result.stdout)
+                else -> LOG.info("Version detection process exited with non-zero code: ${result.exitCode}\n" +
+                        "Error: ${result.stderr}")
+            }
+            is Error -> LOG.info(result.exception)
+            Timeout -> LOG.info("PE product version detection timed out")
+        }
+
+        return null
     }
 
     @Serializable

@@ -70,10 +70,11 @@ This plugin supports optionally installing Unity as a TeamCity [agent tool](http
 
 To create a tool zip file for Unity, do the following:
 1. Locally install (or extract) the desired version of Unity along with any/all desired Target Support (Android, iOS, Xbox, etc.)
-2. Zip the `Editor` folder into an archive named `Unity-<version>.zip` such as `Unity-2018.4.9f1.zip`
+2. Zip the `Editor` folder + [plugin descriptor][plugin-descriptor] into an archive named `Unity-<version>.zip` such as `Unity-2018.4.9f1.zip`
     It should look like this (for Windows):
     ```
     📁 Unity-2018.4.9f1.zip
+    |- 📄 teamcity-plugin.xml
     |- 📂 Editor
     │  |- 📂 BugReporter
     │  |- 📂 Data
@@ -81,8 +82,26 @@ To create a tool zip file for Unity, do the following:
     │  |- 📄 Unity.exe
     │  |- ...
     ```
-   Note that the archive structure may vary for different platforms. For example, on MacOS, the top-level folder inside the archive should be `Unity.app`.
+   Note that the archive structure may vary depending on the distributed binaries. 
+   For example, when packing for MacOS, the top-level folder inside the archive should be `Unity.app`.
 3. Upload as a Unity Tool on the Administration > Tools page on TeamCity
+
+#### NB!
+- Due to the current limitation of TeamCity tool distribution, preserving file permissions
+for Unix-like platforms is only possible with additional configuration. Namely, a plugin descriptor 
+should [list][plugin-descriptor.executables] all files in the archive which are needed to be executable after unpacking on an agent.
+
+    An example of this list for MacOS tool descriptor might be:
+    ```xml
+    <executable-files>
+       <include name='Unity.app/Contents/MacOS/Unity'/>
+       <include name='Unity.app/Contents/Resources/PackageManager/Server/UnityPackageManager'/>
+       ...
+    </executable-files>
+    ```
+    Feel free to upvote [TW-21673](https://youtrack.jetbrains.com/issue/TW-21673) issue to make it work out of the box.
+- Agent environment must contain all the required global dependencies to make Unity work on a given OS.
+
 
 ## Common problems
 
@@ -99,3 +118,6 @@ This project uses Gradle as the build system. You can easily open it in [Intelli
 - [Changelog](CHANGELOG.md)
 - [Contributor Guide](CONTRIBUTING.md)
 - [Maintainership](MAINTAINERSHIP.md)
+
+[plugin-descriptor]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Tools
+[plugin-descriptor.executables]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Making+File+Executable
