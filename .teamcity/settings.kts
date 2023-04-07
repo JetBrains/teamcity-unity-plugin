@@ -133,7 +133,7 @@ object PullRequestBuildConfiguration : BuildType({
             vcsRootExtId = PullRequestVcs.id?.value
             provider = github {
                 filterTargetBranch = "refs/heads/master"
-                filterAuthorRole = PullRequests.GitHubRoleFilter.EVERYBODY
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
                 authType = token {
                     token = "%$githubTokenParameter%"
                 }
