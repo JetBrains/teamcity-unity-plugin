@@ -113,11 +113,16 @@ This problem indicates that the Unity Editor installation was not found on any o
 
 This project uses Gradle as the build system. You can easily open it in [IntelliJ IDEA](https://www.jetbrains.com/idea/help/importing-project-from-gradle-model.html) or [Eclipse](http://gradle.org/eclipse/).
 
+# Contributing
+
+We appreciate all kinds of feedback, so please feel free to send a PR or submit an issue.
+For issues please consider opening related ticket in our [YouTrack][youtrack].
+
 # Documentation
 
 - [Changelog](CHANGELOG.md)
-- [Contributor Guide](CONTRIBUTING.md)
 - [Maintainership](MAINTAINERSHIP.md)
 
 [plugin-descriptor]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Tools
 [plugin-descriptor.executables]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Making+File+Executable
+[youtrack]: https://youtrack.jetbrains.com/newIssue?project=TW&c=Team%20Build%20Tools%20Integrations&c=tag%20tc-unity
