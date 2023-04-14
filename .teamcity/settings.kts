@@ -175,6 +175,8 @@ object MasterBuildConfiguration : BuildType({
     id("TeamCityUnityPlugin_MasterBuild")
     name = "MasterBuild"
 
+    allowExternalStatus = true
+
     vcs {
         root(MasterVcs)
     }

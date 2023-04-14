@@ -68,7 +68,7 @@ class UnityLicenseManager(
         }
     }
 
-    override fun buildFinished(build: AgentRunningBuild, buildStatus: BuildFinishedStatus) {
+    override fun beforeBuildFinish(build: AgentRunningBuild, buildStatus: BuildFinishedStatus) {
         if (unityEditorPath.isNullOrEmpty()) {
             return
         }

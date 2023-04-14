@@ -2,7 +2,7 @@
 
 [![official JetBrains project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![build status](https://teamcity.jetbrains.com/app/rest/builds/buildType:(id:TeamCityUnityPlugin_Build)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=TeamCityUnityPlugin_Build&guest=1)
+[![build status](https://teamcity.jetbrains.com/app/rest/builds/buildType:id:TeamCityPluginsByJetBrains_TeamCityUnityPlugin_TeamCityUnityPlugin_MasterBuild/statusIcon.svg)
 
 The plugin supports building Unity projects on TeamCity.
 
