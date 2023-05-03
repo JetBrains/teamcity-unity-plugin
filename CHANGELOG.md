@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## 1.0.4 - 2023-05-03
+
+### Changed
+- license return now happens just before a build finishes
+
 ## 1.0.3 - 2023-03-17
 
 ### Fixed
