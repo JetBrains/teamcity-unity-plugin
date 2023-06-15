@@ -30,8 +30,40 @@
     var activateLicenseId = BS.Util.escapeId('${params.activateLicense}');
 
     BS.UnityBuildFeatureParametersForm = {
+        clearInputValues: function($licenseDetails) {
+            $licenseDetails.find(':input').each(function (id, element) {
+                const $element = $j(element);
+                const name = $element.attr("name");
+                if (!name || name.indexOf("prop:") !== 0) {
+                    return;
+                }
+
+                let changed;
+                if (element.name === "select") {
+                    changed = element.selectedIndex !== 0;
+                    element.selectedIndex = 0;
+                } else if (element.type === "checkbox") {
+                    changed = $element.is(':checked');
+                    $element.removeAttr('checked');
+                } else {
+                    changed = $element.val() !== '';
+                    $element.val('');
+                }
+
+                if (changed) {
+                    $element.change();
+                }
+            });
+        },
+
         updateElements: function () {
-            $j(".license").toggle($j(activateLicenseId).is(':checked'));
+            const $licenseDetails = $j(".license");
+            const $activateLicenseCheckbox = $j(activateLicenseId);
+            $licenseDetails.toggle($activateLicenseCheckbox.is(':checked'));
+            if (!$activateLicenseCheckbox.is(':checked')) {
+                this.clearInputValues($licenseDetails);
+            }
+
             BS.MultilineProperties.updateVisible();
         }
     };
