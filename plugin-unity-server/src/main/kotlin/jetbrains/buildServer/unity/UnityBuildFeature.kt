@@ -44,10 +44,26 @@ class UnityBuildFeature(descriptor: PluginDescriptor) : BuildFeature() {
                 builder.append("Use cache server: ${it.trim()}\n")
             }
         }
+
+        val detectionMode = parameters[UnityConstants.PARAM_DETECTION_MODE]
+        detectionMode?.let {
+            val prefix = "Unity installation: detection: $detectionMode"
+
+            val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]
+            if (it == UnityConstants.DETECTION_MODE_AUTO && unityVersion != null) {
+                builder.append("$prefix, version: $unityVersion")
+            }
+
+            val unityRoot = parameters[UnityConstants.PARAM_UNITY_ROOT]
+            if (it == UnityConstants.DETECTION_MODE_MANUAL && unityRoot != null) {
+                builder.append("$prefix, unity root: $unityRoot")
+            }
+        }
+
         return builder.toString().trim()
     }
 
     override fun getRequirements(params: MutableMap<String, String>?): MutableCollection<Requirement> = mutableListOf(
-            Requirements.Unity.create(params.orEmpty()[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
+        Requirements.Unity.create(params.orEmpty()[UnityConstants.PARAM_UNITY_VERSION].orEmpty())
     )
 }
