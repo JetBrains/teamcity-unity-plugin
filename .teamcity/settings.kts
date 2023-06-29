@@ -99,6 +99,8 @@ object ReleaseBuildConfiguration : BuildType({
         }
     }
 
+    artifactRules = "+:./plugin-unity-server/build/distributions/plugin-unity-server.zip"
+
     triggers {
         vcs {
             branchFilter = "+:tags/v*"
