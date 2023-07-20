@@ -24,8 +24,8 @@ import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_PLATFORM
-import jetbrains.buildServer.unity.UnitySpecialVersions.UNITY_2018_2_0
-import jetbrains.buildServer.unity.UnitySpecialVersions.UNITY_2019_1_0
+import jetbrains.buildServer.unity.UnityVersion.UnitySpecialVersions.UNITY_2018_2_0
+import jetbrains.buildServer.unity.UnityVersion.UnitySpecialVersions.UNITY_2019_1_0
 import jetbrains.buildServer.unity.logging.LineStatusProvider
 import jetbrains.buildServer.unity.logging.UnityLoggingListener
 import jetbrains.buildServer.unity.messages.ImportData

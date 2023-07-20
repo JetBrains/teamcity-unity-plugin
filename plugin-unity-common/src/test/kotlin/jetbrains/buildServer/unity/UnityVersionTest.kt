@@ -1,8 +1,16 @@
 package jetbrains.buildServer.unity
 
+import io.kotest.assertions.throwables.shouldThrowExactly
+import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
+import io.kotest.matchers.comparables.shouldBeLessThan
+import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
+import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.equals.shouldNotBeEqual
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
 import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
-import org.testng.Assert.*
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
@@ -19,14 +27,14 @@ class UnityVersionTest {
         val v5 = UnityVersion(2024, 1, 1)
 
         // then
-        assertTrue(v1 == v2)
-        assertEquals(v1.hashCode(), v2.hashCode())
+        v1 shouldBeEqual v2
+        v1.hashCode() shouldBeEqual v2.hashCode()
 
-        assertFalse(v1 == v3)
-        assertFalse(v2 == v3)
+        v1 shouldNotBeEqual v3
+        v2 shouldNotBeEqual v3
 
-        assertFalse(v2 == v4)
-        assertFalse(v3 == v5)
+        v2 shouldNotBeEqual v4
+        v3 shouldNotBeEqual v5
     }
 
     @Test
@@ -37,9 +45,9 @@ class UnityVersionTest {
         val v3 = UnityVersion(2023)
 
         // then
-        assertEquals(v1.toString(), "2023.1.1")
-        assertEquals(v2.toString(), "2023.1")
-        assertEquals(v3.toString(), "2023")
+        v1.toString() shouldBeEqual "2023.1.1"
+        v2.toString() shouldBeEqual "2023.1"
+        v3.toString() shouldBeEqual "2023"
     }
 
     @Test
@@ -49,10 +57,11 @@ class UnityVersionTest {
         val v2 = UnityVersion(2023, 1, 2)
 
         // then
-        assertTrue(v1 < v2)
-        assertTrue(v1 <= v1)
-        assertTrue(v2 > v1)
-        assertTrue(v2 >= v1)
+        v1 shouldBeLessThan v2
+        v1 shouldBeLessThanOrEqualTo v1
+        v2 shouldBeGreaterThan v1
+        v2 shouldBeGreaterThanOrEqualTo v1
+        v2 shouldBeGreaterThanOrEqualTo v2
     }
 
     @DataProvider
@@ -72,8 +81,7 @@ class UnityVersionTest {
         val versionWithSuffix = parseVersion(versionWithoutSuffix.toString() + versionSuffix + "ignored part")
 
         // then
-        assertEquals(versionWithoutSuffix, versionWithSuffix)
-        assertEquals(versionWithoutSuffix.hashCode(), versionWithSuffix.hashCode())
+        versionWithoutSuffix shouldBeEqual versionWithSuffix
     }
 
     @Test
@@ -85,7 +93,7 @@ class UnityVersionTest {
         val nextMajor = version.nextMajor()
 
         // then
-        assertEquals(nextMajor, UnityVersion(2024, 0, 0))
+        nextMajor shouldBeEqual UnityVersion(2024, 0, 0)
     }
 
     @Test
@@ -94,10 +102,10 @@ class UnityVersionTest {
         val version = UnityVersion(2023, 1, 1)
 
         // when
-        val nextMajor = version.nextMinor()
+        val nextMinor = version.nextMinor()
 
         // then
-        assertEquals(nextMajor, UnityVersion(2023, 2, 0))
+        nextMinor shouldBeEqual UnityVersion(2023, 2, 0)
     }
 
     @DataProvider
@@ -122,7 +130,8 @@ class UnityVersionTest {
         val result = tryParseVersion(version)
 
         // then
-        assertEquals(result, expectedVersion)
+        result shouldNotBe null
+        result?.shouldBeEqual(expectedVersion)
     }
 
     @Test(dataProvider = "valid unity versions")
@@ -131,7 +140,7 @@ class UnityVersionTest {
         val result = parseVersion(version)
 
         // then
-        assertEquals(result, expectedVersion)
+        result shouldBeEqual expectedVersion
     }
 
     @DataProvider
@@ -143,12 +152,12 @@ class UnityVersionTest {
     @Test(dataProvider = "invalid unity versions")
     fun `should return null when Unity version cannot be parsed`(version: String) {
         // then
-        assertNull(tryParseVersion(version))
+        tryParseVersion(version) shouldBe null
     }
 
     @Test(dataProvider = "invalid unity versions")
     fun `should throw an exception when Unity version cannot be parsed`(version: String) {
         // then
-        assertThrows(InvalidUnityVersionException::class.java) { parseVersion(version) }
+        shouldThrowExactly<InvalidUnityVersionException> { parseVersion(version) }
     }
 }

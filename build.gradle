@@ -15,7 +15,7 @@
  */
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version "1.7.21"
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
 }
 
 repositories {
@@ -28,7 +28,7 @@ ext {
             : project.version
 
     projectIds = ['group': 'teamcity-unity-plugin', 'version': project.version]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? project.property('teamcityVersion') : '2023.07-SNAPSHOT'
+    teamcityVersion = project.property('teamcityVersion')
     teamcityBaseDir = project.hasProperty('teamcityBaseDir') ? property('teamcityBaseDir') : rootDir.absolutePath + '/.teamcity'
 }
 

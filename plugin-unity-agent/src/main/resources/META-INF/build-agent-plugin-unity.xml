@@ -19,8 +19,9 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
+    <bean class="jetbrains.buildServer.unity.util.FileSystemService"/>
+    <bean class="jetbrains.buildServer.unity.detectors.UnityDetectorFactory"/>
     <bean class="jetbrains.buildServer.unity.UnityBuildSessionFactory"/>
-    <bean class="jetbrains.buildServer.unity.UnityLicenseManager"/>
     <bean class="jetbrains.buildServer.unity.detectors.UnityToolProvider"/>
     <bean class="jetbrains.buildServer.unity.util.SimpleCommandLineRunner"/>
 </beans>

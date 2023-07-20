@@ -17,9 +17,9 @@
 import org.jetbrains.changelog.Changelog
 
 plugins {
-    id 'io.github.rodm.teamcity-server' version "1.5"
-    id 'io.github.rodm.teamcity-environments' version "1.5"
-    id 'org.jetbrains.changelog' version '2.0.0'
+    id 'io.github.rodm.teamcity-server' version "$gradleTeamcityPluginVersion"
+    id 'io.github.rodm.teamcity-environments' version "$gradleTeamcityPluginVersion"
+    id 'org.jetbrains.changelog' version "$jetbrainsChangelogPluginVersion"
 }
 
 changelog {
@@ -63,10 +63,11 @@ dependencies {
     implementation (project(':csharp-parser')) {
         exclude group: 'com.ibm.icu'
     }
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     provided "org.jetbrains.teamcity.internal:server:$teamcityVersion"
     testImplementation "org.jetbrains.kotlin:kotlin-test"
-    testImplementation "io.mockk:mockk:1.13.3"
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testImplementation "io.kotest:kotest-assertions-core-jvm:$kotestAssertionsCoreJvmVersion"
 }
 
 serverPlugin.version = null
@@ -76,6 +77,6 @@ compileKotlin {
     targetCompatibility = JavaVersion.VERSION_11
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = "$jvmTargetVersion"
     }
 }

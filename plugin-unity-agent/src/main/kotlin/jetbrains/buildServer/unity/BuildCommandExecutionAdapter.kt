@@ -20,7 +20,7 @@ import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.runner.*
 import java.io.File
 
-class CommandExecutionAdapter(private val buildService: CommandLineBuildService) : CommandExecution {
+class BuildCommandExecutionAdapter(private val buildService: CommandLineBuildService) : CommandExecution {
 
     private val processListeners by lazy { buildService.listeners }
 

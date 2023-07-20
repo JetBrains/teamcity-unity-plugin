@@ -16,29 +16,23 @@
 
 package jetbrains.buildServer.unity
 
-import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.BuildRunnerContext
-import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
-import jetbrains.buildServer.unity.UnityConstants.RUNNER_TYPE
-import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
-import jetbrains.buildServer.unity.detectors.UnityToolProvider
+import jetbrains.buildServer.unity.license.UnityProfessionalLicenceManager
 
-/**
- * Unity runner service.
- */
 class UnityCommandBuildSession(
     private val runnerContext: BuildRunnerContext,
-    private val unityToolProvider: UnityToolProvider
+    private val unityEnvironmentProvider: UnityEnvironmentProvider,
+    private val unityProfessionalLicenceManager: UnityProfessionalLicenceManager,
 ) : MultiCommandBuildSession {
 
     private var commands: Iterator<CommandExecution>? = null
-    private var lastCommands = arrayListOf<CommandExecutionAdapter>()
+    private var lastBuildCommands = arrayListOf<BuildCommandExecutionAdapter>()
 
     override fun sessionStarted() {
-        commands = commands().iterator()
+        commands = commandsSequence().iterator()
     }
 
     override fun getNextCommand(): CommandExecution? {
@@ -52,41 +46,48 @@ class UnityCommandBuildSession(
     }
 
     override fun sessionFinished(): BuildFinishedStatus? {
-        return lastCommands.lastOrNull()?.result
+        return lastBuildCommands.lastOrNull()?.result
     }
 
-    private fun commands() = sequence {
-        val unityEnvironment = unityEnvironment()
+    private fun commandsSequence() = sequence {
+        detectUnityEnvironment()
+        activateProfessionalLicenceIfNeeded()
+        executeBuild()
+        returnProfessionalLicenceIfNeeded()
+    }
 
+    private suspend fun SequenceScope<CommandExecution>.detectUnityEnvironment() {
+        yieldAll(unityEnvironmentProvider.provide(runnerContext))
+    }
+
+    private suspend fun SequenceScope<CommandExecution>.activateProfessionalLicenceIfNeeded() {
+        yieldAll(
+            unityProfessionalLicenceManager.activateLicence(
+                unityEnvironmentProvider.unityEnvironment(),
+                runnerContext,
+            )
+        )
+    }
+
+    private suspend fun SequenceScope<CommandExecution>.executeBuild() {
         yieldAll(
             UnityRunnerBuildService
-                .createAdapters(unityEnvironment, runnerContext)
+                .createAdapters(unityEnvironmentProvider.unityEnvironment(), runnerContext)
                 .map {
                     it.initialize(runnerContext.build, runnerContext)
-                    val command = CommandExecutionAdapter(it)
-                    lastCommands.add(command)
+                    val command = BuildCommandExecutionAdapter(it)
+                    lastBuildCommands.add(command)
                     command
                 }
         )
     }
 
-    private suspend fun SequenceScope<CommandExecution>.unityEnvironment(): UnityEnvironment {
-        return if (runnerContext.isVirtualContext) {
-            LOG.debug("Detecting Unity virtual environment")
-            val detectCommand = DetectVirtualUnityEnvironmentCommand(runnerContext)
-            yield(detectCommand)
-
-            if (detectCommand.results.isEmpty())
-                throw ToolCannotBeFoundException("Failed to detect Unity virtual environment")
-
-            detectCommand.results.first()
-        } else {
-            LOG.debug("Detecting Unity environment")
-            unityToolProvider.getUnity(RUNNER_TYPE, runnerContext)
-        }
-    }
-
-    companion object {
-        private val LOG = Logger.getInstance(UnityCommandBuildSession::class.java.name)
+    private suspend fun SequenceScope<CommandExecution>.returnProfessionalLicenceIfNeeded() {
+        yieldAll(
+            unityProfessionalLicenceManager.returnLicence(
+                unityEnvironmentProvider.unityEnvironment(),
+                runnerContext,
+            )
+        )
     }
 }

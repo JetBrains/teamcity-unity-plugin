@@ -1,6 +1,6 @@
 package jetbrains.buildServer.unity
 
-import org.testng.Assert.*
+import io.kotest.matchers.shouldBe
 import org.testng.annotations.Test
 
 class UnityEnvironmentTest {
@@ -11,9 +11,9 @@ class UnityEnvironmentTest {
         val environment = UnityEnvironment("/path/to/unity", UnityVersion(2023, 1, 1), true)
 
         // then
-        assertEquals(environment.unityPath, "/path/to/unity")
-        assertEquals(environment.unityVersion, UnityVersion(2023, 1, 1))
-        assertTrue(environment.isVirtual)
+        environment.unityPath shouldBe "/path/to/unity"
+        environment.unityVersion shouldBe UnityVersion(2023, 1, 1)
+        environment.isVirtual shouldBe true
     }
 
     @Test
@@ -22,8 +22,8 @@ class UnityEnvironmentTest {
         val environment = UnityEnvironment("/path/to/unity", UnityVersion(2023, 1, 1))
 
         // then
-        assertEquals(environment.unityPath, "/path/to/unity")
-        assertEquals(environment.unityVersion, UnityVersion(2023, 1, 1))
-        assertFalse(environment.isVirtual)
+        environment.unityPath shouldBe "/path/to/unity"
+        environment.unityVersion shouldBe UnityVersion(2023, 1, 1)
+        environment.isVirtual shouldBe false
     }
 }

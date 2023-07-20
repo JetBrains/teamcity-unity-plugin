@@ -16,7 +16,8 @@
 
 package jetbrains.buildServer.unity.logging
 
-import org.testng.Assert
+import io.kotest.matchers.equals.shouldBeEqual
+import jetbrains.buildServer.unity.logging.LineStatus.*
 import org.testng.annotations.Test
 import java.io.File
 
@@ -24,13 +25,15 @@ class LineStatusProviderTest {
 
     @Test
     fun testCustomFile() {
+        // given
         val customSettingsFile = File("src/test/resources/logger/customLogging.xml")
         val provider = LineStatusProvider(customSettingsFile)
 
-        Assert.assertEquals(provider.getLineStatus("text"), LineStatus.Normal)
-        Assert.assertEquals(provider.getLineStatus("error message"), LineStatus.Normal)
-        Assert.assertEquals(provider.getLineStatus("warning message"), LineStatus.Normal)
-        Assert.assertEquals(provider.getLineStatus("customWarning: message"), LineStatus.Warning)
-        Assert.assertEquals(provider.getLineStatus("customError: message"), LineStatus.Error)
+        // when // then
+        provider.getLineStatus("text") shouldBeEqual Normal
+        provider.getLineStatus("error message") shouldBeEqual Normal
+        provider.getLineStatus("warning message") shouldBeEqual Normal
+        provider.getLineStatus("customWarning: message") shouldBeEqual Warning
+        provider.getLineStatus("customError: message") shouldBeEqual Error
     }
 }

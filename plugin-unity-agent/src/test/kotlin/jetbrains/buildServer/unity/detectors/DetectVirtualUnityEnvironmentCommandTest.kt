@@ -1,35 +1,53 @@
 package jetbrains.buildServer.unity.detectors
 
-import io.mockk.MockKAnnotations
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.maps.shouldContainExactly
+import io.kotest.matchers.string.shouldEndWith
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.impl.annotations.MockK
+import io.mockk.mockk
+import io.mockk.mockkStatic
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.VirtualContext
-import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_VERSION
+import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
-import org.testng.Assert.assertEquals
+import jetbrains.buildServer.unity.util.unityRootParam
+import jetbrains.buildServer.unity.util.unityVersionParam
+import jetbrains.buildServer.util.OSType
+import jetbrains.buildServer.util.OSType.*
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
+import java.io.File
 
 class DetectVirtualUnityEnvironmentCommandTest {
 
-    @MockK
-    private lateinit var runnerContext: BuildRunnerContext
-
-    @MockK
-    private lateinit var virtualContext: VirtualContext
+    private val runnerContext = mockk<BuildRunnerContext>()
+    private val virtualContext = mockk<VirtualContext>()
+    private val workingDirectory = mockk<File>()
 
     @BeforeMethod
     fun setUp() {
-        MockKAnnotations.init(this)
         clearAllMocks()
 
         every { runnerContext.isVirtualContext } returns true
         every { runnerContext.virtualContext } returns virtualContext
-        every { runnerContext.runnerParameters } returns emptyMap()
+        every { runnerContext.workingDirectory } returns workingDirectory
+
+        mockkStatic(runnerContext::unityRootParam)
+        mockkStatic(runnerContext::unityVersionParam)
+        every { runnerContext.unityRootParam() } returns null
+        every { runnerContext.unityVersionParam() } returns null
+
+        every { workingDirectory.path } returns "path"
+        every { virtualContext.targetOSType } returns UNIX
+        every { virtualContext.resolvePath(any()) } returnsArgument 0
     }
 
     @DataProvider
@@ -90,7 +108,7 @@ class DetectVirtualUnityEnvironmentCommandTest {
         command.onStandardOutput(stdout)
 
         // then
-        assertEquals(command.results, expectedEnvironment)
+        command.results shouldContainExactly expectedEnvironment
     }
 
     @DataProvider
@@ -114,25 +132,23 @@ class DetectVirtualUnityEnvironmentCommandTest {
         command.onStandardOutput(stdout)
 
         // then
-        assertEquals(command.results, emptySet<UnityEnvironment>())
+        command.results.shouldBeEmpty()
     }
 
     @Test
-    fun `should skip detected Unity environment if an expected Unity version is different`() {
+    fun `should skip detected Unity environment if an expected Unity version is different in params`() {
         // given
         val command = createInstance()
         val stdout = "path=/path/to/1/Unity;version=2023.0.1\npath=/path/to/2/Unity;version=2023.0.2\n"
-        every { runnerContext.runnerParameters } returns mapOf(PARAM_UNITY_VERSION to "2023.0.1")
 
+        every { runnerContext.unityVersionParam() } returns parseVersion("2023.0.1")
 
         // when
         command.onStandardOutput(stdout)
 
         // then
-        assertEquals(
-            command.results,
-            linkedSetOf(UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true))
-        )
+        command.results shouldHaveSize 1
+        command.results shouldContain UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true)
     }
 
     @Test
@@ -145,9 +161,51 @@ class DetectVirtualUnityEnvironmentCommandTest {
         command.onStandardOutput(stdout)
 
         // then
-        assertEquals(
-            command.results,
-            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.0.1"), true))
+        command.results shouldHaveSize 1
+        command.results shouldContain UnityEnvironment("/path/to/Unity", parseVersion("2023.0.1"), true)
+    }
+
+    @DataProvider
+    fun `OS type to expected script name`() = arrayOf(
+        arrayOf(UNIX, "unity-environment-detector.sh"),
+        arrayOf(MAC, "unity-environment-detector.sh"),
+        arrayOf(WINDOWS, "unity-environment-detector.bat"),
+    )
+
+    @Test(dataProvider = "OS type to expected script name")
+    fun `should make program command line`(osType: OSType, expectedScriptName: String) {
+        // given
+        val command = createInstance()
+
+        every { virtualContext.targetOSType } returns osType
+        every { runnerContext.buildParameters.environmentVariables } returns mapOf("ENV" to "VALUE")
+
+        // when
+        val commandLine = command.makeProgramCommandLine()
+
+        // then
+        commandLine.shouldBeInstanceOf<SimpleProgramCommandLine>()
+        commandLine.environment shouldContainExactly mapOf("ENV" to "VALUE")
+        commandLine.workingDirectory shouldBeEqual "path"
+        commandLine.arguments.shouldBeEmpty()
+        commandLine.executablePath shouldEndWith expectedScriptName
+    }
+
+    @Test
+    fun `should make program command line passing unity root ENV variable from params`() {
+        // given
+        val command = createInstance()
+
+        every { runnerContext.buildParameters.environmentVariables } returns mapOf("ENV" to "VALUE")
+        every { runnerContext.unityRootParam() } returns "/path/to/unity"
+
+        // when
+        val commandLine = command.makeProgramCommandLine()
+
+        // then
+        commandLine.environment shouldContainExactly mapOf(
+            "ENV" to "VALUE",
+            "UNITY_ROOT_PARAMETER" to "/path/to/unity"
         )
     }
 

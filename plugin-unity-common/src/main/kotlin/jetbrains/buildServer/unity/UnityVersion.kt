@@ -24,6 +24,11 @@ data class UnityVersion(val major: Int, val minor: Int? = null, val patch: Int? 
     override fun compareTo(other: UnityVersion): Int = semver.compareTo(other.semver)
     override fun toString(): String = semver.value
 
+    object UnitySpecialVersions {
+        val UNITY_2018_2_0 = parseVersion("2018.2.0")
+        val UNITY_2019_1_0 = parseVersion("2019.1.0")
+    }
+
     companion object {
 
         private val LOG = Logger.getInstance(UnityVersion::class.java.name)

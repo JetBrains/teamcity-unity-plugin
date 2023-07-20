@@ -16,16 +16,22 @@
 
 package jetbrains.buildServer.unity
 
+import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.mockk.every
 import io.mockk.mockk
+import jetbrains.buildServer.unity.UnityConstants.PARAM_ACTIVATE_LICENSE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_DETECTION_MODE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_ROOT
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_VERSION
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.testng.annotations.DataProvider
-import kotlin.test.*
+import org.testng.annotations.Test
 
-class UnityBuildFeatureTests {
+class UnityBuildFeatureTest {
     private val pluginDescriptorMock = mockk<PluginDescriptor> {
         every { getPluginResourcesPath(any()) } returns "foo"
     }
@@ -33,7 +39,7 @@ class UnityBuildFeatureTests {
     private val buildFeature = UnityBuildFeature(pluginDescriptorMock)
 
     @Test
-    fun getRequirements_happyPath_generateUnityRequirement() {
+    fun getRequirements_happyPath_returnEmptyUnityRequirement() {
         // arrange
         val sut = buildFeature
 
@@ -46,26 +52,8 @@ class UnityBuildFeatureTests {
         val requirements = sut.getRequirements(parameters)
 
         // assert
-        assertNotNull(requirements)
-        assertEquals(1, requirements.size)
-        val propertyString = requirements.first().propertyName.lowercase()
-        assertContains(propertyString, "unity")
-        assertContains(propertyString, "2021\\.3\\.16")
-    }
-
-    @Test
-    fun getRequirements_versionNotSpecified_generateUnityRequirement() {
-        // arrange
-        val sut = buildFeature
-
-        // act
-        val requirements = sut.getRequirements(mutableMapOf())
-
-        // assert
-        assertNotNull(requirements)
-        assertEquals(1, requirements.size)
-        val propertyString = requirements.first().propertyName.lowercase()
-        assertContains(propertyString, "unity")
+        requirements shouldNotBe null
+        requirements.shouldBeEmpty()
     }
 
     @DataProvider
@@ -83,13 +71,13 @@ class UnityBuildFeatureTests {
     ) {
         // arrange
         val sut = buildFeature
-        val parameters = mutableMapOf(UnityConstants.PARAM_ACTIVATE_LICENSE to activateLicenceParam)
+        val parameters = mutableMapOf(PARAM_ACTIVATE_LICENSE to activateLicenceParam)
 
         // act
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertEquals(description.isNotBlank(), shouldDescribe)
+        description.isNotBlank() shouldBe shouldDescribe
     }
 
     @Test
@@ -102,7 +90,7 @@ class UnityBuildFeatureTests {
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertTrue { description.isBlank() }
+        description.isBlank() shouldBe true
     }
 
     @Test
@@ -116,8 +104,8 @@ class UnityBuildFeatureTests {
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertTrue { description.isNotBlank() }
-        assertTrue { description.contains(cacheServerParam) }
+        description.isNotBlank() shouldBe true
+        description shouldContain cacheServerParam
     }
 
     @Test
@@ -130,7 +118,7 @@ class UnityBuildFeatureTests {
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertTrue { description.isBlank() }
+        description.isBlank() shouldBe true
     }
 
     @DataProvider
@@ -186,9 +174,9 @@ class UnityBuildFeatureTests {
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertTrue { description.isNotBlank() }
-        shouldContain.forEach { assertTrue { description.contains(it) } }
-        shouldNotContain.forEach { assertFalse { description.contains(it) } }
+        description.isNotBlank() shouldBe true
+        shouldContain.forEach { description shouldContain it }
+        shouldNotContain.forEach { description shouldNotContain it }
     }
 
     @DataProvider
@@ -227,6 +215,6 @@ class UnityBuildFeatureTests {
         val description = sut.describeParameters(parameters)
 
         // assert
-        assertTrue { description.isBlank() }
+        description.isBlank() shouldBe true
     }
 }

@@ -8,8 +8,8 @@ import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
 import jetbrains.buildServer.agent.runner.TerminationAction.KILL_PROCESS_TREE
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
-import jetbrains.buildServer.unity.detectors.UnityToolProvider.Companion.getUnityRootParam
-import jetbrains.buildServer.unity.detectors.UnityToolProvider.Companion.getUnityVersionParam
+import jetbrains.buildServer.unity.util.unityRootParam
+import jetbrains.buildServer.unity.util.unityVersionParam
 import jetbrains.buildServer.util.OSType.WINDOWS
 import org.apache.commons.lang.StringUtils.substringAfter
 import org.apache.commons.lang.StringUtils.substringBetween
@@ -18,7 +18,7 @@ import java.nio.file.Paths
 import java.util.Collections.synchronizedSet
 
 class DetectVirtualUnityEnvironmentCommand(
-    private val runnerContext: BuildRunnerContext
+    private val runnerContext: BuildRunnerContext,
 ) : CommandExecution {
 
     val results: MutableSet<UnityEnvironment> = synchronizedSet(LinkedHashSet())
@@ -32,10 +32,12 @@ class DetectVirtualUnityEnvironmentCommand(
             val path = substringBetween(it, PATH_START, PATH_END)
             val version = tryParseVersion(substringAfter(it, VERSION_START))
             if (!path.isNullOrBlank() && version != null) {
-                val expectedVersion = getUnityVersionParam(runnerContext.runnerParameters)
+                val expectedVersion = runnerContext.unityVersionParam()
                 if (expectedVersion != null && version != expectedVersion) {
-                    LOG.info("Skipping Unity environment because the Unity version is different, " +
-                            "path=$path; version=$version; expected version=$expectedVersion")
+                    LOG.info(
+                        "Skipping Unity environment because the Unity version is different, " +
+                                "path=$path; version=$version; expected version=$expectedVersion"
+                    )
                     return
                 }
                 val environment = UnityEnvironment(path, version, true)
@@ -62,7 +64,7 @@ class DetectVirtualUnityEnvironmentCommand(
     }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
-        val unityRootParam = getUnityRootParam(runnerContext.runnerParameters)
+        val unityRootParam = runnerContext.unityRootParam()
         val environmentVariables =
             if (unityRootParam == null)
                 runnerContext.buildParameters.environmentVariables
@@ -71,8 +73,8 @@ class DetectVirtualUnityEnvironmentCommand(
 
         return SimpleProgramCommandLine(
             environmentVariables,
-            runnerContext.virtualContext.resolvePath(runnerContext.workingDirectory.path),
-            runnerContext.virtualContext.resolvePath(scriptSourcePath.toFile().canonicalPath.toString()),
+            resolvePath(runnerContext.workingDirectory.path),
+            resolvePath(scriptSourcePath.toFile().canonicalPath.toString()),
             emptyList()
         )
     }
@@ -108,6 +110,8 @@ class DetectVirtualUnityEnvironmentCommand(
         get() =
             if (isWindows) Paths.get(UNITY_ENVIRONMENT_DETECTOR_BAT_PATH).toAbsolutePath()
             else Paths.get(UNITY_ENVIRONMENT_DETECTOR_SH_PATH).toAbsolutePath()
+
+    private fun resolvePath(path: String) = runnerContext.virtualContext.resolvePath(path)
 
     companion object {
         private val LOG = Logger.getInstance(DetectVirtualUnityEnvironmentCommand::class.java.name)

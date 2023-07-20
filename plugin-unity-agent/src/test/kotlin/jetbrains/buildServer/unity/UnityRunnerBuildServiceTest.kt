@@ -16,6 +16,9 @@
 
 package jetbrains.buildServer.unity
 
+import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -27,7 +30,8 @@ import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
 import org.testng.annotations.DataProvider
 import java.io.File
 import kotlin.random.Random
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 
 class UnityRunnerBuildServiceTest {
     private val defaultEditorPath = "somePath"
@@ -86,9 +90,9 @@ class UnityRunnerBuildServiceTest {
         val commandLine = sut.makeProgramCommandLine()
 
         // assert
-        assertNotNull(commandLine)
+        commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
-        assertContains(commandString, "-logFile -")
+        commandString shouldContain "-logFile -"
     }
 
     @Test
@@ -121,12 +125,10 @@ class UnityRunnerBuildServiceTest {
         val commandLine = sut.makeProgramCommandLine()
 
         // assert
-        assertNotNull(commandLine)
+        commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
-        assertEquals(
-            "-batchmode -projectPath /converted/project -player /converted/player -nographics -quit -logFile /converted/logs",
-            commandString
-        )
+        commandString shouldBeEqual "-batchmode -projectPath /converted/project " +
+                "-player /converted/player -nographics -quit -logFile /converted/logs"
     }
 
     private inner class FakeUnityBuildFeature(
