@@ -110,9 +110,9 @@ class UnityRunnerBuildServiceTest {
             every { getVirtualContext() } returns virtualContext
             every { runnerParameters } returns mapOf(
                 "noGraphics" to true.toString(),
-                "logFilePath" to "/logs",
+                "logFilePath" to File("/logs").absolutePath,
                 "buildPlayer" to "player",
-                "buildPlayerPath" to "/player"
+                "buildPlayerPath" to File("/player").absolutePath
             )
         }
 

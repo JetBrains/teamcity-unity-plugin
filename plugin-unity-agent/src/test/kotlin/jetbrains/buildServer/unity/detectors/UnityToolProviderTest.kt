@@ -77,7 +77,7 @@ class UnityToolProviderTest {
         val result = provider.getUnity("unity", runnerContext)
 
         // then
-        result shouldBeEqual UnityEnvironment("$unityRootParam/Unity", unityVersion, false)
+        result shouldBeEqual UnityEnvironment(File("$unityRootParam/Unity").absolutePath, unityVersion, false)
     }
 
     private fun createInstance() = UnityToolProvider(
