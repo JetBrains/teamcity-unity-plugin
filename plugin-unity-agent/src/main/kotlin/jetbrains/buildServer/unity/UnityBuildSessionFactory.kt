@@ -20,6 +20,7 @@ import jetbrains.buildServer.agent.AgentBuildRunnerInfo
 import jetbrains.buildServer.agent.BuildAgentConfiguration
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
+import jetbrains.buildServer.unity.detectors.UnityToolProvider
 
 /**
  * Unity runner service factory.
@@ -27,7 +28,7 @@ import jetbrains.buildServer.agent.runner.MultiCommandBuildSessionFactory
 class UnityBuildSessionFactory(private val unityToolProvider: UnityToolProvider) : MultiCommandBuildSessionFactory {
 
     override fun createSession(runnerContext: BuildRunnerContext) =
-            UnityCommandBuildSession(runnerContext, unityToolProvider)
+        UnityCommandBuildSession(runnerContext, unityToolProvider)
 
     override fun getBuildRunnerInfo(): AgentBuildRunnerInfo {
         return object : AgentBuildRunnerInfo {

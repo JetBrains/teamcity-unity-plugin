@@ -16,26 +16,24 @@
 
 package jetbrains.buildServer.unity
 
-import com.vdurmont.semver4j.Semver
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.VirtualContext
+import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
 import org.testng.annotations.DataProvider
 import java.io.File
 import kotlin.random.Random
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertContains
-import kotlin.test.assertNotNull
+import kotlin.test.*
 
-class UnityRunnerBuildServiceTests {
-    private val defaultUnityVersion = Semver("2021.3.16")
+class UnityRunnerBuildServiceTest {
     private val defaultEditorPath = "somePath"
+    private val defaultUnityVersion = parseVersion("2021.3.16")
+    private val defaultUnityEnvironment = UnityEnvironment(defaultEditorPath, defaultUnityVersion)
 
-    private val toolProviderMock = mockk<UnityToolProvider>()
     private val buildRunnerContextMock = mockk<BuildRunnerContext>()
     private val agentRunningBuildMock = mockk<AgentRunningBuild>()
 
@@ -46,14 +44,13 @@ class UnityRunnerBuildServiceTests {
     }
 
     private fun defaultMockSetup() {
-        every { toolProviderMock.getUnity(any(), any(), any()) } returns Pair(defaultUnityVersion, defaultEditorPath)
-
         buildRunnerContextMock.apply {
             every { runnerParameters } returns mapOf(
                 "noGraphics" to true.toString()
             )
             every { buildParameters } returns mockk(relaxed = true)
             every { workingDirectory } returns File("dir")
+            every { isVirtualContext } returns false
         }
 
         agentRunningBuildMock.apply {
@@ -65,7 +62,7 @@ class UnityRunnerBuildServiceTests {
 
     data class LogArgumentTestCase(
         val system: String,
-        val unityVersion: Semver
+        val unityVersion: UnityVersion
     )
 
     @DataProvider(name = "consoleLogOutput")
@@ -80,9 +77,7 @@ class UnityRunnerBuildServiceTests {
     @Test(dataProvider = "consoleLogOutput")
     fun makeProgramCommandLine_consoleLogOutput_correctLogArgumentGenerated(case: LogArgumentTestCase) {
         // arrange
-        every { toolProviderMock.getUnity(any(), any(), any()) } returns Pair(case.unityVersion, defaultEditorPath)
-
-        val sut = UnityRunnerBuildService(toolProviderMock, emptyMap())
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap())
         sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
 
         System.setProperty("os.name", case.system)
@@ -96,15 +91,55 @@ class UnityRunnerBuildServiceTests {
         assertContains(commandString, "-logFile -")
     }
 
+    @Test
+    fun makeProgramCommandLine_virtualContext_correctCommandLineGenerated() {
+        // arrange
+        val virtualContext = mockk<VirtualContext>()
+        virtualContext.apply {
+            every { resolvePath("./") } returns "/converted/project"
+            every { resolvePath(File("/logs").absolutePath) } returns "/converted/logs"
+            every { resolvePath(File("/player").absolutePath) } returns "/converted/player"
+        }
+
+        buildRunnerContextMock.apply {
+            every { isVirtualContext } returns true
+            every { getVirtualContext() } returns virtualContext
+            every { runnerParameters } returns mapOf(
+                "noGraphics" to true.toString(),
+                "logFilePath" to "/logs",
+                "buildPlayer" to "player",
+                "buildPlayerPath" to "/player"
+            )
+        }
+
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap())
+        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+
+        System.setProperty("os.name", "linux")
+
+        // act
+        val commandLine = sut.makeProgramCommandLine()
+
+        // assert
+        assertNotNull(commandLine)
+        val commandString = commandLine.arguments.joinToString(" ")
+        assertEquals(
+            "-batchmode -projectPath /converted/project -player /converted/player -nographics -quit -logFile /converted/logs",
+            commandString
+        )
+    }
+
     private inner class FakeUnityBuildFeature(
         init: Map<String, String> = mapOf()
     ) : AgentBuildFeature {
         private val parameters: MutableMap<String, String>
+
         init {
             parameters = (mapOf(
                 UnityConstants.PARAM_UNITY_VERSION to defaultUnityVersion.toString(),
             ) + init).toMutableMap()
         }
+
         override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
         override fun getParameters(): MutableMap<String, String> = parameters
     }

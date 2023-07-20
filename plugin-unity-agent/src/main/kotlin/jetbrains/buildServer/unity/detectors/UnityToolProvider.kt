@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
-import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.config.AgentParametersSupplier
+import jetbrains.buildServer.unity.UnityConstants
+import jetbrains.buildServer.unity.UnityEnvironment
+import jetbrains.buildServer.unity.UnityVersion
+import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
+import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
 import jetbrains.buildServer.util.EventDispatcher
 import java.io.File
 
@@ -42,7 +46,7 @@ class UnityToolProvider(
         else -> null
     }
 
-    private val unityVersions = mutableMapOf<Semver, String>()
+    private val unityVersions = mutableMapOf<UnityVersion, String>()
 
     init {
         toolsRegistry.registerToolProvider(this)
@@ -52,7 +56,7 @@ class UnityToolProvider(
 
     override fun agentStarted(agent: BuildAgent) {
         // If unityVersions is empty, it may mean the agent was initialized from a state cache
-        if (unityVersions.isNotEmpty()){
+        if (unityVersions.isNotEmpty()) {
             return
         }
 
@@ -60,7 +64,7 @@ class UnityToolProvider(
             .filter { entry -> entry.key.startsWith(UnityConstants.UNITY_CONFIG_NAME) }
             .map { entry ->
                 val version = entry.key.substring(UnityConstants.UNITY_CONFIG_NAME.length)
-                Semver(version) to entry.value
+                parseVersion(version) to entry.value
             }.toMap()
 
         unityVersions.putAll(unityToolsParameters)
@@ -81,45 +85,42 @@ class UnityToolProvider(
         }.toMap().toMutableMap()
     }
 
-    private fun getParameterName(version: Semver) = "${UnityConstants.UNITY_CONFIG_NAME}$version"
+    private fun getParameterName(version: UnityVersion) = "${UnityConstants.UNITY_CONFIG_NAME}$version"
 
     override fun supports(toolName: String): Boolean {
         return UnityConstants.RUNNER_TYPE.equals(toolName, true)
     }
 
     override fun getPath(toolName: String): String {
-        return getUnity(toolName, mapOf()).second
+        return getUnity(toolName, mapOf()).unityPath
     }
 
     override fun getPath(
         toolName: String,
-        build: AgentRunningBuild,
+        ignored: AgentRunningBuild,
         runner: BuildRunnerContext
     ): String {
-        return getUnity(toolName, build, runner).second
+        return getUnity(toolName, runner).unityPath
     }
 
     fun getUnity(
         toolName: String,
-        build: AgentRunningBuild,
         runner: BuildRunnerContext
-    ): Pair<Semver, String> {
-        if (runner.isVirtualContext) {
-            return Semver("2019.1.0") to UnityConstants.RUNNER_TYPE
-        }
-
+    ): UnityEnvironment {
         val parameters: Map<String?, String?> =
-                if (!runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION].isNullOrEmpty() ||
-                    !runner.runnerParameters[UnityConstants.PARAM_UNITY_ROOT].isNullOrEmpty()) {
-                    runner.runnerParameters
-                } else {
-                    val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()
-                    feature?.parameters ?: mapOf()
-                }
+            if (!runner.runnerParameters[UnityConstants.PARAM_UNITY_VERSION].isNullOrEmpty() ||
+                !getUnityRootParam(runner.runnerParameters).isNullOrEmpty()
+            ) {
+                runner.runnerParameters
+            } else {
+                val feature = runner.build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()
+                feature?.parameters ?: mapOf()
+            }
+
         return getUnity(toolName, parameters)
     }
 
-    fun getUnity(toolName: String, parameters: Map<String?, String?>): Pair<Semver, String> {
+    fun getUnity(toolName: String, parameters: Map<String?, String?>): UnityEnvironment {
         if (!supports(toolName)) {
             throw ToolCannotBeFoundException("Unsupported tool $toolName")
         }
@@ -129,17 +130,17 @@ class UnityToolProvider(
         }
 
         // Path has been specified by Tool dropdown or provided explicitly
-        val editorPath = parameters[UnityConstants.PARAM_UNITY_ROOT]
-        if(!editorPath.isNullOrEmpty()) {
-            val unityVersion = unityDetector.getVersionFromInstall(File(editorPath))
-                    ?: throw ToolCannotBeFoundException("""
-                        Unable to locate tool $toolName in system. Please make sure correct Unity binary tool is installed
-                        """.trimIndent())
-            return unityVersion to unityDetector.getEditorPath(File(editorPath)).absolutePath
+        val editorPath = getUnityRootParam(parameters)
+        if (!editorPath.isNullOrEmpty()) {
+            val unityVersion =
+                unityDetector.getVersionFromInstall(File(editorPath)) ?: throw ToolCannotBeFoundException(
+                    "Unable to locate tool $toolName in system. Please make sure correct Unity binary tool is installed"
+                )
+            return UnityEnvironment(unityDetector.getEditorPath(File(editorPath)).absolutePath, unityVersion)
         }
 
         // Path is to be discovered by UNITY_VERSION
-        val unityVersion = getUnityVersion(parameters)
+        val unityVersion = getUnityVersionParam(parameters)
 
         val (version, path) = if (unityVersion == null) {
             unityVersions.entries.lastOrNull()?.toPair()
@@ -155,26 +156,28 @@ class UnityToolProvider(
             }
         } ?: throw ToolCannotBeFoundException(
             """
-                Unable to locate tool $toolName $unityVersion in system. Please make sure to specify UNITY_PATH environment variable
+                Unable to locate tool $toolName $unityVersion in system. 
+                Please make sure to specify UNITY_PATH environment variable
                 """.trimIndent()
         )
 
-        return version to unityDetector.getEditorPath(File(path)).absolutePath
+        return UnityEnvironment(unityDetector.getEditorPath(File(path)).absolutePath, version)
     }
 
-    private fun getUpperVersion(version: Semver): Semver = when {
-        version.minor == null -> version.toStrict().nextMajor()
-        else -> version.toStrict().nextMinor()
-    }
-
-
-    private fun getUnityVersion(parameters: Map<String?, String?>): Semver? {
-        val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim() ?: return null
-
-        return Semver(unityVersion, Semver.SemverType.LOOSE)
+    private fun getUpperVersion(version: UnityVersion): UnityVersion = when (version.minor) {
+        null -> version.nextMajor()
+        else -> version.nextMinor()
     }
 
     companion object {
         private val LOG = Logger.getInstance(UnityToolProvider::class.java.name)
+
+        fun getUnityRootParam(parameters: Map<String?, String?>): String? = parameters[UnityConstants.PARAM_UNITY_ROOT]
+
+        fun getUnityVersionParam(parameters: Map<String?, String?>): UnityVersion? {
+            val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]?.trim() ?: return null
+
+            return tryParseVersion(unityVersion)
+        }
     }
 }

@@ -21,6 +21,7 @@ plugins {
 
 teamcity {
     version = teamcityVersion
+    allowSnapshotVersions = true
 
     agent {
         descriptor = project.file('teamcity-plugin.xml')
@@ -29,6 +30,8 @@ teamcity {
     files {
         into('tools') {
             from('tools/pe-product-version-detector/binaries/PeProductVersionDetector.exe')
+            from('tools/unity-environment-detector/unity-environment-detector.sh')
+            from('tools/unity-environment-detector/unity-environment-detector.bat')
         }
     }
 }

@@ -28,7 +28,7 @@ ext {
             : project.version
 
     projectIds = ['group': 'teamcity-unity-plugin', 'version': project.version]
-    teamcityVersion = project.hasProperty('teamcityVersion') ? project.property('teamcityVersion') : '2022.10'
+    teamcityVersion = project.hasProperty('teamcityVersion') ? project.property('teamcityVersion') : '2023.07-SNAPSHOT'
     teamcityBaseDir = project.hasProperty('teamcityBaseDir') ? property('teamcityBaseDir') : rootDir.absolutePath + '/.teamcity'
 }
 
@@ -50,6 +50,6 @@ subprojects {
     test.useTestNG()
     jar.version = null
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }

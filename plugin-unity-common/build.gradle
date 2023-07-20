@@ -24,4 +24,5 @@ dependencies {
 
 teamcity {
     version = teamcityVersion
+    allowSnapshotVersions = true
 }

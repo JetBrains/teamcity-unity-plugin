@@ -64,4 +64,7 @@ object UnityConstants {
 
     const val DETECTION_MODE_AUTO = "auto"
     const val DETECTION_MODE_MANUAL = "manual"
+
+    const val PLUGIN_DOCKER_IMAGE = "plugin.docker.imageId"
+    const val DOCKER_WRAPPER_ID = "dockerWrapper"
 }

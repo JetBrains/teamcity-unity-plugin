@@ -16,27 +16,33 @@
 
 package jetbrains.buildServer.unity
 
+import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.agent.runner.CommandExecution
-import jetbrains.buildServer.agent.runner.CommandLineBuildService
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
+import jetbrains.buildServer.unity.UnityConstants.RUNNER_TYPE
+import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
+import jetbrains.buildServer.unity.detectors.UnityToolProvider
 
 /**
  * Unity runner service.
  */
-class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext,
-                               private val unityToolProvider: UnityToolProvider) : MultiCommandBuildSession {
+class UnityCommandBuildSession(
+    private val runnerContext: BuildRunnerContext,
+    private val unityToolProvider: UnityToolProvider
+) : MultiCommandBuildSession {
 
-    private var buildSteps: Iterator<CommandExecution>? = null
+    private var commands: Iterator<CommandExecution>? = null
     private var lastCommands = arrayListOf<CommandExecutionAdapter>()
 
     override fun sessionStarted() {
-        buildSteps = getSteps()
+        commands = commands().iterator()
     }
 
     override fun getNextCommand(): CommandExecution? {
-        buildSteps?.let {
+        commands?.let {
             if (it.hasNext()) {
                 return it.next()
             }
@@ -46,17 +52,41 @@ class UnityCommandBuildSession(private val runnerContext: BuildRunnerContext,
     }
 
     override fun sessionFinished(): BuildFinishedStatus? {
-        return lastCommands.last().result
+        return lastCommands.lastOrNull()?.result
     }
 
-    private fun getSteps(): Iterator<CommandExecution> =
+    private fun commands() = sequence {
+        val unityEnvironment = unityEnvironment()
+
+        yieldAll(
             UnityRunnerBuildService
-                    .createAdapters(unityToolProvider, runnerContext)
-                    .map {
-                        it.initialize(runnerContext.build, runnerContext)
-                        val command = CommandExecutionAdapter(it)
-                        lastCommands.add(command)
-                        command
-                    }
-                    .iterator()
+                .createAdapters(unityEnvironment, runnerContext)
+                .map {
+                    it.initialize(runnerContext.build, runnerContext)
+                    val command = CommandExecutionAdapter(it)
+                    lastCommands.add(command)
+                    command
+                }
+        )
+    }
+
+    private suspend fun SequenceScope<CommandExecution>.unityEnvironment(): UnityEnvironment {
+        return if (runnerContext.isVirtualContext) {
+            LOG.debug("Detecting Unity virtual environment")
+            val detectCommand = DetectVirtualUnityEnvironmentCommand(runnerContext)
+            yield(detectCommand)
+
+            if (detectCommand.results.isEmpty())
+                throw ToolCannotBeFoundException("Failed to detect Unity virtual environment")
+
+            detectCommand.results.first()
+        } else {
+            LOG.debug("Detecting Unity environment")
+            unityToolProvider.getUnity(RUNNER_TYPE, runnerContext)
+        }
+    }
+
+    companion object {
+        private val LOG = Logger.getInstance(UnityCommandBuildSession::class.java.name)
+    }
 }

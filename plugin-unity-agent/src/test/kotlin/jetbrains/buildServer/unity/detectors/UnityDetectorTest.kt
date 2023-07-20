@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.util.SystemInfo
 import org.testng.SkipException
 import kotlin.test.Test
 
-class UnityVersionsDetectorTest {
+class UnityDetectorTest {
 
     @Test
-    fun testFindInstallations() {
+    fun `print found installations`() {
         val detector = when {
             SystemInfo.isWindows -> WindowsUnityDetector(PEProductVersionDetector())
             SystemInfo.isMac -> MacOsUnityDetector()

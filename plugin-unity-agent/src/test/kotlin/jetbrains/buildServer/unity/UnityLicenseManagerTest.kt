@@ -17,7 +17,6 @@
 package jetbrains.buildServer.unity
 
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.vdurmont.semver4j.Semver
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -27,28 +26,30 @@ import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerSettings
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
+import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
+import jetbrains.buildServer.unity.detectors.UnityToolProvider
 import jetbrains.buildServer.unity.util.CommandLineRunner
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.random.Random
 import kotlin.test.*
 
-class UnityLicenseManagerTests {
+class UnityLicenseManagerTest {
     private val editorPath = "somePath"
     private var tmpDir: Path? = null
 
-    private val toolProviderMock = mockk<UnityToolProvider> {
-        every { getUnity(any(), any()) } returns Pair(Semver("2022", Semver.SemverType.LOOSE), editorPath)
-    }
+    private val toolProviderMock = mockk<UnityToolProvider>()
     private val commandLineRunnerMock = mockk<CommandLineRunner>()
-    private val eventDispatcherMock = mockk<AgentEventDispatcher> {
-        every { addListener(any()) } returns Unit
-    }
+    private val eventDispatcherMock = mockk<AgentEventDispatcher>()
 
     @BeforeTest
     fun setUp() {
         clearMocks(commandLineRunnerMock)
         tmpDir = Files.createTempDirectory(null)
+
+        every { eventDispatcherMock.addListener(any()) } returns Unit
+        every { toolProviderMock.getUnity(any(), any<Map<String?, String?>>()) } returns
+                UnityEnvironment(editorPath, parseVersion("2022"))
     }
 
     @AfterTest
@@ -137,6 +138,6 @@ class UnityLicenseManagerTests {
     private fun generateUnityBuildRunnerMock() = mockk<BuildRunnerSettings> {
         every { isEnabled } returns true
         every { runType } returns UnityConstants.RUNNER_TYPE
-        every { runnerParameters["plugin.docker.imageId"] } returns null
+        every { runnerParameters[UnityConstants.PLUGIN_DOCKER_IMAGE] } returns null
     }
 }

@@ -6,10 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-
-### Changed
-
-### Fixed
+- Support for running Unity inside a container starting from 2023.09 TeamCity version
 
 ## 1.0.4 - 2023-05-03
 

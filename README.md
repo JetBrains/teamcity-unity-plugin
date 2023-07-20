@@ -15,6 +15,7 @@ The plugin supports building Unity projects on TeamCity.
 * Unity Editor tests reporting
 * Unity build settings feature
 * Unity as Agent tool
+* Running Unity build step inside a container
 
 ### Unity build settings feature
 
@@ -102,6 +103,10 @@ should [list][plugin-descriptor.executables] all files in the archive which are 
     Feel free to upvote [TW-21673](https://youtrack.jetbrains.com/issue/TW-21673) issue to make it work out of the box.
 - Agent environment must contain all the required global dependencies to make Unity work on a given OS.
 
+
+## Running Unity build step inside a container
+This plugin is integrated with [Container Wrapper](https://www.jetbrains.com/help/teamcity/container-wrapper.html) extension.
+The integration works only with `2023.09` and above versions of TeamCity.
 
 ## Common problems
 

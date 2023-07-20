@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.diagnostic.Logger
-import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.UnityVersion
 import jetbrains.buildServer.unity.util.Completed
 import jetbrains.buildServer.unity.util.Error
 import jetbrains.buildServer.unity.util.Timeout
@@ -34,11 +34,11 @@ import kotlin.io.path.exists
 class PEProductVersionDetector {
     private val detectorToolPath = "../plugins/teamcity-unity-agent/tools/PeProductVersionDetector.exe"
 
-    fun detect(executable: File): Semver? {
+    fun detect(executable: File): UnityVersion? {
         val version = PEUtil.getProductVersion(executable)
 
         if (version != null) {
-            return Semver("${version.p1}.${version.p2}.${version.p3}", Semver.SemverType.LOOSE)
+            return UnityVersion(version.p1, version.p2, version.p3)
         }
 
         LOG.debug("unable to detect version via PEUtil, falling back to embedded tool")
@@ -51,7 +51,7 @@ class PEProductVersionDetector {
         }
     }
 
-    private fun detectWithEmbeddedTool(executable: File): Semver? {
+    private fun detectWithEmbeddedTool(executable: File): UnityVersion? {
         val detectorPath = Paths.get(detectorToolPath).toAbsolutePath()
 
         if (!detectorPath.exists()) {
@@ -59,13 +59,12 @@ class PEProductVersionDetector {
             return null
         }
 
-        fun parseStdoutToVersion(stdout: String): Semver? {
+        fun parseStdoutToVersion(stdout: String): UnityVersion? {
             return try {
                 val versionObject = Json.decodeFromString<ProductVersion?>(stdout)
 
                 if (versionObject?.majorPart != null) {
-                    Semver("${versionObject.majorPart}.${versionObject.minorPart}.${versionObject.buildPart}",
-                        Semver.SemverType.LOOSE)
+                    UnityVersion(versionObject.majorPart, versionObject.minorPart, versionObject.buildPart)
                 } else {
                     LOG.info("version does not contain major part. stdout: $stdout")
                     null

@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
-import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.UnityVersion
 import java.io.File
 
 interface UnityDetector {
-    fun findInstallations(): Sequence<Pair<Semver, File>>
+    fun findInstallations(): Sequence<Pair<UnityVersion, File>>
     fun getEditorPath(directory: File): File
-    fun getVersionFromInstall(editorRoot: File): Semver?
+    fun getVersionFromInstall(editorRoot: File): UnityVersion?
 }

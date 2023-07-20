@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.diagnostic.Logger
-import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.UnityVersion
 import java.io.File
 
 class WindowsUnityDetector(
@@ -50,7 +50,7 @@ class WindowsUnityDetector(
         }
     }
 
-    override fun getVersionFromInstall(editorRoot: File): Semver? {
+    override fun getVersionFromInstall(editorRoot: File): UnityVersion? {
         LOG.debug("Looking for Unity installation in $editorRoot")
 
         val executable = getEditorPath(editorRoot)

@@ -64,7 +64,15 @@ class UnityRunnerRunTypeTest {
                         mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
                                 UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
                         listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
-                )
+                ),
+                arrayOf(
+                    mapOf(
+                        UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                        UnityConstants.PARAM_UNITY_VERSION to "",
+                        UnityConstants.PLUGIN_DOCKER_IMAGE to "some-image"
+                    ),
+                    emptyList<Requirement>()
+                ),
         )
     }
 

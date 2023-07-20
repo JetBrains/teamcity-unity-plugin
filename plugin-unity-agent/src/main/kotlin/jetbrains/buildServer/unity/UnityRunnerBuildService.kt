@@ -18,13 +18,14 @@ package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.SystemInfo
-import com.vdurmont.semver4j.Semver
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.messages.Status
 import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_PLATFORM
+import jetbrains.buildServer.unity.UnitySpecialVersions.UNITY_2018_2_0
+import jetbrains.buildServer.unity.UnitySpecialVersions.UNITY_2019_1_0
 import jetbrains.buildServer.unity.logging.LineStatusProvider
 import jetbrains.buildServer.unity.logging.UnityLoggingListener
 import jetbrains.buildServer.unity.messages.ImportData
@@ -39,9 +40,9 @@ import java.io.RandomAccessFile
  * Unity runner service.
  */
 class UnityRunnerBuildService(
-        private val unityToolProvider: UnityToolProvider,
-        private val overriddenRunnerParameters: Map<String, String>)
-    : BuildServiceAdapter() {
+    private val unityEnvironment: UnityEnvironment,
+    private val overriddenRunnerParameters: Map<String, String>
+) : BuildServiceAdapter() {
 
     private var unityTestsReportFile: File? = null
     private var unityLogFileTailer: Tailer? = null
@@ -84,7 +85,8 @@ class UnityRunnerBuildService(
         }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
-        val (version, toolPath) = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, build, runnerContext)
+        val unityVersion = unityEnvironment.unityVersion
+        val unityPath = unityEnvironment.unityPath
         val arguments = mutableListOf("-batchmode")
 
         var projectPath = "./"
@@ -94,8 +96,8 @@ class UnityRunnerBuildService(
             }
         }
 
-        if (version > UNITY_2018_2) {
-            arguments.addAll(listOf("-projectPath", projectPath))
+        if (unityVersion > UNITY_2018_2_0) {
+            arguments.addAll(listOf("-projectPath", resolvePath(projectPath)))
         } else {
             // In Unity < 2018.2 we should specify project path argument with equals sign
             // https://answers.unity.com/questions/622429/i-have-a-problem-the-log-is-couldnt-set-project-pa.html
@@ -120,7 +122,7 @@ class UnityRunnerBuildService(
                 if (!playerFile.isAbsolute) {
                     playerFile = File(workingDirectory, playerPath.trim())
                 }
-                arguments.addAll(listOf("-" + it.trim(), playerFile.absolutePath))
+                arguments.addAll(listOf("-" + it.trim(), resolvePath(playerFile.absolutePath)))
             }
         }
 
@@ -150,7 +152,7 @@ class UnityRunnerBuildService(
 
         appendRunTestsArguments(arguments)
 
-        appendLogArgument(arguments, version)
+        appendLogArgument(arguments, unityVersion)
 
         // Use line statuses file if available
         parameters.value[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
@@ -168,7 +170,7 @@ class UnityRunnerBuildService(
             }
         }
 
-        return createProgramCommandline(toolPath, arguments)
+        return createProgramCommandline(unityPath, arguments)
     }
 
     private fun appendRunTestsArguments(arguments: MutableList<String>) {
@@ -208,7 +210,7 @@ class UnityRunnerBuildService(
                 } else {
                     ARG_TEST_RESULTS_FILE
                 }
-                arguments.addAll(listOf(testResultsArgument, this.absolutePath))
+                arguments.addAll(listOf(testResultsArgument, resolvePath(this.absolutePath)))
             }
         }
 
@@ -247,7 +249,7 @@ class UnityRunnerBuildService(
 
     override fun getListeners() = unityListeners
 
-    private fun appendLogArgument(arguments: MutableList<String>, version: Semver) {
+    private fun appendLogArgument(arguments: MutableList<String>, version: UnityVersion) {
         val verbosityArg = verbosityArgument
         arguments.add(verbosityArg)
 
@@ -255,7 +257,7 @@ class UnityRunnerBuildService(
         // https://issuetracker.unity3d.com/issues/command-line-logfile-with-no-parameters-outputs-to-screen-on-os-x-but-not-on-windows
         // Was resolved in 2019.1 but only for -logFile with -nographics option
         fun currentSetupSupportsConsoleOutput() = !SystemInfo.isWindows
-                || (version >= UNITY_2019 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS))
+                || (version >= UNITY_2019_1_0 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS))
 
         if (logFilePath.isNullOrEmpty() && currentSetupSupportsConsoleOutput()) {
             arguments.add("-")
@@ -274,7 +276,7 @@ class UnityRunnerBuildService(
             file
         }
 
-        arguments.add(logFile.absolutePath)
+        arguments.add(resolvePath(logFile.absolutePath))
 
         unityLogFileTailer = Tailer.create(logFile, object : TailerListenerAdapter() {
             override fun handle(line: String) {
@@ -307,6 +309,11 @@ class UnityRunnerBuildService(
         }
     }
 
+    private fun resolvePath(path: String) =
+        if (runnerContext.isVirtualContext)
+            runnerContext.virtualContext.resolvePath(path)
+        else path
+
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
@@ -319,16 +326,14 @@ class UnityRunnerBuildService(
         private const val LOG_FILE_ACCESS_MODE = "rw"
         private val RUN_TESTS_REGEX = Regex("-run(Editor)?Tests")
         private val RUN_TEST_RESULTS_REGEX = Regex("-(editorTestsResultFile|testResults)")
-        private val UNITY_2018_2 = Semver("2018.2.0")
-        private val UNITY_2019 = Semver("2019.1.0")
 
-        fun createAdapters(unityToolProvider: UnityToolProvider, context: BuildRunnerContext) =
+        fun createAdapters(unityEnvironment: UnityEnvironment, context: BuildRunnerContext) =
                 getParameterVariants(context)
                         .ifEmpty {
                             sequenceOf(emptyMap())
                         }
                         .map {
-                            UnityRunnerBuildService(unityToolProvider, it)
+                            UnityRunnerBuildService(unityEnvironment, it)
                         }
 
         private fun getParameterVariants(context: BuildRunnerContext) = sequence {

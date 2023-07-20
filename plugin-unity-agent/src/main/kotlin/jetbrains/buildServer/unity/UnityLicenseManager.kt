@@ -21,6 +21,7 @@ import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.agent.impl.AgentEventDispatcher
 import jetbrains.buildServer.messages.DefaultMessagesInfo
+import jetbrains.buildServer.unity.detectors.UnityToolProvider
 import jetbrains.buildServer.unity.util.CommandLineRunner
 import java.io.File
 
@@ -50,7 +51,7 @@ class UnityLicenseManager(
 
             // Activate Unity license
             try {
-                unityEditorPath = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, parameters).second
+                unityEditorPath = unityToolProvider.getUnity(UnityConstants.RUNNER_TYPE, parameters).unityPath
             } catch (e: ToolCannotBeFoundException) {
                 build.buildLogger.warning(e.message)
                 return
@@ -119,7 +120,7 @@ class UnityLicenseManager(
     private fun isUnityRunner(it: BuildRunnerSettings): Boolean {
         if (!it.isEnabled) return false
         if (it.runType != UnityConstants.RUNNER_TYPE) return false
-        return it.runnerParameters["plugin.docker.imageId"].isNullOrEmpty()
+        return it.runnerParameters[UnityConstants.PLUGIN_DOCKER_IMAGE].isNullOrEmpty()
     }
 
     private fun <T> underLogBlock(blockName: String, logger: BuildProgressLogger, isVerbose: Boolean, block: () -> T): T {

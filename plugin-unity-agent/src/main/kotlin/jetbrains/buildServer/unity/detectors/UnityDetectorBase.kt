@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.diagnostic.Logger
+import jetbrains.buildServer.unity.UnityConstants
 import jetbrains.buildServer.unity.unityhub.Editor
 import jetbrains.buildServer.unity.unityhub.HubInfo
 import jetbrains.buildServer.util.FileUtil

@@ -19,7 +19,10 @@ package jetbrains.buildServer.unity
 import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.serverSide.PropertiesProcessor
 import jetbrains.buildServer.serverSide.RunType
+import jetbrains.buildServer.serverSide.RunTypeExtension
 import jetbrains.buildServer.serverSide.RunTypeRegistry
+import jetbrains.buildServer.unity.UnityConstants.DOCKER_WRAPPER_ID
+import jetbrains.buildServer.util.positioning.PositionAware
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 
 /**
@@ -103,11 +106,18 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     override fun getRunnerSpecificRequirements(parameters: Map<String, String>): List<Requirement> {
         val detectionMode = parameters[UnityConstants.PARAM_DETECTION_MODE]
         val unityVersion = parameters[UnityConstants.PARAM_UNITY_VERSION]
-        return if (detectionMode != UnityConstants.DETECTION_MODE_MANUAL && unityVersion != null) {
+        val isNotVirtual = parameters[UnityConstants.PLUGIN_DOCKER_IMAGE].isNullOrEmpty()
+        return if (detectionMode != UnityConstants.DETECTION_MODE_MANUAL && unityVersion != null && isNotVirtual) {
             listOf(Requirements.Unity.create(unityVersion))
         } else {
             emptyList()
         }
+    }
+
+    override fun supports(runTypeExtension: RunTypeExtension): Boolean {
+        if (runTypeExtension is PositionAware && runTypeExtension.orderId == DOCKER_WRAPPER_ID)
+            return true
+        return super.supports(runTypeExtension)
     }
 
     private fun escapeRegex(value: String) =

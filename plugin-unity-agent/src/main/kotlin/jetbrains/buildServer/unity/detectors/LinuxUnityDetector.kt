@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package jetbrains.buildServer.unity
+package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.diagnostic.Logger
-import com.vdurmont.semver4j.Semver
+import jetbrains.buildServer.unity.UnityVersion
+import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
 import jetbrains.buildServer.unity.util.Completed
 import jetbrains.buildServer.unity.util.Error
 import jetbrains.buildServer.unity.util.Timeout
@@ -51,7 +52,7 @@ class LinuxUnityDetector : UnityDetectorBase() {
         yieldAll(findUnityPaths(File("/opt/")))
     }
 
-    override fun getVersionFromInstall(editorRoot: File): Semver? {
+    override fun getVersionFromInstall(editorRoot: File): UnityVersion? {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
         if (!executable.exists()) {
@@ -84,22 +85,10 @@ class LinuxUnityDetector : UnityDetectorBase() {
         }
 
         LOG.info("Version is $version")
-        // Unity version looks like that: 2017.1.1f1
-        // where suffix could be the following:
-        // * a  - alpha
-        // * b  - beta
-        // * p  - patch
-        // * rc - release candidate
-        // * f  - final
-        version = version
-                ?.split("a", "b", "p", "rc", "f")
-                ?.firstOrNull()
-                ?: return null
-
-        LOG.debug("Version after splitting is $version")
         return try {
-            LOG.debug("Reports version $version to ${editorRoot.name}")
-            Semver(version, Semver.SemverType.LOOSE)
+            val unityVersion = tryParseVersion(version)
+            LOG.debug("Reports version $unityVersion to ${editorRoot.name}")
+            unityVersion
         } catch (e: Exception) {
             LOG.infoAndDebugDetails("Invalid Unity version $version in directory $editorRoot", e)
             null
