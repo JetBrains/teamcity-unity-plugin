@@ -2,8 +2,12 @@ package jetbrains.buildServer.unity.util
 
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.unity.UnityConstants.BUILD_FEATURE_TYPE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_ACTIVATE_LICENSE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_LICENSE_TYPE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_PERSONAL_LICENSE_CONTENT
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_ROOT
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_VERSION
+import jetbrains.buildServer.unity.UnityLicenseTypeParameter
 import jetbrains.buildServer.unity.UnityVersion
 import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
 
@@ -34,6 +38,24 @@ fun BuildRunnerContext.unityVersionParam(): UnityVersion? {
 
     unityBuildFeatureParams(this)?.let { params ->
         params[PARAM_UNITY_VERSION]?.let { v -> return tryParseVersion(v) }
+    }
+    return null
+}
+
+fun BuildRunnerContext.unityLicenseTypeParam(): UnityLicenseTypeParameter? {
+    unityBuildFeatureParams(this)?.let { params ->
+        if (params[PARAM_ACTIVATE_LICENSE].toBoolean())
+            return UnityLicenseTypeParameter.PROFESSIONAL
+        params[PARAM_UNITY_LICENSE_TYPE]?.let { licenseTypeId ->
+            return UnityLicenseTypeParameter.from(licenseTypeId)
+        }
+    }
+    return null
+}
+
+fun BuildRunnerContext.unityPersonalLicenseContentParam(): String? {
+    unityBuildFeatureParams(this)?.let { params ->
+        return params[PARAM_UNITY_PERSONAL_LICENSE_CONTENT]
     }
     return null
 }

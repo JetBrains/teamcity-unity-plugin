@@ -38,6 +38,11 @@ class UnityPasswordsProvider : PasswordsProvider {
                 parameters.add(SimpleParameter(this, it.trim()))
             }
         }
+        UnityConstants.PARAM_UNITY_PERSONAL_LICENSE_CONTENT.apply {
+            feature.parameters[this]?.let {
+                parameters.add(SimpleParameter(this, it.trim()))
+            }
+        }
 
         return parameters
     }

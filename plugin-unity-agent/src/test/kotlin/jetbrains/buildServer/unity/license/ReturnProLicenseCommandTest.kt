@@ -14,8 +14,11 @@ import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
-class ReturnUnityLicenseCommandTest {
+class ReturnProLicenseCommandTest {
+
     private val runnerContext = mockk<BuildRunnerContext>()
     private val virtualContext = mockk<VirtualContext>()
     private val build = mockk<AgentRunningBuild>()
@@ -52,13 +55,15 @@ class ReturnUnityLicenseCommandTest {
     fun `should make program command line`() {
         // given
         val command = createInstance()
-        val logFile = mockk<File>()
+        val logFile = mockk<Path>()
         val logPath = "/path/to/logs.txt"
         val unityEnvironment = anUnityEnvironment()
         command.withUnityEnvironment(unityEnvironment)
 
-        every { fileSystemService.createTempFile(agentTempDirectory, "unityBuildLog-", "-1.txt") } returns logFile
-        every { logFile.absolutePath } returns logPath
+        every {
+            fileSystemService.createTempFile(agentTempDirectory.toPath(), "return-license-log-", "-1.txt")
+        } returns logFile
+        every { logFile.absolutePathString() } returns logPath
         every { buildFeature.parameters } returns mapOf(
             "username" to "someUsername",
             "secure:password" to "somePassword",
@@ -77,7 +82,7 @@ class ReturnUnityLicenseCommandTest {
             listOf(
                 "-quit", "-batchmode", "-nographics", "-returnlicense",
                 "-username", "someUsername", "-password", "somePassword",
-                "-logFile", logPath
+                "-logFile", logPath,
             )
         )
     }
@@ -138,5 +143,5 @@ class ReturnUnityLicenseCommandTest {
             """.trimIndent()
     }
 
-    private fun createInstance() = ReturnUnityLicenseCommand(runnerContext, fileSystemService)
+    private fun createInstance() = ReturnProLicenseCommand(runnerContext, fileSystemService)
 }

@@ -24,10 +24,13 @@
     .runnerFormTable tr th.withTopBorder {
         border-top: 1px dotted #CCC;
     }
+    .invisibleUpload input[type='file'] {
+        color: transparent;
+    }
 </style>
 
 <script type="text/javascript">
-    var activateLicenseId = BS.Util.escapeId('${params.activateLicense}');
+    const unityLicenseType = BS.Util.escapeId('${params.unityLicenseType}');
 
     BS.UnityBuildFeatureParametersForm = {
         clearInputValues: function($licenseDetails) {
@@ -56,19 +59,82 @@
             });
         },
 
+        updateLicenseUploadNote: function () {
+            const licenseContent = $('${params.unityPersonalLicenseContent}').value
+            const note = $j(BS.Util.escapeId('unityLicenseUploadNote'));
+
+            if (licenseContent) {
+                note.text("License has been successfully uploaded.");
+            } else {
+                note.text("Please upload the .ulf file. Note that it can only be used on the machine where the corresponding .alf file was generated. See the Unity documentation for details.");
+            }
+        },
+
+        validateLicenseFile: function ($file) {
+            const allowedExtensions = ['ulf'], sizeLimit = 100_000; // 100 kilobytes
+            const {name: fileName, size: fileSize} = $file;
+            const fileExtension = fileName.split(".").pop();
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert("File should have .ulf extension");
+                return false;
+            } else if (fileSize > sizeLimit) {
+                alert("File is too large");
+                return false;
+            }
+            return true;
+        },
+
         updateElements: function () {
-            const $licenseDetails = $j(".license");
-            const $activateLicenseCheckbox = $j(activateLicenseId);
-            $licenseDetails.toggle($activateLicenseCheckbox.is(':checked'));
-            if (!$activateLicenseCheckbox.is(':checked')) {
-                this.clearInputValues($licenseDetails);
+            const $professionalLicense = $j(BS.Util.escapeId('professionalLicense'));
+            const $personalLicense = $j(BS.Util.escapeId('personalLicense'));
+
+            switch ($j(unityLicenseType).val()) {
+                case "professionalLicense":
+                    $professionalLicense.show();
+                    $personalLicense.hide();
+                    this.clearInputValues($personalLicense);
+                    break;
+
+                case "personalLicense":
+                    $personalLicense.show();
+                    $professionalLicense.hide();
+                    this.clearInputValues($professionalLicense);
+                    break;
+
+                default:
+                    $professionalLicense.hide();
+                    $personalLicense.hide();
+                    this.clearInputValues($professionalLicense);
+                    this.clearInputValues($personalLicense);
+                    break;
             }
 
+            this.updateLicenseUploadNote();
             BS.MultilineProperties.updateVisible();
         }
     };
 
-    $j(document).on('change', activateLicenseId, function () {
+    $j('#file\\:unityLicenseFile').on('change', function (event) {
+        const input = event.target;
+        if ('files' in input && input.files.length > 0) {
+            const file = input.files[0];
+            if (BS.UnityBuildFeatureParametersForm.validateLicenseFile(file)) {
+                const reader = new FileReader();
+                reader.onload = event => {
+                    $('${params.unityPersonalLicenseContent}').value = event.target.result;
+                    BS.UnityBuildFeatureParametersForm.updateLicenseUploadNote();
+                };
+                reader.onerror = error => BS.UnityBuildFeatureParametersForm.showError('unity_license_upload', error);
+                reader.readAsText(file);
+            } else {
+                file.value = null;
+                $('${params.unityPersonalLicenseContent}').value = null;
+                BS.UnityBuildFeatureParametersForm.updateLicenseUploadNote();
+            }
+        }
+    });
+
+    $j(document).on('change', unityLicenseType, function () {
         BS.UnityBuildFeatureParametersForm.updateElements();
     });
 </script>
@@ -79,15 +145,23 @@
   </td>
 </tr>
 
-<tr>
-    <th>License: <bs:help urlPrefix="https://docs.unity3d.com/Manual/ManagingYourUnityLicense.html" file=""/></th>
+<tr class="unityLicenseType">
+    <th>
+        <label for="${params.unityLicenseType}">License: <bs:help
+                urlPrefix="https://docs.unity3d.com/Manual/ManagingYourUnityLicense.html" file=""/></label>
+    </th>
     <td>
-        <props:checkboxProperty name="${params.activateLicense}"/>
-        <label for="${params.activateLicense}">Activate Unity license on Editor startup</label>
+        <props:selectProperty name="${params.unityLicenseType}" enableFilter="true" className="mediumField">
+            <props:option value="">&lt;Select&gt;</props:option>
+            <c:forEach var="item" items="${params.unityLicenseTypes}">
+                <props:option value="${item.id}"><c:out value="${item.displayName}"/></props:option>
+            </c:forEach>
+        </props:selectProperty>
+        <span class="error" id="error_${params.unityLicenseType}"></span>
+        <span class="smallNote">Specify the type of Unity license.</span>
     </td>
 </tr>
-</tbody>
-<tbody class="license">
+<tbody id="professionalLicense">
 <tr>
     <th class="noBorder"><label for="${params.serialNumber}">Serial number:</label></th>
     <td>
@@ -110,7 +184,18 @@
     </td>
 </tr>
 </tbody>
-<tbody>
+
+<tr id="personalLicense">
+    <th class="noBorder"><label for="${params.unityPersonalLicenseContent}">Upload license:</label></th>
+    <td>
+        <div class="posRel invisibleUpload">
+            <forms:file name="unityLicenseFile" attributes="accept=\".ulf\""/>
+            <span id="uploadError" class="error hidden"></span>
+            <props:hiddenProperty name="${params.unityPersonalLicenseContent}"/>
+            <span id="unityLicenseUploadNote" class="smallNote"></span>
+        </div>
+    </td>
+</tr>
 
 <tr>
   <th class="withTopBorder">

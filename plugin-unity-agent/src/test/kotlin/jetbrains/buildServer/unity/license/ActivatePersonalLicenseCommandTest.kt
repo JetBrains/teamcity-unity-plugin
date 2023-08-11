@@ -1,11 +1,9 @@
 package jetbrains.buildServer.unity.license
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.*
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.messages.BlockData
 import jetbrains.buildServer.unity.UnityEnvironment
@@ -14,8 +12,10 @@ import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
-class ActivateUnityLicenseCommandTest {
+class ActivatePersonalLicenseCommandTest {
 
     private val runnerContext = mockk<BuildRunnerContext>()
     private val virtualContext = mockk<VirtualContext>()
@@ -28,6 +28,7 @@ class ActivateUnityLicenseCommandTest {
     private val workingDirectory = mockk<File>()
     private val workingDirectoryPath = "/path/to/workingDir"
     private val agentTempDirectory = mockk<File>()
+    private val buildTempDirectory = mockk<File>()
 
     @BeforeMethod
     fun setUp() {
@@ -46,6 +47,7 @@ class ActivateUnityLicenseCommandTest {
         every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
         every { build.buildLogger } returns buildLogger
         every { build.agentTempDirectory } returns agentTempDirectory
+        every { build.buildTempDirectory } returns buildTempDirectory
         every { build.buildId } returns 1
     }
 
@@ -53,17 +55,15 @@ class ActivateUnityLicenseCommandTest {
     fun `should make program command line`() {
         // given
         val command = createInstance()
-        val logFile = mockk<File>()
-        val logPath = "/path/to/logs.txt"
+        val licenseFilePath = "/path/to/license/file.ulf"
+        val logFilePath = "/path/to/logs.txt"
         val unityEnvironment = anUnityEnvironment()
         command.withUnityEnvironment(unityEnvironment)
 
-        every { fileSystemService.createTempFile(agentTempDirectory, "unityBuildLog-", "-1.txt") } returns logFile
-        every { logFile.absolutePath } returns logPath
+        mockFiles(licenseFilePath, logFilePath)
+
         every { buildFeature.parameters } returns mapOf(
-            "secure:serialNumber" to "someSerialNumber",
-            "username" to "someUsername",
-            "secure:password" to "somePassword",
+            "secure:unityPersonalLicenseContent" to "personalLicenseContent",
         )
 
         command.beforeProcessStarted()
@@ -78,10 +78,32 @@ class ActivateUnityLicenseCommandTest {
         result.arguments.shouldContainExactly(
             listOf(
                 "-quit", "-batchmode", "-nographics",
-                "-serial", "someSerialNumber", "-username", "someUsername", "-password", "somePassword",
-                "-logFile", logPath
+                "-manualLicenseFile", licenseFilePath,
+                "-logFile", logFilePath,
             )
         )
+    }
+
+    @Test
+    fun `should fail when license content is not provided`() {
+        // given
+        val command = createInstance()
+        val licenseFilePath = "/path/to/license/file.ulf"
+        val logFilePath = "/path/to/logs.txt"
+        val unityEnvironment = anUnityEnvironment()
+        command.withUnityEnvironment(unityEnvironment)
+
+        mockFiles(licenseFilePath, logFilePath)
+
+        every { buildFeature.parameters } returns emptyMap()
+        command.beforeProcessStarted()
+
+        // when // then
+        shouldThrow<IllegalStateException> {
+            command.makeProgramCommandLine()
+        }.apply {
+            message shouldBe "Personal license content is not provided"
+        }
     }
 
     @Test
@@ -108,22 +130,21 @@ class ActivateUnityLicenseCommandTest {
         }
     }
 
-    @Test
-    fun `should close a log block when process is finished`() {
-        // given
-        val command = createInstance()
-        every { buildLogger.logMessage(any()) } returns Unit
-
-        // when
-        command.processFinished(0)
-
-        // then
-        verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Activate Unity license", "unity")
-                it.typeId shouldBe "BlockEnd"
-            })
-        }
+    @Suppress("SameParameterValue")
+    private fun mockFiles(licenseFilePath: String, logFilePath: String) {
+        val licenseFile = mockk<Path>()
+        val logFile = mockk<Path>()
+        every {
+            fileSystemService.createTempFile(buildTempDirectory.toPath(), "unity-personal-license-", ".ulf")
+        } returns licenseFile
+        every {
+            fileSystemService.writeText(licenseFile, "personalLicenseContent")
+        } returns Unit
+        every {
+            fileSystemService.createTempFile(agentTempDirectory.toPath(), "activate-license-log-", "-1.txt")
+        } returns logFile
+        every { licenseFile.absolutePathString() } returns licenseFilePath
+        every { logFile.absolutePathString() } returns logFilePath
     }
 
     private fun anUnityEnvironment(): UnityEnvironment {
@@ -135,10 +156,10 @@ class ActivateUnityLicenseCommandTest {
     private fun aCommandLine(): String {
         return """
             /path/to/unity -quit -batchmode -nographics 
-            -serial someSerial -username someUsername -password somePassword 
+            -manualLicenseFile /path/to/license/file.ulf
             -logFile /path/to/logs.txt"
             """.trimIndent()
     }
 
-    private fun createInstance() = ActivateUnityLicenseCommand(runnerContext, fileSystemService)
+    private fun createInstance() = ActivatePersonalLicenseCommand(runnerContext, fileSystemService)
 }

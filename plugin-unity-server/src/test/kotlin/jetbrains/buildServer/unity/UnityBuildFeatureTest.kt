@@ -23,7 +23,6 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import io.mockk.every
 import io.mockk.mockk
-import jetbrains.buildServer.unity.UnityConstants.PARAM_ACTIVATE_LICENSE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_DETECTION_MODE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_ROOT
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_VERSION
@@ -57,31 +56,35 @@ class UnityBuildFeatureTest {
     }
 
     @DataProvider
-    fun activateLicenceTestData(): Array<Array<Any?>> {
+    fun activateLicenseTestData(): Array<Array<Any?>> {
         return arrayOf(
-            arrayOf("true", true),
-            arrayOf("false", false)
+            arrayOf(emptyMap<String, String>(), false),
+            arrayOf(mapOf("activateLicense" to "true"), true),
+            arrayOf(mapOf("activateLicense" to "false"), false),
+            arrayOf(mapOf("activateLicense" to "invalid activate license value"), false),
+            arrayOf(mapOf("unityLicenseType" to "personalLicense"), true),
+            arrayOf(mapOf("unityLicenseType" to "professionalLicense"), true),
+            arrayOf(mapOf("unityLicenseType" to "invalid license type"), false),
         )
     }
 
-    @Test(dataProvider = "activateLicenceTestData")
-    fun describeParameters_activateLicenceParamExists_describeWhenTrue(
-        activateLicenceParam: String,
-        shouldDescribe: Boolean
+    @Test(dataProvider = "activateLicenseTestData")
+    fun describeParameters_activateLicenseParamExists_describeWhenTrue(
+        licenseTypeParam: Map<String, String>,
+        shouldDescribe: Boolean,
     ) {
         // arrange
         val sut = buildFeature
-        val parameters = mutableMapOf(PARAM_ACTIVATE_LICENSE to activateLicenceParam)
 
         // act
-        val description = sut.describeParameters(parameters)
+        val description = sut.describeParameters(licenseTypeParam)
 
         // assert
         description.isNotBlank() shouldBe shouldDescribe
     }
 
     @Test
-    fun describeParameters_activateLicenceParamAbsent_doNotDescribe() {
+    fun describeParameters_activateLicenseParamAbsent_doNotDescribe() {
         // arrange
         val sut = buildFeature
         val parameters: MutableMap<String, String> = mutableMapOf()

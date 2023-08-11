@@ -25,6 +25,7 @@ import jetbrains.buildServer.unity.UnityConstants.DETECTION_MODE_MANUAL
 import jetbrains.buildServer.unity.UnityConstants.PARAM_ACTIVATE_LICENSE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
 import jetbrains.buildServer.unity.UnityConstants.PARAM_DETECTION_MODE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_LICENSE_TYPE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_ROOT
 import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_VERSION
 import jetbrains.buildServer.web.openapi.PluginDescriptor
@@ -43,10 +44,10 @@ class UnityBuildFeature(descriptor: PluginDescriptor) : BuildFeature() {
 
     override fun describeParameters(parameters: Map<String, String>): String {
         val builder = StringBuilder()
-        parameters[PARAM_ACTIVATE_LICENSE]?.let {
-            if (it.toBoolean()) {
-                builder.append("Activate Unity license: ON\n")
-            }
+        if (parameters[PARAM_ACTIVATE_LICENSE].toBoolean() ||
+            UnityLicenseTypeParameter.from(parameters[PARAM_UNITY_LICENSE_TYPE] ?: "") != null
+        ) {
+            builder.append("Activate Unity license: ON\n")
         }
         parameters[PARAM_CACHE_SERVER]?.let {
             if (it.isNotEmpty()) {

@@ -7,8 +7,10 @@ import io.mockk.*
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.unity.UnityLicenseTypeParameter
 import jetbrains.buildServer.unity.UnityVersion
 import org.testng.annotations.BeforeMethod
+import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
 class UnityParametersExtractorTest {
@@ -137,5 +139,58 @@ class UnityParametersExtractorTest {
 
         // then
         result shouldBe null
+    }
+
+    @DataProvider
+    fun `license type test data`(): Array<Array<Any?>> = arrayOf(
+        arrayOf(mapOf("activateLicense" to "true"), UnityLicenseTypeParameter.PROFESSIONAL),
+        arrayOf(mapOf("unityLicenseType" to "professionalLicense"), UnityLicenseTypeParameter.PROFESSIONAL),
+        arrayOf(mapOf("unityLicenseType" to "personalLicense"), UnityLicenseTypeParameter.PERSONAL),
+        arrayOf(mapOf("notRelevantParam" to "some value"), null),
+        arrayOf(emptyMap<String, String>(), null),
+    )
+
+    @Test(dataProvider = "license type test data")
+    fun `should return unity license type from build feature parameters`(
+        params: Map<String, String>,
+        expectedLicenseType: UnityLicenseTypeParameter?,
+    ) {
+        // given
+        every { runnerContext.runnerParameters } returns mapOf()
+        every { buildFeature.parameters } returns params
+
+        // when
+        val result = runnerContext.unityLicenseTypeParam()
+
+        // then
+        if (expectedLicenseType == null)
+            result shouldBe null
+        else
+            result!! shouldBeEqual expectedLicenseType
+    }
+
+    @DataProvider
+    fun `license content test data`(): Array<Array<Any?>> = arrayOf(
+        arrayOf(mapOf("secure:unityPersonalLicenseContent" to "someContent"), "someContent"),
+        arrayOf(emptyMap<String, String>(), null),
+    )
+
+    @Test(dataProvider = "license content test data")
+    fun `should return unity personal license content from build feature parameters`(
+        params: Map<String, String>,
+        expectedContent: String?,
+    ) {
+        // given
+        every { runnerContext.runnerParameters } returns mapOf()
+        every { buildFeature.parameters } returns params
+
+        // when
+        val result = runnerContext.unityPersonalLicenseContentParam()
+
+        // then
+        if (expectedContent == null)
+            result shouldBe null
+        else
+            result!! shouldBeEqual expectedContent
     }
 }

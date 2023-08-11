@@ -20,12 +20,12 @@ import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
-import jetbrains.buildServer.unity.license.UnityProfessionalLicenceManager
+import jetbrains.buildServer.unity.license.UnityLicenseManager
 
 class UnityCommandBuildSession(
     private val runnerContext: BuildRunnerContext,
     private val unityEnvironmentProvider: UnityEnvironmentProvider,
-    private val unityProfessionalLicenceManager: UnityProfessionalLicenceManager,
+    private val unityLicenseManager: UnityLicenseManager,
 ) : MultiCommandBuildSession {
 
     private var commands: Iterator<CommandExecution>? = null
@@ -51,18 +51,18 @@ class UnityCommandBuildSession(
 
     private fun commandsSequence() = sequence {
         detectUnityEnvironment()
-        activateProfessionalLicenceIfNeeded()
+        activateLicenceIfNeeded()
         executeBuild()
-        returnProfessionalLicenceIfNeeded()
+        returnLicenceIfNeeded()
     }
 
     private suspend fun SequenceScope<CommandExecution>.detectUnityEnvironment() {
         yieldAll(unityEnvironmentProvider.provide(runnerContext))
     }
 
-    private suspend fun SequenceScope<CommandExecution>.activateProfessionalLicenceIfNeeded() {
+    private suspend fun SequenceScope<CommandExecution>.activateLicenceIfNeeded() {
         yieldAll(
-            unityProfessionalLicenceManager.activateLicence(
+            unityLicenseManager.activateLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 runnerContext,
             )
@@ -82,9 +82,9 @@ class UnityCommandBuildSession(
         )
     }
 
-    private suspend fun SequenceScope<CommandExecution>.returnProfessionalLicenceIfNeeded() {
+    private suspend fun SequenceScope<CommandExecution>.returnLicenceIfNeeded() {
         yieldAll(
-            unityProfessionalLicenceManager.returnLicence(
+            unityLicenseManager.returnLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 runnerContext,
             )

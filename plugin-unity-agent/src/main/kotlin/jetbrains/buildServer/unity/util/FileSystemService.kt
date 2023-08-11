@@ -1,16 +1,24 @@
 package jetbrains.buildServer.unity.util
 
-import java.io.File
-import java.io.File.createTempFile
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.readText
+import kotlin.io.path.writeText
 
 class FileSystemService {
-    fun createFile(path: String) = File(path)
+    fun createFile(path: String): Path = Path.of(path)
 
-    fun createFile(parent: File, child: String) = File(parent, child)
+    fun createFile(parent: Path, child: String): Path = Path.of(parent.absolutePathString(), child)
 
-    fun createTempFile(directory: File, prefix: String, suffix: String): File {
-        return createTempFile(prefix, suffix, directory)
+    fun createTempFile(directory: Path, prefix: String, suffix: String): Path {
+        return Files.createTempFile(directory, prefix, suffix)
     }
 
-    fun readText(file: File) = file.readText()
+    fun deleteFile(file: Path) = file.deleteIfExists()
+
+    fun readText(file: Path) = file.readText()
+
+    fun writeText(file: Path, text: String) = file.writeText(text)
 }

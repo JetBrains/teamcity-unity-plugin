@@ -65,8 +65,14 @@ class UnityParametersProvider {
     val logFilePath: String
         get() = UnityConstants.PARAM_UNITY_LOG_FILE
 
-    val activateLicense: String
-        get() = UnityConstants.PARAM_ACTIVATE_LICENSE
+    val unityLicenseType: String
+        get() = UnityConstants.PARAM_UNITY_LICENSE_TYPE
+
+    val unityLicenseTypes: List<UnityLicenseTypeParameter>
+        get() = UnityLicenseTypeParameter.values().toList()
+
+    val unityPersonalLicenseContent: String
+        get() = UnityConstants.PARAM_UNITY_PERSONAL_LICENSE_CONTENT
 
     val serialNumber: String
         get() = UnityConstants.PARAM_SERIAL_NUMBER
