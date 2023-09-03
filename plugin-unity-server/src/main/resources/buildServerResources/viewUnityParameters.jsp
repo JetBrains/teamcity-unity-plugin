@@ -63,7 +63,7 @@
 
 <c:if test="${propertiesBean.properties[params.noQuit]}">
     <div class="parameter">
-        Do not quit the Unity Editor when execute method is complete: <strong>ON</strong>
+        Do not quit the Unity Editor after other commands have finished executing: <strong>ON</strong>
     </div>
 </c:if>
 

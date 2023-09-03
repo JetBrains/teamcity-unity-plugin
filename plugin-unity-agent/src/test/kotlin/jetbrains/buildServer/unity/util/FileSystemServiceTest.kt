@@ -12,27 +12,27 @@ class FileSystemServiceTest {
 
     @Test
     fun `should create file`() {
-        // given
+        // arrange
         val service = createInstance()
 
-        // when
-        val result = service.createFile(path)
+        // act
+        val result = service.createPath(path)
 
-        // then
+        // assert
         result shouldBe Path.of(path)
     }
 
     @Test
     fun `should create file in parent directory`() {
-        // given
+        // arrange
         val parentDirectory = Path.of(path)
         val filename = "file.txt"
         val service = createInstance()
 
-        // when
-        val result = service.createFile(parentDirectory, filename)
+        // act
+        val result = service.createPath(parentDirectory, filename)
 
-        // then
+        // assert
         result shouldBe Path.of(parentDirectory.absolutePathString(), filename)
     }
 

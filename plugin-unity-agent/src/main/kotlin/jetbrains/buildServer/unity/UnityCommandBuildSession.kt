@@ -21,9 +21,11 @@ import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
 import jetbrains.buildServer.unity.license.UnityLicenseManager
+import jetbrains.buildServer.unity.util.FileSystemService
 
 class UnityCommandBuildSession(
     private val runnerContext: BuildRunnerContext,
+    private val fileSystemService: FileSystemService,
     private val unityEnvironmentProvider: UnityEnvironmentProvider,
     private val unityLicenseManager: UnityLicenseManager,
 ) : MultiCommandBuildSession {
@@ -72,7 +74,7 @@ class UnityCommandBuildSession(
     private suspend fun SequenceScope<CommandExecution>.executeBuild() {
         yieldAll(
             UnityRunnerBuildService
-                .createAdapters(unityEnvironmentProvider.unityEnvironment(), runnerContext)
+                .createAdapters(unityEnvironmentProvider.unityEnvironment(), runnerContext, fileSystemService)
                 .map {
                     it.initialize(runnerContext.build, runnerContext)
                     val command = BuildCommandExecutionAdapter(it)

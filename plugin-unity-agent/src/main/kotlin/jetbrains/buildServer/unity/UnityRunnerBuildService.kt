@@ -21,27 +21,47 @@ import com.intellij.openapi.util.SystemInfo
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
-import jetbrains.buildServer.messages.Status
+import jetbrains.buildServer.messages.Status.WARNING
 import jetbrains.buildServer.messages.serviceMessages.Message
+import jetbrains.buildServer.unity.UnityConstants.BUILD_FEATURE_TYPE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_ARGUMENTS
+import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_PLAYER
+import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_PLAYER_PATH
+import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_TARGET
+import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
+import jetbrains.buildServer.unity.UnityConstants.PARAM_EXECUTE_METHOD
+import jetbrains.buildServer.unity.UnityConstants.PARAM_LINE_STATUSES_FILE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_NO_GRAPHICS
+import jetbrains.buildServer.unity.UnityConstants.PARAM_NO_QUIT
+import jetbrains.buildServer.unity.UnityConstants.PARAM_PROJECT_PATH
+import jetbrains.buildServer.unity.UnityConstants.PARAM_RUN_EDITOR_TESTS
+import jetbrains.buildServer.unity.UnityConstants.PARAM_SILENT_CRASHES
+import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_CATEGORIES
+import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_NAMES
 import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_PLATFORM
+import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_LOG_FILE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_VERBOSITY
 import jetbrains.buildServer.unity.UnityVersion.UnitySpecialVersions.UNITY_2018_2_0
 import jetbrains.buildServer.unity.UnityVersion.UnitySpecialVersions.UNITY_2019_1_0
+import jetbrains.buildServer.unity.Verbosity.Minimal
+import jetbrains.buildServer.unity.Verbosity.Normal
 import jetbrains.buildServer.unity.logging.LineStatusProvider
 import jetbrains.buildServer.unity.logging.UnityLoggingListener
 import jetbrains.buildServer.unity.messages.ImportData
+import jetbrains.buildServer.unity.util.FileSystemService
 import jetbrains.buildServer.util.StringUtil
+import jetbrains.buildServer.util.StringUtil.splitCommandArgumentsAndUnquote
 import org.apache.commons.io.input.Tailer
 import org.apache.commons.io.input.TailerListenerAdapter
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
+import kotlin.io.path.absolutePathString
 
-/**
- * Unity runner service.
- */
 class UnityRunnerBuildService(
     private val unityEnvironment: UnityEnvironment,
-    private val overriddenRunnerParameters: Map<String, String>
+    private val overriddenRunnerParameters: Map<String, String>,
+    private val fileSystemService: FileSystemService,
 ) : BuildServiceAdapter() {
 
     private var unityTestsReportFile: File? = null
@@ -59,7 +79,7 @@ class UnityRunnerBuildService(
             }
         } catch (e: Exception) {
             val message = "Failed to parse file $statusesFile with line statuses"
-            logger.message(Message(message, Status.WARNING.text, null).asString())
+            logger.message(Message(message, WARNING.text, null).asString())
             LOG.infoAndDebugDetails(message, e)
             LineStatusProvider()
         }
@@ -70,34 +90,55 @@ class UnityRunnerBuildService(
         get() = lazy { runnerParameters + overriddenRunnerParameters }
 
     private val verbosity: Verbosity by lazy {
-        parameters.value[UnityConstants.PARAM_VERBOSITY]?.let {
+        parameters.value[PARAM_VERBOSITY]?.let {
             Verbosity.tryParse(it)
-        } ?: Verbosity.Normal
+        } ?: Normal
     }
 
     private val logFilePath: String?
-        get() = parameters.value[UnityConstants.PARAM_UNITY_LOG_FILE]?.trim()
+        get() = parameters.value[PARAM_UNITY_LOG_FILE]?.trim()
 
     private val verbosityArgument: String
         get() = when (verbosity) {
-            Verbosity.Minimal -> "-cleanedLogFile"
+            Minimal -> ARG_CLEANED_LOG_FILE
             else -> ARG_LOG_FILE
         }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val unityVersion = unityEnvironment.unityVersion
         val unityPath = unityEnvironment.unityPath
-        val arguments = mutableListOf("-batchmode", ARG_QUIT)
 
+        val arguments: MutableList<String> = sequence {
+            yield(ARG_BATCH_MODE)
+            projectPathArg(unityVersion)
+            argIfNotEmpty(PARAM_BUILD_TARGET, ARG_BUILD_TARGET)
+            buildPlayerArg()
+            argIfTrue(PARAM_NO_GRAPHICS, ARG_NO_GRAPHICS)
+            argIfTrue(PARAM_SILENT_CRASHES, ARG_SILENT_CRASHES)
+            argIfNotEmpty(PARAM_EXECUTE_METHOD, ARG_EXECUTE_METHOD)
+            otherArgs()
+        }.toMutableList()
+
+        addRunTestsArgs(arguments)
+        addLogArg(arguments, unityVersion)
+
+        createLineStatusesFile()
+        addArgsFromBuildFeature(arguments)
+
+        return createProgramCommandline(unityPath, arguments)
+    }
+
+    private suspend fun SequenceScope<String>.projectPathArg(unityVersion: UnityVersion) {
         var projectPath = "./"
-        parameters.value[UnityConstants.PARAM_PROJECT_PATH]?.let {
+        parameters.value[PARAM_PROJECT_PATH]?.let {
             if (it.isNotEmpty()) {
                 projectPath = it.trim()
             }
         }
 
         if (unityVersion > UNITY_2018_2_0) {
-            arguments.addAll(listOf("-projectPath", resolvePath(projectPath)))
+            yield(ARG_PROJECT_PATH)
+            yield(resolvePath(projectPath))
         } else {
             // In Unity < 2018.2 we should specify project path argument with equals sign
             // https://answers.unity.com/questions/622429/i-have-a-problem-the-log-is-couldnt-set-project-pa.html
@@ -106,132 +147,121 @@ class UnityRunnerBuildService(
             } else {
                 projectPath
             }
-            arguments.add("-projectPath=$path")
+            yield("$ARG_PROJECT_PATH=$path")
         }
-
-        parameters.value[UnityConstants.PARAM_BUILD_TARGET]?.let {
-            if (it.isNotEmpty()) {
-                arguments.addAll(listOf("-buildTarget", it.trim()))
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_BUILD_PLAYER]?.let {
-            val playerPath = parameters.value[UnityConstants.PARAM_BUILD_PLAYER_PATH]
-            if (it.isNotEmpty() && !playerPath.isNullOrEmpty()) {
-                var playerFile = File(playerPath.trim())
-                if (!playerFile.isAbsolute) {
-                    playerFile = File(workingDirectory, playerPath.trim())
-                }
-                arguments.addAll(listOf("-" + it.trim(), resolvePath(playerFile.absolutePath)))
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_NO_GRAPHICS]?.let {
-            if (it.toBoolean()) {
-                arguments.add(ARG_NO_GRAPHICS)
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_SILENT_CRASHES]?.let {
-            if (it.toBoolean()) {
-                arguments.add("-silent-crashes")
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_NO_QUIT]?.let {
-            if (it.toBoolean()) {
-                arguments.remove(ARG_QUIT)
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
-            if (it.isNotEmpty()) {
-                arguments.addAll(listOf("-executeMethod", it.trim()))
-            }
-        }
-
-        parameters.value[UnityConstants.PARAM_ARGUMENTS]?.let {
-            if (it.isNotEmpty()) {
-                arguments.addAll(StringUtil.splitCommandArgumentsAndUnquote(it))
-            }
-        }
-
-        appendRunTestsArguments(arguments)
-
-        appendLogArgument(arguments, unityVersion)
-
-        // Use line statuses file if available
-        parameters.value[UnityConstants.PARAM_LINE_STATUSES_FILE]?.let {
-            if (it.isNotEmpty()) {
-                unityLineStatusesFile = File(workingDirectory, it.trim())
-            }
-        }
-
-        // Append build feature parameters
-        build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
-            feature.parameters[UnityConstants.PARAM_CACHE_SERVER]?.let {
-                if (it.isNotEmpty()) {
-                    arguments.addAll(listOf("-CacheServerIPAddress", it.trim()))
-                }
-            }
-        }
-
-        return createProgramCommandline(unityPath, arguments)
     }
 
-    private fun appendRunTestsArguments(arguments: MutableList<String>) {
-        val runTests = parameters.value[UnityConstants.PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
-        val testPlatform = parameters.value[UnityConstants.PARAM_TEST_PLATFORM]
+    private suspend fun SequenceScope<String>.argIfNotEmpty(parameter: String, argument: String) {
+        parameters.value[parameter]?.let {
+            if (it.isNotEmpty()) {
+                yield(argument)
+                yield(it.trim())
+            }
+        }
+    }
 
+    private suspend fun SequenceScope<String>.argIfTrue(parameter: String, argument: String) {
+        parameters.value[parameter]?.let {
+            if (it.toBoolean()) {
+                yield(argument)
+            }
+        }
+    }
+
+    private suspend fun SequenceScope<String>.buildPlayerArg() {
+        parameters.value[PARAM_BUILD_PLAYER]?.let {
+            val playerPath = parameters.value[PARAM_BUILD_PLAYER_PATH]
+            if (it.isNotEmpty() && !playerPath.isNullOrEmpty()) {
+                var playerFile = fileSystemService.createPath(playerPath.trim())
+                if (!playerFile.isAbsolute) {
+                    playerFile = fileSystemService.createPath(workingDirectory.toPath(), playerPath.trim())
+                }
+                yield("-" + it.trim())
+                yield(resolvePath(playerFile.absolutePathString()))
+            }
+        }
+    }
+
+    private fun addArgsFromBuildFeature(arguments: MutableList<String>) {
+        build.getBuildFeaturesOfType(BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
+            feature.parameters[PARAM_CACHE_SERVER]?.let {
+                if (it.isNotEmpty()) {
+                    arguments.addAll(listOf(ARG_CACHE_SERVER_IP_ADDRESS, it.trim()))
+                }
+            }
+        }
+    }
+
+    private fun createLineStatusesFile() {
+        parameters.value[PARAM_LINE_STATUSES_FILE]?.let {
+            if (it.isNotEmpty()) {
+                unityLineStatusesFile = fileSystemService.createPath(workingDirectory.toPath(), it.trim()).toFile()
+            }
+        }
+    }
+
+    private suspend fun SequenceScope<String>.otherArgs() {
+        parameters.value[PARAM_ARGUMENTS]?.let {
+            if (it.isNotEmpty()) {
+                splitCommandArgumentsAndUnquote(it).forEach { arg ->
+                    yield(arg)
+                }
+            }
+        }
+    }
+
+    private fun addRunTestsArgs(arguments: MutableList<String>) {
+        val runTests = parameters.value[PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
+        val testPlatform = parameters.value[PARAM_TEST_PLATFORM]
+
+        // For tests run we should not add -quit argument
         val runTestIndex = arguments.indexOfFirst { RUN_TESTS_REGEX.matches(it) }
         if (runTestIndex < 0) {
             if (runTests) {
-                // For tests run we should remove -quit argument
-                arguments.remove(ARG_QUIT);
-
                 // Append -runTests argument if selected test platform
                 // otherwise use -runEditorTests argument
                 if (testPlatform.isNullOrEmpty()) {
                     arguments.add(ARG_RUN_EDITOR_TESTS)
                 } else {
-                    arguments.addAll(listOf(ARG_RUN_TESTS, "-testPlatform", testPlatform))
+                    arguments.addAll(listOf(ARG_RUN_TESTS, ARG_TEST_PLATFORM, testPlatform))
                 }
             } else {
+				val shouldAddQuitArg = !parameters.value[PARAM_NO_QUIT].toBoolean()
+                if (shouldAddQuitArg) {
+                    arguments.add(ARG_QUIT)
+                }
                 return
             }
         }
 
         // Check test results argument
-        val index = arguments.indexOfFirst { RUN_TEST_RESULTS_REGEX.matches(it)}
+        val index = arguments.indexOfFirst { RUN_TEST_RESULTS_REGEX.matches(it) }
         unityTestsReportFile = if (index > 0 && index + 1 < arguments.size) {
             val testsResultPath = arguments[index + 1]
-            File(testsResultPath)
+            fileSystemService.createPath(testsResultPath).toFile()
         } else {
-            File.createTempFile(
-                    "unityTestResults-",
-                    ".xml",
-                    build.agentTempDirectory
-            ).apply {
-                val testResultsArgument = if (testPlatform.isNullOrEmpty()) {
-                    ARG_EDITOR_TESTS_RESULT_FILE
-                } else {
-                    ARG_TEST_RESULTS_FILE
+            fileSystemService.createTempFile(build.agentTempDirectory.toPath(), "unityTestResults-", ".xml").toFile()
+                .apply {
+                    val testResultsArgument = if (testPlatform.isNullOrEmpty()) {
+                        ARG_EDITOR_TESTS_RESULT_FILE
+                    } else {
+                        ARG_TEST_RESULTS_FILE
+                    }
+                    arguments.addAll(listOf(testResultsArgument, resolvePath(this.absolutePath)))
                 }
-                arguments.addAll(listOf(testResultsArgument, resolvePath(this.absolutePath)))
-            }
         }
 
-        parameters.value[UnityConstants.PARAM_TEST_CATEGORIES]?.let {
+        parameters.value[PARAM_TEST_CATEGORIES]?.let {
             if (it.isNotEmpty()) {
                 val categories = StringUtil.split(it).joinToString(";")
-                arguments.addAll(listOf("-editorTestsCategories", categories))
+                arguments.addAll(listOf(ARG_EDITOR_TESTS_CATEGORIES, categories))
             }
         }
 
-        parameters.value[UnityConstants.PARAM_TEST_NAMES]?.let {
+        parameters.value[PARAM_TEST_NAMES]?.let {
             if (it.isNotEmpty()) {
                 val names = StringUtil.split(it).joinToString(";")
-                arguments.addAll(listOf("-editorTestsFilter", names))
+                arguments.addAll(listOf(ARG_EDITOR_TESTS_FILTER, names))
             }
         }
 
@@ -256,7 +286,7 @@ class UnityRunnerBuildService(
 
     override fun getListeners() = unityListeners
 
-    private fun appendLogArgument(arguments: MutableList<String>, version: UnityVersion) {
+    private fun addLogArg(arguments: MutableList<String>, version: UnityVersion) {
         val verbosityArg = verbosityArgument
         arguments.add(verbosityArg)
 
@@ -271,26 +301,23 @@ class UnityRunnerBuildService(
             return
         }
 
-        val logFile = if (logFilePath.isNullOrEmpty()) {
-            File.createTempFile(
-                    "unityBuildLog-",
-                    ".txt",
-                    build.agentTempDirectory
-            )
+        val logPath = if (logFilePath.isNullOrEmpty()) {
+            fileSystemService.createTempFile(build.agentTempDirectory.toPath(), "unityBuildLog-", ".txt")
         } else {
-            val file = File(logFilePath)
-            trimLog(file)
-            file
+            val path = fileSystemService.createPath(logFilePath!!)
+            trimLog(path.toFile())
+            path
         }
 
-        arguments.add(resolvePath(logFile.absolutePath))
+        arguments.add(resolvePath(logPath.absolutePathString()))
 
-        unityLogFileTailer = Tailer.create(logFile, object : TailerListenerAdapter() {
+        unityLogFileTailer = Tailer.create(logPath.toFile(), object : TailerListenerAdapter() {
             override fun handle(line: String) {
                 listeners.forEach {
                     it.onStandardOutput(line)
                 }
             }
+
             override fun fileRotated() {
                 unityLogFileTailer?.stop()
             }
@@ -302,16 +329,13 @@ class UnityRunnerBuildService(
         try {
             logFileAccess = RandomAccessFile(logFile, LOG_FILE_ACCESS_MODE)
             logFileAccess.setLength(0)
-        }
-        catch (e: FileNotFoundException) {
+        } catch (e: FileNotFoundException) {
             return
-        }
-        catch(e: Throwable) {
+        } catch (e: Throwable) {
             val message = "Failed to truncate log file $logFile"
-            logger.message(Message(message, Status.WARNING.text, null).asString())
+            logger.message(Message(message, WARNING.text, null).asString())
             LOG.infoAndDebugDetails(message, e)
-        }
-        finally {
+        } finally {
             logFileAccess?.close()
         }
     }
@@ -324,28 +348,46 @@ class UnityRunnerBuildService(
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)
         private const val DEFAULT_DELAY_MILLIS = 500L
+
+        private const val ARG_BATCH_MODE = "-batchmode"
+        private const val ARG_PROJECT_PATH = "-projectPath"
+        private const val ARG_BUILD_TARGET = "-buildTarget"
+        private const val ARG_SILENT_CRASHES = "-silent-crashes"
+        private const val ARG_EXECUTE_METHOD = "-executeMethod"
+
         private const val ARG_RUN_TESTS = "-runTests"
+        private const val ARG_TEST_PLATFORM = "-testPlatform"
         private const val ARG_RUN_EDITOR_TESTS = "-runEditorTests"
+        private const val ARG_EDITOR_TESTS_CATEGORIES = "-editorTestsCategories"
+        private const val ARG_EDITOR_TESTS_FILTER = "-editorTestsFilter"
         private const val ARG_TEST_RESULTS_FILE = "-testResults"
         private const val ARG_EDITOR_TESTS_RESULT_FILE = "-editorTestsResultFile"
+
         private const val ARG_LOG_FILE = "-logFile"
+        private const val ARG_CLEANED_LOG_FILE = "-cleanedLogFile"
         private const val ARG_NO_GRAPHICS = "-nographics"
-        private const val ARG_QUIT= "-quit"
+        private const val ARG_QUIT = "-quit"
+        private const val ARG_CACHE_SERVER_IP_ADDRESS = "-CacheServerIPAddress"
+
         private const val LOG_FILE_ACCESS_MODE = "rw"
+
         private val RUN_TESTS_REGEX = Regex("-run(Editor)?Tests")
         private val RUN_TEST_RESULTS_REGEX = Regex("-(editorTestsResultFile|testResults)")
 
-        fun createAdapters(unityEnvironment: UnityEnvironment, context: BuildRunnerContext) =
-                getParameterVariants(context)
-                        .ifEmpty {
-                            sequenceOf(emptyMap())
-                        }
-                        .map {
-                            UnityRunnerBuildService(unityEnvironment, it)
-                        }
+        fun createAdapters(
+            unityEnvironment: UnityEnvironment,
+            context: BuildRunnerContext,
+            fileSystemService: FileSystemService,
+        ) = getParameterVariants(context)
+            .ifEmpty {
+                sequenceOf(emptyMap())
+            }
+            .map {
+                UnityRunnerBuildService(unityEnvironment, it, fileSystemService)
+            }
 
         private fun getParameterVariants(context: BuildRunnerContext) = sequence {
-            if("all".equals(context.runnerParameters[PARAM_TEST_PLATFORM], true)) {
+            if ("all".equals(context.runnerParameters[PARAM_TEST_PLATFORM], true)) {
                 yield(mapOf(PARAM_TEST_PLATFORM to "editmode"))
                 yield(mapOf(PARAM_TEST_PLATFORM to "playmode"))
             }

@@ -39,17 +39,17 @@ class UnityLicenseManagerTest {
 
     @Test(dataProvider = "should manage professional license params")
     fun `should activate professional license`(params: Map<String, String>) {
-        // given
+        // arrange
         val manager = createInstance()
         val unityEnvironment = anUnityEnvironment()
 
         every { buildFeature.parameters } returns params
         every { activateProCommand.withUnityEnvironment(unityEnvironment) } returns activateProCommand
 
-        // when
+        // act
         val commands = manager.activateLicense(unityEnvironment, runnerContext).toList()
 
-        // then
+        // assert
         commands.shouldNotBeEmpty()
         commands.shouldContainExactly(activateProCommand)
 
@@ -60,17 +60,17 @@ class UnityLicenseManagerTest {
 
     @Test(dataProvider = "should manage professional license params")
     fun `should return professional license`(params: Map<String, String>) {
-        // given
+        // arrange
         val manager = createInstance()
         val unityEnvironment = anUnityEnvironment()
 
         every { buildFeature.parameters } returns params
         every { returnProCommand.withUnityEnvironment(unityEnvironment) } returns returnProCommand
 
-        // when
+        // act
         val commands = manager.returnLicense(unityEnvironment, runnerContext).toList()
 
-        // then
+        // assert
         commands.shouldNotBeEmpty()
         commands.shouldContainExactly(returnProCommand)
 
@@ -81,17 +81,17 @@ class UnityLicenseManagerTest {
 
     @Test
     fun `should activate personal license`() {
-        // given
+        // arrange
         val manager = createInstance()
         val unityEnvironment = anUnityEnvironment()
 
         every { buildFeature.parameters } returns mapOf("unityLicenseType" to "personalLicense")
         every { activatePersonalCommand.withUnityEnvironment(unityEnvironment) } returns activatePersonalCommand
 
-        // when
+        // act
         val commands = manager.activateLicense(unityEnvironment, runnerContext).toList()
 
-        // then
+        // assert
         commands.shouldNotBeEmpty()
         commands.shouldContainExactly(activatePersonalCommand)
 
@@ -102,16 +102,16 @@ class UnityLicenseManagerTest {
 
     @Test
     fun `should not return personal license`() {
-        // given
+        // arrange
         val manager = createInstance()
         val unityEnvironment = anUnityEnvironment()
 
         every { buildFeature.parameters } returns mapOf("unityLicenseType" to "personalLicense")
 
-        // when
+        // act
         val commands = manager.returnLicense(unityEnvironment, runnerContext).toList()
 
-        // then
+        // assert
         commands.shouldBeEmpty()
 
         verify { activatePersonalCommand wasNot Called }
@@ -130,17 +130,17 @@ class UnityLicenseManagerTest {
 
     @Test(dataProvider = "should not manage licenses params")
     fun `should not manage licenses`(params: Map<String, String>) {
-        // given
+        // arrange
         val manager = createInstance()
         val unityEnvironment = anUnityEnvironment()
 
         every { buildFeature.parameters } returns params
 
-        // when
+        // act
         val activateCommands = manager.activateLicense(unityEnvironment, runnerContext).toList()
         val returnCommands = manager.returnLicense(unityEnvironment, runnerContext).toList()
 
-        // then
+        // assert
         activateCommands.shouldBeEmpty()
         returnCommands.shouldBeEmpty()
 

@@ -8,9 +8,9 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class FileSystemService {
-    fun createFile(path: String): Path = Path.of(path)
+    fun createPath(path: String): Path = Path.of(path)
 
-    fun createFile(parent: Path, child: String): Path = Path.of(parent.absolutePathString(), child)
+    fun createPath(parent: Path, child: String): Path = Path.of(parent.absolutePathString(), child)
 
     fun createTempFile(directory: Path, prefix: String, suffix: String): Path {
         return Files.createTempFile(directory, prefix, suffix)

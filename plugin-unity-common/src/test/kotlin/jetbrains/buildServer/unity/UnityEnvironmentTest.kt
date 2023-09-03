@@ -7,10 +7,10 @@ class UnityEnvironmentTest {
 
     @Test
     fun `should create unity environment`() {
-        // when
+        // act
         val environment = UnityEnvironment("/path/to/unity", UnityVersion(2023, 1, 1), true)
 
-        // then
+        // assert
         environment.unityPath shouldBe "/path/to/unity"
         environment.unityVersion shouldBe UnityVersion(2023, 1, 1)
         environment.isVirtual shouldBe true
@@ -18,10 +18,10 @@ class UnityEnvironmentTest {
 
     @Test
     fun `should create non-virtual unity environment by default`() {
-        // when
+        // act
         val environment = UnityEnvironment("/path/to/unity", UnityVersion(2023, 1, 1))
 
-        // then
+        // assert
         environment.unityPath shouldBe "/path/to/unity"
         environment.unityVersion shouldBe UnityVersion(2023, 1, 1)
         environment.isVirtual shouldBe false

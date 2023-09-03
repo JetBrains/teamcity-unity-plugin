@@ -101,13 +101,13 @@ class DetectVirtualUnityEnvironmentCommandTest {
 
     @Test(dataProvider = "correct standard output")
     fun `should parse correct standard output`(stdout: String, expectedEnvironment: Set<UnityEnvironment>) {
-        // given
+        // arrange
         val command = createInstance()
 
-        // when
+        // act
         command.onStandardOutput(stdout)
 
-        // then
+        // assert
         command.results shouldContainExactly expectedEnvironment
     }
 
@@ -125,42 +125,42 @@ class DetectVirtualUnityEnvironmentCommandTest {
 
     @Test(dataProvider = "wrong standard output")
     fun `should not fail on wrong standard output`(stdout: String) {
-        // given
+        // arrange
         val command = createInstance()
 
-        // when
+        // act
         command.onStandardOutput(stdout)
 
-        // then
+        // assert
         command.results.shouldBeEmpty()
     }
 
     @Test
     fun `should skip detected Unity environment if an expected Unity version is different in params`() {
-        // given
+        // arrange
         val command = createInstance()
         val stdout = "path=/path/to/1/Unity;version=2023.0.1\npath=/path/to/2/Unity;version=2023.0.2\n"
 
         every { runnerContext.unityVersionParam() } returns parseVersion("2023.0.1")
 
-        // when
+        // act
         command.onStandardOutput(stdout)
 
-        // then
+        // assert
         command.results shouldHaveSize 1
         command.results shouldContain UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true)
     }
 
     @Test
     fun `should not create duplicate Unity environment in case of duplicate stdout`() {
-        // given
+        // arrange
         val command = createInstance()
         val stdout = "path=/path/to/Unity;version=2023.0.1\npath=/path/to/Unity;version=2023.0.1\n"
 
-        // when
+        // act
         command.onStandardOutput(stdout)
 
-        // then
+        // assert
         command.results shouldHaveSize 1
         command.results shouldContain UnityEnvironment("/path/to/Unity", parseVersion("2023.0.1"), true)
     }
@@ -174,16 +174,16 @@ class DetectVirtualUnityEnvironmentCommandTest {
 
     @Test(dataProvider = "OS type to expected script name")
     fun `should make program command line`(osType: OSType, expectedScriptName: String) {
-        // given
+        // arrange
         val command = createInstance()
 
         every { virtualContext.targetOSType } returns osType
         every { runnerContext.buildParameters.environmentVariables } returns mapOf("ENV" to "VALUE")
 
-        // when
+        // act
         val commandLine = command.makeProgramCommandLine()
 
-        // then
+        // assert
         commandLine.shouldBeInstanceOf<SimpleProgramCommandLine>()
         commandLine.environment shouldContainExactly mapOf("ENV" to "VALUE")
         commandLine.workingDirectory shouldBeEqual "path"
@@ -193,16 +193,16 @@ class DetectVirtualUnityEnvironmentCommandTest {
 
     @Test
     fun `should make program command line passing unity root ENV variable from params`() {
-        // given
+        // arrange
         val command = createInstance()
 
         every { runnerContext.buildParameters.environmentVariables } returns mapOf("ENV" to "VALUE")
         every { runnerContext.unityRootParam() } returns "/path/to/unity"
 
-        // when
+        // act
         val commandLine = command.makeProgramCommandLine()
 
-        // then
+        // assert
         commandLine.environment shouldContainExactly mapOf(
             "ENV" to "VALUE",
             "UNITY_ROOT_PARAMETER" to "/path/to/unity"

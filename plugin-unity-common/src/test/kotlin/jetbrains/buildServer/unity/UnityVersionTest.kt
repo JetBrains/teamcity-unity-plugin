@@ -18,7 +18,7 @@ class UnityVersionTest {
 
     @Test
     fun `should have correct equals and hashcode implementation`() {
-        // given
+        // arrange
         val v1 = UnityVersion(2023, 1, 1)
         val v2 = UnityVersion(2023, 1, 1)
 
@@ -26,7 +26,7 @@ class UnityVersionTest {
         val v4 = UnityVersion(2023, 2, 1)
         val v5 = UnityVersion(2024, 1, 1)
 
-        // then
+        // assert
         v1 shouldBeEqual v2
         v1.hashCode() shouldBeEqual v2.hashCode()
 
@@ -39,12 +39,12 @@ class UnityVersionTest {
 
     @Test
     fun `should have correct toString implementation`() {
-        // given
+        // arrange
         val v1 = UnityVersion(2023, 1, 1)
         val v2 = UnityVersion(2023, 1)
         val v3 = UnityVersion(2023)
 
-        // then
+        // assert
         v1.toString() shouldBeEqual "2023.1.1"
         v2.toString() shouldBeEqual "2023.1"
         v3.toString() shouldBeEqual "2023"
@@ -52,11 +52,11 @@ class UnityVersionTest {
 
     @Test
     fun `should have correct compareTo implementation`() {
-        // given
+        // arrange
         val v1 = UnityVersion(2023, 1, 1)
         val v2 = UnityVersion(2023, 1, 2)
 
-        // then
+        // assert
         v1 shouldBeLessThan v2
         v1 shouldBeLessThanOrEqualTo v1
         v2 shouldBeGreaterThan v1
@@ -76,35 +76,35 @@ class UnityVersionTest {
     // Consider changing this behaviour in case the suffix becomes important
     @Test(dataProvider = "valid version suffixes")
     fun `should ignore version suffix`(versionSuffix: String) {
-        // given
+        // arrange
         val versionWithoutSuffix = UnityVersion(2023, 1, 1)
         val versionWithSuffix = parseVersion(versionWithoutSuffix.toString() + versionSuffix + "ignored part")
 
-        // then
+        // assert
         versionWithoutSuffix shouldBeEqual versionWithSuffix
     }
 
     @Test
     fun `should return next major version`() {
-        // given
+        // arrange
         val version = UnityVersion(2023, 1, 1)
 
-        // when
+        // act
         val nextMajor = version.nextMajor()
 
-        // then
+        // assert
         nextMajor shouldBeEqual UnityVersion(2024, 0, 0)
     }
 
     @Test
     fun `should return next minor version`() {
-        // given
+        // arrange
         val version = UnityVersion(2023, 1, 1)
 
-        // when
+        // act
         val nextMinor = version.nextMinor()
 
-        // then
+        // assert
         nextMinor shouldBeEqual UnityVersion(2023, 2, 0)
     }
 
@@ -126,20 +126,20 @@ class UnityVersionTest {
 
     @Test(dataProvider = "valid unity versions")
     fun `should successfully try to parse valid Unity version`(version: String, expectedVersion: UnityVersion) {
-        // when
+        // act
         val result = tryParseVersion(version)
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual(expectedVersion)
     }
 
     @Test(dataProvider = "valid unity versions")
     fun `should successfully parse valid Unity version`(version: String, expectedVersion: UnityVersion) {
-        // when
+        // act
         val result = parseVersion(version)
 
-        // then
+        // assert
         result shouldBeEqual expectedVersion
     }
 
@@ -151,13 +151,13 @@ class UnityVersionTest {
 
     @Test(dataProvider = "invalid unity versions")
     fun `should return null when Unity version cannot be parsed`(version: String) {
-        // then
+        // assert
         tryParseVersion(version) shouldBe null
     }
 
     @Test(dataProvider = "invalid unity versions")
     fun `should throw an exception when Unity version cannot be parsed`(version: String) {
-        // then
+        // assert
         shouldThrowExactly<InvalidUnityVersionException> { parseVersion(version) }
     }
 }

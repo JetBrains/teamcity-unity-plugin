@@ -29,13 +29,13 @@ class UnityParametersExtractorTest {
 
     @Test
     fun `should return unityRoot from runner parameters`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf("unityRoot" to "/path/to/unity")
 
-        // when
+        // act
         val result = runnerContext.unityRootParam()
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual("/path/to/unity")
 
@@ -45,40 +45,40 @@ class UnityParametersExtractorTest {
 
     @Test
     fun `should return unityRoot from build feature parameters`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns mapOf("unityRoot" to "/path/to/unity")
 
-        // when
+        // act
         val result = runnerContext.unityRootParam()
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual("/path/to/unity")
     }
 
     @Test
     fun `should return null if unityRoot parameter is not found`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns mapOf()
 
-        // when
+        // act
         val result = runnerContext.unityRootParam()
 
-        // then
+        // assert
         result shouldBe null
     }
 
     @Test
     fun `should return unity version from runner parameters`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf("unityVersion" to "2023.1.1")
 
-        // when
+        // act
         val result = runnerContext.unityVersionParam()
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual(UnityVersion(2023, 1, 1))
 
@@ -88,27 +88,27 @@ class UnityParametersExtractorTest {
 
     @Test
     fun `should return unity version from build feature parameters`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns mapOf("unityVersion" to "2023.1.1")
 
-        // when
+        // act
         val result = runnerContext.unityVersionParam()
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual(UnityVersion(2023, 1, 1))
     }
 
     @Test
     fun `should return unity version when it is surrounded with spaces`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf("unityVersion" to " 2023.1.1 ")
 
-        // when
+        // act
         val result = runnerContext.unityVersionParam()
 
-        // then
+        // assert
         result shouldNotBe null
         result?.shouldBeEqual(UnityVersion(2023, 1, 1))
 
@@ -118,26 +118,26 @@ class UnityParametersExtractorTest {
 
     @Test
     fun `should return null if unityVersion parameter is not found`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns mapOf()
 
-        // when
+        // act
         val result = runnerContext.unityVersionParam()
 
-        // then
+        // assert
         result shouldBe null
     }
 
     @Test
     fun `should return null if unityVersion parameter contains not valid version`() {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf("unityVersion" to "invalid version string")
 
-        // when
+        // act
         val result = runnerContext.unityVersionParam()
 
-        // then
+        // assert
         result shouldBe null
     }
 
@@ -155,14 +155,14 @@ class UnityParametersExtractorTest {
         params: Map<String, String>,
         expectedLicenseType: UnityLicenseTypeParameter?,
     ) {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns params
 
-        // when
+        // act
         val result = runnerContext.unityLicenseTypeParam()
 
-        // then
+        // assert
         if (expectedLicenseType == null)
             result shouldBe null
         else
@@ -180,14 +180,14 @@ class UnityParametersExtractorTest {
         params: Map<String, String>,
         expectedContent: String?,
     ) {
-        // given
+        // arrange
         every { runnerContext.runnerParameters } returns mapOf()
         every { buildFeature.parameters } returns params
 
-        // when
+        // act
         val result = runnerContext.unityPersonalLicenseContentParam()
 
-        // then
+        // assert
         if (expectedContent == null)
             result shouldBe null
         else

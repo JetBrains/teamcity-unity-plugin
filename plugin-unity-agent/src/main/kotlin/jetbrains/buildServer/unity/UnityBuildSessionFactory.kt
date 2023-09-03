@@ -38,6 +38,7 @@ class UnityBuildSessionFactory(
     override fun createSession(runnerContext: BuildRunnerContext): MultiCommandBuildSession =
         UnityCommandBuildSession(
             runnerContext,
+            fileSystemService,
             unityEnvironmentProvider(runnerContext),
             unityLicenseManager(runnerContext),
         )
