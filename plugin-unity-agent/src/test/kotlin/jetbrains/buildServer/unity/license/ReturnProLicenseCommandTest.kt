@@ -53,7 +53,7 @@ class ReturnProLicenseCommandTest {
 
     @Test
     fun `should make program command line`() {
-        // given
+        // arrange
         val command = createInstance()
         val logFile = mockk<Path>()
         val logPath = "/path/to/logs.txt"
@@ -71,10 +71,10 @@ class ReturnProLicenseCommandTest {
 
         command.beforeProcessStarted()
 
-        // when
+        // act
         val result = command.makeProgramCommandLine()
 
-        // then
+        // assert
         result.executablePath shouldBe unityEnvironment.unityPath
         result.workingDirectory shouldBe workingDirectoryPath
         result.environment shouldBe mapOf()
@@ -89,17 +89,17 @@ class ReturnProLicenseCommandTest {
 
     @Test
     fun `should open a log block when process is started`() {
-        // given
+        // arrange
         val commandLine = aCommandLine()
         val command = createInstance()
 
         every { buildLogger.logMessage(any()) } returns Unit
         every { buildLogger.message(any()) } returns Unit
 
-        // when
+        // act
         command.processStarted(commandLine, workingDirectory)
 
-        // then
+        // assert
         verify(exactly = 1) {
             buildLogger.logMessage(withArg {
                 it.value shouldBe BlockData("Return Unity license", "unity")
@@ -113,14 +113,14 @@ class ReturnProLicenseCommandTest {
 
     @Test
     fun `should close a log block when process is finished`() {
-        // given
+        // arrange
         val command = createInstance()
         every { buildLogger.logMessage(any()) } returns Unit
 
-        // when
+        // act
         command.processFinished(0)
 
-        // then
+        // assert
         verify(exactly = 1) {
             buildLogger.logMessage(withArg {
                 it.value shouldBe BlockData("Return Unity license", "unity")

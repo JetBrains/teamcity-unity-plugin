@@ -25,11 +25,11 @@ class LineStatusProviderTest {
 
     @Test
     fun testCustomFile() {
-        // given
+        // arrange
         val customSettingsFile = File("src/test/resources/logger/customLogging.xml")
         val provider = LineStatusProvider(customSettingsFile)
 
-        // when // then
+        // act // assert
         provider.getLineStatus("text") shouldBeEqual Normal
         provider.getLineStatus("error message") shouldBeEqual Normal
         provider.getLineStatus("warning message") shouldBeEqual Normal

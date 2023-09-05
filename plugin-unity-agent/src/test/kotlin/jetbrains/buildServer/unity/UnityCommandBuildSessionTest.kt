@@ -12,239 +12,251 @@ import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentComman
 import jetbrains.buildServer.unity.license.ActivateProLicenseCommand
 import jetbrains.buildServer.unity.license.ReturnProLicenseCommand
 import jetbrains.buildServer.unity.license.UnityLicenseManager
+import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 
 class UnityCommandBuildSessionTest {
 
-    private val runnerContext = mockk<BuildRunnerContext>()
-    private val envProvider = mockk<UnityEnvironmentProvider>()
-    private val licenceManager = mockk<UnityLicenseManager>()
+    private val runnerContextMock = mockk<BuildRunnerContext>()
+    private val fileSystemServiceMock = mockk<FileSystemService>()
+    private val envProviderMock = mockk<UnityEnvironmentProvider>()
+    private val licenceManagerMock = mockk<UnityLicenseManager>()
 
-    private val unityEnvironment = mockk<UnityEnvironment>()
+    private val unityEnvironmentMock = mockk<UnityEnvironment>()
 
     @BeforeMethod
     fun setUp() {
         clearAllMocks()
 
-        every { envProvider.unityEnvironment() } returns unityEnvironment
+        every { envProviderMock.unityEnvironment() } returns unityEnvironmentMock
     }
 
     @Test
     fun `should detect virtual unity environment as the 1st command`() {
-        // given
+        // arrange
         val session = startedSession()
         val detectCommand = givenDetectVirtualUnityEnvironmentCommand()
 
-        // when
+        // act
         val command = getNthCommand(1, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command!! shouldBeEqual detectCommand
 
-        verify(exactly = 1) { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() wasNot Called }
-        verify { licenceManager wasNot Called }
+        verify(exactly = 1) { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() wasNot Called }
+        verify { licenceManagerMock wasNot Called }
     }
 
     @Test
     fun `should activate license as the 1st command`() {
-        // given
+        // arrange
         val session = startedSession()
         givenNoDetectVirtualUnityEnvironmentCommand()
         val activateLicenseCommand = givenActivateLicenseCommand()
 
-        // when
+        // act
         val command = getNthCommand(1, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command!! shouldBeEqual activateLicenseCommand
 
-        verify(exactly = 1) { envProvider.provide(runnerContext) }
-        verify(exactly = 1) { envProvider.unityEnvironment() }
-        verify(exactly = 1) { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 1) { envProviderMock.provide(runnerContextMock) }
+        verify(exactly = 1) { envProviderMock.unityEnvironment() }
+        verify(exactly = 1) {
+            licenceManagerMock.activateLicense(
+                envProviderMock.unityEnvironment(),
+                runnerContextMock
+            )
+        }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should activate license as the 2nd command`() {
-        // given
+        // arrange
         val session = startedSession()
         givenDetectVirtualUnityEnvironmentCommand()
         val activateLicenseCommand = givenActivateLicenseCommand()
 
-        // when
+        // act
         val command = getNthCommand(2, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command!! shouldBeEqual activateLicenseCommand
 
-        verify(exactly = 1) { envProvider.provide(runnerContext) }
-        verify(exactly = 1) { envProvider.unityEnvironment() }
-        verify(exactly = 1) { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 1) { envProviderMock.provide(runnerContextMock) }
+        verify(exactly = 1) { envProviderMock.unityEnvironment() }
+        verify(exactly = 1) {
+            licenceManagerMock.activateLicense(
+                envProviderMock.unityEnvironment(),
+                runnerContextMock
+            )
+        }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should execute build as the 1st command`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns emptyMap()
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns emptyMap()
+        every { runnerContextMock.build } returns mockk(relaxed = true)
 
         givenNoDetectVirtualUnityEnvironmentCommand()
         givenNoLicenseCommands()
 
-        // when
+        // act
         val command = getNthCommand(1, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should execute build as the 2nd command`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns emptyMap()
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns emptyMap()
+        every { runnerContextMock.build } returns mockk(relaxed = true)
 
         givenNoDetectVirtualUnityEnvironmentCommand()
         givenActivateLicenseCommand()
 
-        // when
+        // act
         val command = getNthCommand(2, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should execute build as the 3d command`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns emptyMap()
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns emptyMap()
+        every { runnerContextMock.build } returns mockk(relaxed = true)
 
         givenDetectVirtualUnityEnvironmentCommand()
         givenActivateLicenseCommand()
 
-        // when
+        // act
         val command = getNthCommand(3, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should execute build as the 1st and the 2nd commands when all test platforms specified`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
+        every { runnerContextMock.build } returns mockk(relaxed = true)
 
         givenNoDetectVirtualUnityEnvironmentCommand()
         givenNoLicenseCommands()
 
-        // when
+        // act
         val firstCommand = session.nextCommand
         val secondCommand = session.nextCommand
 
-        // then
+        // assert
         firstCommand shouldNotBe null
         firstCommand?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
         secondCommand shouldNotBe null
         secondCommand?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should execute build as the 3d and the 4th commands when all test platforms specified`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
+        every { runnerContextMock.build } returns mockk(relaxed = true)
 
         givenDetectVirtualUnityEnvironmentCommand()
         givenActivateLicenseCommand()
 
-        // when
+        // act
         val thirdCommand = getNthCommand(3, session)
         val fourthCommand = session.nextCommand
 
-        // then
+        // assert
         thirdCommand shouldNotBe null
         thirdCommand?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
         fourthCommand shouldNotBe null
         fourthCommand?.shouldBeInstanceOf<BuildCommandExecutionAdapter>()
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(any(), any()) wasNot Called }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(any(), any()) wasNot Called }
     }
 
     @Test
     fun `should return unity license as the last command`() {
-        // given
+        // arrange
         val session = startedSession()
-        every { runnerContext.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
-        every { runnerContext.build } returns mockk(relaxed = true)
+        every { runnerContextMock.runnerParameters } returns mapOf(PARAM_TEST_PLATFORM to "all")
+        every { runnerContextMock.build } returns mockk(relaxed = true)
         givenDetectVirtualUnityEnvironmentCommand()
         givenActivateLicenseCommand()
         val returnLicenseCommand = givenReturnLicenseCommand()
 
-        // when
+        // act
         val command = getNthCommand(5, session)
 
-        // then
+        // assert
         command shouldNotBe null
         command!! shouldBeEqual returnLicenseCommand
 
-        verify { envProvider.provide(runnerContext) }
-        verify { envProvider.unityEnvironment() }
-        verify { licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext) }
-        verify { licenceManager.returnLicense(envProvider.unityEnvironment(), runnerContext) }
+        verify { envProviderMock.provide(runnerContextMock) }
+        verify { envProviderMock.unityEnvironment() }
+        verify { licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
+        verify { licenceManagerMock.returnLicense(envProviderMock.unityEnvironment(), runnerContextMock) }
     }
 
     @Test
     fun `should do nothing on nextCommand if sessionStarted was not called (should not happen)`() {
-        // given
+        // arrange
         val session = createInstance()
 
-        // when
+        // act
         val nextCommand = session.nextCommand
 
-        // then
+        // assert
         nextCommand shouldBe null
 
-        verify { envProvider wasNot Called }
-        verify { licenceManager wasNot Called }
+        verify { envProviderMock wasNot Called }
+        verify { licenceManagerMock wasNot Called }
     }
 
     private fun startedSession(): UnityCommandBuildSession {
@@ -255,18 +267,18 @@ class UnityCommandBuildSessionTest {
 
     private fun givenDetectVirtualUnityEnvironmentCommand(): DetectVirtualUnityEnvironmentCommand {
         val command = mockk<DetectVirtualUnityEnvironmentCommand>()
-        every { envProvider.provide(runnerContext) } returns sequenceOf(command)
+        every { envProviderMock.provide(runnerContextMock) } returns sequenceOf(command)
         return command
     }
 
     private fun givenNoDetectVirtualUnityEnvironmentCommand() {
-        every { envProvider.provide(runnerContext) } returns emptySequence()
+        every { envProviderMock.provide(runnerContextMock) } returns emptySequence()
     }
 
     private fun givenActivateLicenseCommand(): ActivateProLicenseCommand {
         val command = mockk<ActivateProLicenseCommand>()
         every {
-            licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext)
+            licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock)
         } returns sequenceOf(command)
         return command
     }
@@ -274,17 +286,17 @@ class UnityCommandBuildSessionTest {
     private fun givenReturnLicenseCommand(): ReturnProLicenseCommand {
         val command = mockk<ReturnProLicenseCommand>()
         every {
-            licenceManager.returnLicense(envProvider.unityEnvironment(), runnerContext)
+            licenceManagerMock.returnLicense(envProviderMock.unityEnvironment(), runnerContextMock)
         } returns sequenceOf(command)
         return command
     }
 
     private fun givenNoLicenseCommands() {
         every {
-            licenceManager.activateLicense(envProvider.unityEnvironment(), runnerContext)
+            licenceManagerMock.activateLicense(envProviderMock.unityEnvironment(), runnerContextMock)
         } returns emptySequence()
         every {
-            licenceManager.returnLicense(envProvider.unityEnvironment(), runnerContext)
+            licenceManagerMock.returnLicense(envProviderMock.unityEnvironment(), runnerContextMock)
         } returns emptySequence()
     }
 
@@ -297,8 +309,9 @@ class UnityCommandBuildSessionTest {
     }
 
     private fun createInstance() = UnityCommandBuildSession(
-        runnerContext,
-        envProvider,
-        licenceManager,
+        runnerContextMock,
+        fileSystemServiceMock,
+        envProviderMock,
+        licenceManagerMock,
     )
 }

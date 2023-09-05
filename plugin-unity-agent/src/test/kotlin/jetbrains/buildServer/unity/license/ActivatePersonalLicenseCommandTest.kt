@@ -53,7 +53,7 @@ class ActivatePersonalLicenseCommandTest {
 
     @Test
     fun `should make program command line`() {
-        // given
+        // arrange
         val command = createInstance()
         val licenseFilePath = "/path/to/license/file.ulf"
         val logFilePath = "/path/to/logs.txt"
@@ -68,10 +68,10 @@ class ActivatePersonalLicenseCommandTest {
 
         command.beforeProcessStarted()
 
-        // when
+        // act
         val result = command.makeProgramCommandLine()
 
-        // then
+        // assert
         result.executablePath shouldBe unityEnvironment.unityPath
         result.workingDirectory shouldBe workingDirectoryPath
         result.environment shouldBe mapOf()
@@ -86,7 +86,7 @@ class ActivatePersonalLicenseCommandTest {
 
     @Test
     fun `should fail when license content is not provided`() {
-        // given
+        // arrange
         val command = createInstance()
         val licenseFilePath = "/path/to/license/file.ulf"
         val logFilePath = "/path/to/logs.txt"
@@ -98,7 +98,7 @@ class ActivatePersonalLicenseCommandTest {
         every { buildFeature.parameters } returns emptyMap()
         command.beforeProcessStarted()
 
-        // when // then
+        // act // assert
         shouldThrow<IllegalStateException> {
             command.makeProgramCommandLine()
         }.apply {
@@ -108,17 +108,17 @@ class ActivatePersonalLicenseCommandTest {
 
     @Test
     fun `should open a log block when process is started`() {
-        // given
+        // arrange
         val commandLine = aCommandLine()
         val command = createInstance()
 
         every { buildLogger.logMessage(any()) } returns Unit
         every { buildLogger.message(any()) } returns Unit
 
-        // when
+        // act
         command.processStarted(commandLine, workingDirectory)
 
-        // then
+        // assert
         verify(exactly = 1) {
             buildLogger.logMessage(withArg {
                 it.value shouldBe BlockData("Activate Unity license", "unity")

@@ -44,28 +44,28 @@ class UnityToolProviderTest {
 
     @Test
     fun `should throw exception if wrong tool name is provided`() {
-        // given
+        // arrange
         val provider = createInstance()
 
-        // when // then
+        // act // assert
         shouldThrowExactly<ToolCannotBeFoundException> { provider.getUnity("wrong tool name") }
             .message?.shouldBeEqual("Unsupported tool wrong tool name")
     }
 
     @Test
     fun `should throw exception when unity detector was not created`() {
-        // given
+        // arrange
         every { unityDetectorFactory.unityDetector() } returns null
         val provider = createInstance()
 
-        // when // then
+        // act // assert
         shouldThrowExactly<ToolCannotBeFoundException> { provider.getUnity("unity") }
             .message?.shouldBeEqual("unity")
     }
 
     @Test
     fun `should detect unity environment when unity root param is provided`() {
-        // given
+        // arrange
         val provider = createInstance()
         val unityRootParam = "/path/to/unity"
         val unityVersion = UnityVersion(2023, 1, 1)
@@ -73,10 +73,10 @@ class UnityToolProviderTest {
         every { unityDetector.getVersionFromInstall(File(unityRootParam)) } returns unityVersion
         every { unityDetector.getEditorPath(File(unityRootParam)) } returns File("$unityRootParam/Unity")
 
-        // when
+        // act
         val result = provider.getUnity("unity", runnerContext)
 
-        // then
+        // assert
         result shouldBeEqual UnityEnvironment(File("$unityRootParam/Unity").absolutePath, unityVersion, false)
     }
 

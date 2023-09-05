@@ -22,26 +22,26 @@ class UnityBuildSessionFactoryTest {
 
     @Test
     fun `should create unity command build session`() {
-        // given
+        // arrange
         val factory = createInstance()
         val runnerContext = mockk<BuildRunnerContext>()
 
-        // when
+        // act
         val session = factory.createSession(runnerContext)
 
-        // then
+        // assert
         session.shouldBeInstanceOf<UnityCommandBuildSession>()
     }
 
     @Test
     fun `should return correct build runner info`() {
-        // given
+        // arrange
         val factory = createInstance()
 
-        // when
+        // act
         val buildRunnerInfo = factory.buildRunnerInfo
 
-        // then
+        // assert
         buildRunnerInfo.type shouldBeEqual "unity"
         buildRunnerInfo.canRun(mockk()) shouldBe true
     }

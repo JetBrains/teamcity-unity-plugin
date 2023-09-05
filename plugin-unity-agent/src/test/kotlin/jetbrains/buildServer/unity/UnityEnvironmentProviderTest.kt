@@ -25,18 +25,18 @@ class UnityEnvironmentProviderTest {
 
     @Test
     fun `should initialize unity environment when context is NOT virtual`() {
-        // given
+        // arrange
         val provider = createInstance()
         val context = mockk<BuildRunnerContext>()
         val unityEnvironment = mockk<UnityEnvironment>()
         every { context.isVirtualContext } returns false
         every { unityToolProvider.getUnity(any(), any()) } returns unityEnvironment
 
-        // when
+        // act
         val command = provider.provide(context).firstOrNull()
         val result = provider.unityEnvironment()
 
-        // then
+        // assert
         command shouldBe null
         result shouldBe unityEnvironment
 
@@ -46,18 +46,18 @@ class UnityEnvironmentProviderTest {
 
     @Test
     fun `should initialize unity environment when context is virtual`() {
-        // given
+        // arrange
         val provider = createInstance()
         val context = mockk<BuildRunnerContext>()
         val unityEnvironment = mockk<UnityEnvironment>()
         every { context.isVirtualContext } returns true
         every { detectCommand.results } returns mutableSetOf(unityEnvironment)
 
-        // when
+        // act
         val commands = provider.provide(context).toList()
         val result = provider.unityEnvironment()
 
-        // then
+        // assert
         commands shouldHaveSize 1
         commands shouldContain detectCommand
         result shouldBeEqual unityEnvironment
@@ -68,10 +68,10 @@ class UnityEnvironmentProviderTest {
 
     @Test
     fun `should throw exception when unity environment is not initialized`() {
-        // given
+        // arrange
         val provider = createInstance()
 
-        // when // then
+        // act // assert
         shouldThrowExactly<ToolCannotBeFoundException> {
             provider.unityEnvironment()
         }.message shouldBe "Unity environment is not initialized yet"
@@ -79,13 +79,13 @@ class UnityEnvironmentProviderTest {
 
     @Test
     fun `should fail to initialize unity environment when context is virtual and no environment detected`() {
-        // given
+        // arrange
         val provider = createInstance()
         val context = mockk<BuildRunnerContext>()
         every { context.isVirtualContext } returns true
         every { detectCommand.results } returns mutableSetOf()
 
-        // when // then
+        // act // assert
         shouldThrowExactly<ToolCannotBeFoundException> {
             provider.provide(context).toList()
         }.message shouldBe "Failed to detect Unity virtual environment"

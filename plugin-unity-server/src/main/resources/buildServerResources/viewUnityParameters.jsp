@@ -61,6 +61,12 @@
     </div>
 </c:if>
 
+<c:if test="${propertiesBean.properties[params.noQuit]}">
+    <div class="parameter">
+        Do not quit the Unity Editor after other commands have finished executing: <strong>ON</strong>
+    </div>
+</c:if>
+
 <c:if test="${propertiesBean.properties[params.runEditorTests]}">
     <div class="parameter">
         Run Editor tests from the project: <strong>ON</strong>

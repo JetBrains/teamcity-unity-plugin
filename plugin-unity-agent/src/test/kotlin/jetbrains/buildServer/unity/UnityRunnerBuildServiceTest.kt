@@ -19,6 +19,7 @@ package jetbrains.buildServer.unity
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -27,6 +28,7 @@ import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.VirtualContext
 import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
+import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.DataProvider
 import java.io.File
 import kotlin.random.Random
@@ -38,8 +40,9 @@ class UnityRunnerBuildServiceTest {
     private val defaultUnityVersion = parseVersion("2021.3.16")
     private val defaultUnityEnvironment = UnityEnvironment(defaultEditorPath, defaultUnityVersion)
 
-    private val buildRunnerContextMock = mockk<BuildRunnerContext>()
-    private val agentRunningBuildMock = mockk<AgentRunningBuild>()
+    private val buildRunnerContextMock = mockk<BuildRunnerContext>(relaxed = true)
+    private val agentRunningBuildMock = mockk<AgentRunningBuild>(relaxed = true)
+    private val fileSystemServiceMock = mockk<FileSystemService>(relaxed = true)
 
     @BeforeTest
     fun setUp() {
@@ -62,6 +65,11 @@ class UnityRunnerBuildServiceTest {
             every { buildId } returns Random.nextLong(0, Long.MAX_VALUE)
             every { getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(FakeUnityBuildFeature())
         }
+
+        fileSystemServiceMock.apply {
+            every { createPath(any()) } answers { callOriginal() }
+            every { createPath(any(), any()) } answers { callOriginal() }
+        }
     }
 
     data class LogArgumentTestCase(
@@ -79,9 +87,9 @@ class UnityRunnerBuildServiceTest {
     }
 
     @Test(dataProvider = "consoleLogOutput")
-    fun makeProgramCommandLine_consoleLogOutput_correctLogArgumentGenerated(case: LogArgumentTestCase) {
+    fun `should add correct log argument`(case: LogArgumentTestCase) {
         // arrange
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap())
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
         sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
 
         System.setProperty("os.name", case.system)
@@ -95,11 +103,56 @@ class UnityRunnerBuildServiceTest {
         commandString shouldContain "-logFile -"
     }
 
-    @Test
-    fun makeProgramCommandLine_virtualContext_correctCommandLineGenerated() {
+    data class QuitArgTestCase(
+        val noQuitParam: String?,
+        val runEditorTestsParam: String? = null,
+        val shouldAddQuitArg: Boolean,
+    )
+
+    @DataProvider
+    fun noQuitTestData(): Array<QuitArgTestCase> {
+        return arrayOf(
+            QuitArgTestCase(noQuitParam = "false", shouldAddQuitArg = true),
+            QuitArgTestCase(noQuitParam = "", shouldAddQuitArg = true),
+            QuitArgTestCase(noQuitParam = null, shouldAddQuitArg = true),
+
+            QuitArgTestCase(noQuitParam = "true", shouldAddQuitArg = false),
+            QuitArgTestCase(noQuitParam = "true", runEditorTestsParam = "true", shouldAddQuitArg = false),
+            QuitArgTestCase(noQuitParam = "false", runEditorTestsParam = "true", shouldAddQuitArg = false),
+            QuitArgTestCase(noQuitParam = "", runEditorTestsParam = "true", shouldAddQuitArg = false),
+            QuitArgTestCase(noQuitParam = null, runEditorTestsParam = "true", shouldAddQuitArg = false),
+        )
+    }
+
+    @Test(dataProvider = "noQuitTestData")
+    fun `should correctly handle -quit argument`(case: QuitArgTestCase) {
         // arrange
-        val virtualContext = mockk<VirtualContext>()
-        virtualContext.apply {
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
+        buildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                "noQuit" to case.noQuitParam,
+                "runEditorTests" to case.runEditorTestsParam,
+            )
+        }
+        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+
+        // act
+        val commandLine = sut.makeProgramCommandLine()
+
+        // assert
+        commandLine shouldNotBe null
+        val commandString = commandLine.arguments.joinToString(" ")
+        if (case.shouldAddQuitArg) {
+            commandString shouldContain "-quit"
+        } else {
+            commandString shouldNotContain "-quit"
+        }
+    }
+
+    @Test
+    fun `should generate correct command line when virtual context is used`() {
+        // arrange
+        val virtualContext = mockk<VirtualContext> {
             every { resolvePath("./") } returns "/converted/project"
             every { resolvePath(File("/logs").absolutePath) } returns "/converted/logs"
             every { resolvePath(File("/player").absolutePath) } returns "/converted/player"
@@ -116,7 +169,7 @@ class UnityRunnerBuildServiceTest {
             )
         }
 
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap())
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
         sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
 
         System.setProperty("os.name", "linux")
