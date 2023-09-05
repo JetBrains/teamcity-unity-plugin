@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 1.1.0 - 2023-09-05
+
+### Added
 - Support for running Unity inside a container starting from 2023.09 TeamCity version
 - Support for Unity Personal license activation via .ulf file upload
 - Add option to remove '-quit' argument
