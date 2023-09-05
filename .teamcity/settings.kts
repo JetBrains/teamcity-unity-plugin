@@ -76,7 +76,7 @@ object ReleaseBuildConfiguration : BuildType({
     name = "ReleaseBuild"
 
     params {
-        password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:9836dc1a-9546-4018-b7c5-b5cbbaa03213", readOnly = true)
+        password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:1a57eff8-4658-4747-a7ff-e6cdbb3dbb6e", readOnly = true)
     }
 
     vcs {
