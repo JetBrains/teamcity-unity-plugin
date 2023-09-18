@@ -2,13 +2,13 @@ package jetbrains.buildServer.unity.util
 
 import io.kotest.matchers.shouldBe
 import org.testng.annotations.Test
-import java.io.File.pathSeparator
+import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class FileSystemServiceTest {
 
-    private val path = "some" + pathSeparator + "path"
+    private val path = "some" + File.pathSeparator + "path"
 
     @Test
     fun `should create file`() {
@@ -19,7 +19,7 @@ class FileSystemServiceTest {
         val result = service.createPath(path)
 
         // assert
-        result shouldBe Path.of(path)
+        result shouldBe File(path).toPath()
     }
 
     @Test
@@ -33,7 +33,7 @@ class FileSystemServiceTest {
         val result = service.createPath(parentDirectory, filename)
 
         // assert
-        result shouldBe Path.of(parentDirectory.absolutePathString(), filename)
+        result shouldBe File(parentDirectory.absolutePathString(), filename).toPath()
     }
 
     private fun createInstance() = FileSystemService()
