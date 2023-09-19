@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Support compatibility with Java 1.8
+- Support for class name in tests reporting
 
 ## 1.1.0 - 2023-09-05
 
