@@ -186,7 +186,7 @@ class UnityRunnerBuildService(
         build.getBuildFeaturesOfType(BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
             feature.parameters[PARAM_CACHE_SERVER]?.let {
                 if (it.isNotEmpty()) {
-                    arguments.addAll(listOf(ARG_CACHE_SERVER_IP_ADDRESS, it.trim()))
+                    arguments.addAll(listOf(ARG_ENABLE_CACHE_SERVER, ARG_CACHE_SERVER_ENDPOINT, it.trim()))
                 }
             }
         }
@@ -367,7 +367,8 @@ class UnityRunnerBuildService(
         private const val ARG_CLEANED_LOG_FILE = "-cleanedLogFile"
         private const val ARG_NO_GRAPHICS = "-nographics"
         private const val ARG_QUIT = "-quit"
-        private const val ARG_CACHE_SERVER_IP_ADDRESS = "-CacheServerIPAddress"
+        private const val ARG_ENABLE_CACHE_SERVER = "-EnableCacheServer"
+        private const val ARG_CACHE_SERVER_ENDPOINT = "-cacheServerEndpoint"
 
         private const val LOG_FILE_ACCESS_MODE = "rw"
 
