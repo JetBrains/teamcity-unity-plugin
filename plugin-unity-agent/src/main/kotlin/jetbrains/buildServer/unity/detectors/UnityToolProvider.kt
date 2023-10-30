@@ -123,7 +123,7 @@ class UnityToolProvider(
         val unityVersion = runnerContext?.unityVersionParam()
 
         val (version, path) = if (unityVersion == null) {
-            unityVersions.entries.lastOrNull()?.toPair()
+            unityVersions.entries.maxByOrNull { it.key }?.toPair()
         } else {
             val unityPath = unityVersions[unityVersion]
             if (unityPath != null) {

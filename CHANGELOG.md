@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+* Previously, random Unity version was selected when no one is specified. 
+The new behavior ensures the latest Unity version is consistently chosen [TW-84210](https://youtrack.jetbrains.com/issue/TW-84210/Unity-plugin-random-Unity-version-is-selected-when-no-one-is-specified)
 
 ## 1.1.1 - 2023-09-20
 
@@ -27,17 +29,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 1.0.4 - 2023-05-03
 
 ### Changed
-- license return now happens just before a build finishes
+- License return now happens just before a build finishes
 
 ## 1.0.3 - 2023-03-17
 
 ### Fixed
-- version detection on Linux when Unity was distributed as a TeamCity tool
+- Version detection on Linux when Unity was distributed as a TeamCity tool
 
 ## 1.0.2 - 2023-03-01
 
 ### Fixed
-- licence activation on "fresh" agents
+- Licence activation on "fresh" agents
 
 ## 1.0.1 - 2023-02-23
 
