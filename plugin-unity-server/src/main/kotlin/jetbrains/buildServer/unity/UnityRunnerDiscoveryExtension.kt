@@ -16,45 +16,74 @@
 
 package jetbrains.buildServer.unity
 
-import jetbrains.buildServer.serverSide.BuildTypeSettings
-import jetbrains.buildServer.serverSide.discovery.BuildRunnerDiscoveryExtension
+import com.intellij.openapi.diagnostic.Logger
+import jetbrains.buildServer.serverSide.discovery.BreadthFirstRunnerDiscoveryExtension
 import jetbrains.buildServer.serverSide.discovery.DiscoveredObject
-import jetbrains.buildServer.util.browser.Browser
 import jetbrains.buildServer.util.browser.Element
 
-/**
- * Performs unity build steps discovery.
- */
-class UnityRunnerDiscoveryExtension : BuildRunnerDiscoveryExtension {
+private data class DiscoveredUnityProject(
+    val path: String,
+    val unityVersion: UnityVersion? = null,
+): DiscoveredObject(UnityConstants.RUNNER_TYPE, buildMap {
+    put(UnityConstants.PARAM_PROJECT_PATH, path)
 
-    private val depthLimit = 3
-
-    override fun discover(settings: BuildTypeSettings, browser: Browser): MutableList<DiscoveredObject> {
-        return discoverRunners(browser.root, 0).toMutableList()
+    unityVersion?.let {
+        put(UnityConstants.PARAM_UNITY_VERSION, unityVersion.toString())
     }
+})
 
-    private fun discoverRunners(currentElement: Element, currentElementDepth: Int)
-            : Sequence<DiscoveredObject> = sequence {
-        if (currentElementDepth > depthLimit || currentElement.name.contains("rule")) {
-            return@sequence
-        }
-
-        val children = (currentElement.children?.filter { !it.isLeaf } ?: emptyList())
-        val directories = children.map { it.name }.toSet()
-        when {
-            directories.containsAll(PROJECTS_DIRS) -> yield(DiscoveredObject(UnityConstants.RUNNER_TYPE, mapOf(
-                    UnityConstants.PARAM_PROJECT_PATH to currentElement.fullName
-            )))
-            else -> {
-                // Scan nested directories
-                children.forEach {
-                        yieldAll(discoverRunners(it, currentElementDepth + 1))
-                }
-            }
-        }
-    }
-
+class UnityRunnerDiscoveryExtension : BreadthFirstRunnerDiscoveryExtension(DEPTH_LIMIT) {
     companion object {
-        val PROJECTS_DIRS = setOf("Assets", "ProjectSettings")
+        private const val DEPTH_LIMIT = 3
+        private const val PROJECT_SETTINGS_DIR = "ProjectSettings"
+        private val PROJECTS_DIRS = listOf("Assets", PROJECT_SETTINGS_DIR)
+        private val logger = Logger.getInstance(UnityRunnerDiscoveryExtension::class.java.name)
     }
+
+    override fun discoverRunnersInDirectory(
+        dir: Element,
+        filesAndDirs: MutableList<Element>
+    ): MutableList<DiscoveredObject> {
+        if (!dir.isUnityProjectDirectory()) {
+            logger.debug("Directory: ${dir.fullName} seems not to be a Unity project directory, skipping")
+            return mutableListOf()
+        }
+
+        val unityVersion = tryToFindAssociatedUnityVersionForProject(dir)
+
+        logger.info("Unity project was found in directory '${dir.fullName}'${if (unityVersion == null) "" else ", associated Unity version: '$unityVersion'"}")
+        return mutableListOf(DiscoveredUnityProject(dir.fullName, unityVersion))
+    }
+
+    private fun tryToFindAssociatedUnityVersionForProject(projectDir: Element): UnityVersion? = projectDir.children?.let { children ->
+        val projectSettingsDir = children.first { it.name == PROJECT_SETTINGS_DIR }
+
+        projectSettingsDir.children
+            ?.filter { it.isContentAvailable }
+            ?.firstOrNull { it.name == "ProjectVersion.txt" }
+            ?.let {
+                it.inputStream
+                    .bufferedReader()
+                    .useLines { lines ->
+                        for (line in lines ) {
+                            val keyValue = line.split(" ")
+                            if (keyValue.size != 2) {
+                                continue
+                            }
+
+                            if (keyValue.first() == "m_EditorVersion:") {
+                                return@useLines UnityVersion.tryParseVersion(keyValue.last())
+                            }
+                        }
+                        null
+                    }
+            }
+    }
+
+    private fun Element.isUnityProjectDirectory(): Boolean =
+        children
+            ?.filter { !it.isLeaf }
+            ?.map { it.name }
+            ?.containsAll(PROJECTS_DIRS)
+            ?: false
 }

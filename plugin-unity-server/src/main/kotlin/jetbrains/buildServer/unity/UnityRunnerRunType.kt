@@ -100,6 +100,13 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
                 builder.addParameter("Run editor tests: ON")
             }
         }
+
+        parameters[UnityConstants.PARAM_UNITY_VERSION]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Unity version: $it")
+            }
+        }
+
         return builder.toString().trim()
     }
 

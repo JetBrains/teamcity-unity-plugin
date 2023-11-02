@@ -19,6 +19,7 @@
 
 <jsp:useBean id="params" class="jetbrains.buildServer.unity.UnityParametersProvider"/>
 <jsp:useBean id="constants" class="jetbrains.buildServer.unity.UnityConstantsProvider"/>
+<jsp:useBean id="propertiesBean" scope="request" type="jetbrains.buildServer.controllers.BasePropertiesBean"/>
 
 <script type="text/javascript">
     var detectionModeId = BS.Util.escapeId('${params.detectionMode}');
@@ -93,9 +94,10 @@
   <th class="noBorder"><label for="${params.detectionMode}">Detection mode:</label></th>
   <td>
     <props:selectProperty name="${params.detectionMode}" enableFilter="true" className="mediumField">
-      <props:option value="">&lt;Default&gt;</props:option>
       <c:forEach var="item" items="${params.detectionModeValues}">
-        <props:option value="${item.id}"><c:out value="${item.description}"/></props:option>
+        <props:option value="${item.id}" currValue="${propertiesBean.properties[params.detectionMode]}">
+            <c:out value="${item.description}"/>
+        </props:option>
       </c:forEach>
     </props:selectProperty>
     <span class="error" id="error_${params.detectionMode}"></span>
