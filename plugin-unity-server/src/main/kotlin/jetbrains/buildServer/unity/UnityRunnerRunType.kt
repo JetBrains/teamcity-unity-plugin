@@ -28,11 +28,13 @@ import jetbrains.buildServer.web.openapi.PluginDescriptor
 /**
  * Cargo runner definition.
  */
-class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
-                         private val myRunTypeRegistry: RunTypeRegistry) : RunType() {
+class UnityRunnerRunType(
+    private val pluginDescriptor: PluginDescriptor,
+    private val runTypeRegistry: RunTypeRegistry,
+) : RunType() {
 
     private val myDisplayName: String by lazy {
-        val runType = myRunTypeRegistry.findRunType("unityRunner")
+        val runType = runTypeRegistry.findRunType("unityRunner")
         if (runType == null) {
             UnityConstants.RUNNER_DISPLAY_NAME
         } else {
@@ -41,7 +43,7 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     init {
-        myRunTypeRegistry.registerRunType(this)
+        runTypeRegistry.registerRunType(this)
     }
 
     override fun getType(): String {
@@ -59,11 +61,11 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
     }
 
     override fun getEditRunnerParamsJspFilePath(): String? {
-        return myPluginDescriptor.getPluginResourcesPath("editUnityParameters.jsp")
+        return pluginDescriptor.getPluginResourcesPath("editUnityParameters.jsp")
     }
 
     override fun getViewRunnerParamsJspFilePath(): String? {
-        return myPluginDescriptor.getPluginResourcesPath("viewUnityParameters.jsp")
+        return pluginDescriptor.getPluginResourcesPath("viewUnityParameters.jsp")
     }
 
     override fun getDefaultRunnerProperties(): MutableMap<String, String> {
@@ -138,4 +140,6 @@ class UnityRunnerRunType(private val myPluginDescriptor: PluginDescriptor,
         }
         append("\n")
     }
+
+    override fun getIconUrl() = pluginDescriptor.getPluginResourcesPath("unity_logo.svg")
 }
