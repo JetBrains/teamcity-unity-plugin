@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+* The plugin can now pick up the Unity version specified in the project settings (ProjectVersion.txt). 
+This means that this version will be pre-filled in auto-detected build steps. Additionally, when in 'auto' 
+Unity detection mode and no version is explicitly specified, the version from the project will be chosen if it's available on an agent
+[TW-59619](https://youtrack.jetbrains.com/issue/TW-59619/Unity-Plugin-set-Unity-Version-from-ProjectVersion-file-for-auto-detected-build-step), [TW-84683](https://youtrack.jetbrains.com/issue/TW-84683/Unity-Plugin-use-Unity-version-from-a-project-in-auto-detection-mode-when-no-version-is-specified)
 
 ### Changed
 

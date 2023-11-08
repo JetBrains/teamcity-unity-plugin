@@ -32,7 +32,9 @@ private data class DiscoveredUnityProject(
     }
 })
 
-class UnityRunnerDiscoveryExtension : BreadthFirstRunnerDiscoveryExtension(DEPTH_LIMIT) {
+class UnityRunnerDiscoveryExtension(
+    private val projectAssociatedUnityVersionIdentifier: ProjectAssociatedUnityVersionIdentifier,
+) : BreadthFirstRunnerDiscoveryExtension(DEPTH_LIMIT) {
     companion object {
         private const val DEPTH_LIMIT = 3
         private const val PROJECT_SETTINGS_DIR = "ProjectSettings"
@@ -49,35 +51,23 @@ class UnityRunnerDiscoveryExtension : BreadthFirstRunnerDiscoveryExtension(DEPTH
             return mutableListOf()
         }
 
-        val unityVersion = tryToFindAssociatedUnityVersionForProject(dir)
+        val unityVersion = projectAssociatedUnityVersionIdentifier.identify(
+            object : UnityProjectFilesAccessor {
+                private var current = dir
+                override fun directory(name: String): UnityProjectFilesAccessor? {
+                    current = current.children
+                        ?.firstOrNull { it.name == name } ?: return null
+                    return this
+                }
+
+                override fun file(name: String) = current.children
+                    ?.filter { it.isContentAvailable }
+                    ?.firstOrNull { it.name == name }
+                    ?.inputStream
+            })
 
         logger.info("Unity project was found in directory '${dir.fullName}'${if (unityVersion == null) "" else ", associated Unity version: '$unityVersion'"}")
         return mutableListOf(DiscoveredUnityProject(dir.fullName, unityVersion))
-    }
-
-    private fun tryToFindAssociatedUnityVersionForProject(projectDir: Element): UnityVersion? = projectDir.children?.let { children ->
-        val projectSettingsDir = children.first { it.name == PROJECT_SETTINGS_DIR }
-
-        projectSettingsDir.children
-            ?.filter { it.isContentAvailable }
-            ?.firstOrNull { it.name == "ProjectVersion.txt" }
-            ?.let {
-                it.inputStream
-                    .bufferedReader()
-                    .useLines { lines ->
-                        for (line in lines ) {
-                            val keyValue = line.split(" ")
-                            if (keyValue.size != 2) {
-                                continue
-                            }
-
-                            if (keyValue.first() == "m_EditorVersion:") {
-                                return@useLines UnityVersion.tryParseVersion(keyValue.last())
-                            }
-                        }
-                        null
-                    }
-            }
     }
 
     private fun Element.isUnityProjectDirectory(): Boolean =

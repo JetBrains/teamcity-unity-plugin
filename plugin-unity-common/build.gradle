@@ -22,6 +22,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "com.vdurmont:semver4j:$semver4jVersion"
 
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "io.kotest:kotest-assertions-core-jvm:$kotestAssertionsCoreJvmVersion"
 }
 

@@ -109,7 +109,11 @@
     <td>
         <props:textProperty name="${params.unityVersion}" className="longField disableBuildTypeParams"/>
         <span class="error" id="error_${params.unityVersion}"></span>
-        <span class="smallNote" id="${params.unityVersion}-hint">Specify the required Unity version, e.g 2018.2.</span>
+        <span class="smallNote" id="${params.unityVersion}-hint">
+            Specify the required Unity version, e.g 2018.2.
+            If left blank, the version specified in the project settings will be selected if available.
+            Otherwise, the latest Unity installed on the agent will be chosen for the build.
+        </span>
     </td>
   </tr>
 </tbody>

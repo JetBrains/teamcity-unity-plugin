@@ -19,6 +19,9 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
        default-autowire="constructor">
+
+    <import resource="classpath*:META-INF/build-common-plugin-unity.xml"/>
+
     <bean class="jetbrains.buildServer.unity.UnityBuildFeature"/>
     <bean class="jetbrains.buildServer.unity.UnityPasswordsProvider"/>
     <bean class="jetbrains.buildServer.unity.UnityRunnerRunType"/>
