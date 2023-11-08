@@ -6,16 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
-* The plugin can now pick up the Unity version specified in the project settings (ProjectVersion.txt). 
-This means that this version will be pre-filled in auto-detected build steps. Additionally, when in 'auto' 
-Unity detection mode and no version is explicitly specified, the version from the project will be chosen if it's available on an agent
-[TW-59619](https://youtrack.jetbrains.com/issue/TW-59619/Unity-Plugin-set-Unity-Version-from-ProjectVersion-file-for-auto-detected-build-step), [TW-84683](https://youtrack.jetbrains.com/issue/TW-84683/Unity-Plugin-use-Unity-version-from-a-project-in-auto-detection-mode-when-no-version-is-specified)
 
 ### Changed
 
 ### Fixed
-* Previously, random Unity version was selected when no one is specified. 
+
+## 1.2.0 - 2023-11-08
+
+### Added
+- The plugin can now pick up the Unity version specified in the project settings (ProjectVersion.txt). 
+This means that this version will be pre-filled in auto-detected build steps. Additionally, when in 'auto' 
+Unity detection mode and no version is explicitly specified, the version from the project will be chosen if it's available on an agent
+[TW-59619](https://youtrack.jetbrains.com/issue/TW-59619/Unity-Plugin-set-Unity-Version-from-ProjectVersion-file-for-auto-detected-build-step), [TW-84683](https://youtrack.jetbrains.com/issue/TW-84683/Unity-Plugin-use-Unity-version-from-a-project-in-auto-detection-mode-when-no-version-is-specified)
+
+### Fixed
+- Previously, random Unity version was selected when no one is specified. 
 The new behavior ensures the latest Unity version is consistently chosen [TW-84210](https://youtrack.jetbrains.com/issue/TW-84210/Unity-plugin-random-Unity-version-is-selected-when-no-one-is-specified)
+- Runner now has a logo
 
 ## 1.1.1 - 2023-09-20
 

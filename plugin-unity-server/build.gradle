@@ -80,3 +80,7 @@ compileKotlin {
         jvmTarget = "$jvmTargetVersion"
     }
 }
+
+tasks.register("getLatestChangelogVersion") {
+    print(changelog.getLatest().version)
+}
