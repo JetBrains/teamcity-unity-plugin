@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+- Unity environment detection fails in a Windows container [TW-85189](https://youtrack.jetbrains.com/issue/TW-85189)
 
 ## 1.2.0 - 2023-11-08
 

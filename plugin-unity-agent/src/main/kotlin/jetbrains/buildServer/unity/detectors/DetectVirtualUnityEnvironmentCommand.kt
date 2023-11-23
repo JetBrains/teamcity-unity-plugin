@@ -29,6 +29,11 @@ class DetectVirtualUnityEnvironmentCommand(
             return
 
         text.split(LINE_END).forEach {
+            if (it.startsWith("log:")) {
+                LOG.debug(it.substringAfter("log:"))
+                return@forEach
+            }
+
             val path = substringBetween(it, PATH_START, PATH_END)
             val version = tryParseVersion(substringAfter(it, VERSION_START))
             if (!path.isNullOrBlank() && version != null) {
