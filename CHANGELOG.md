@@ -10,7 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Fixed
+
+## 1.2.1 - 2023-12-12
+
+### Fixed
 - Unity environment detection fails in a Windows container [TW-85189](https://youtrack.jetbrains.com/issue/TW-85189)
+- Broken Unity environment detection in a Linux container since version 1.2.0 [TW-85468](https://youtrack.jetbrains.com/issue/TW-85468/Unity-Plugin-package-1.2.0-is-broken-because-it-was-built-on-Windows)
 
 ## 1.2.0 - 2023-11-08
 
