@@ -5,6 +5,7 @@ package jetbrains.buildServer.unity
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
 import io.mockk.clearAllMocks
 import io.mockk.every
@@ -87,6 +88,30 @@ class UnityRunnerBuildServiceTest {
         commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
         commandString shouldContain "-logFile -"
+    }
+
+
+    @Test
+    fun `should not add log argument if provided by user`() {
+        // arrange
+        buildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                "arguments" to "-logFile 42.log",
+            )
+        }
+
+        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
+        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+
+        // act
+        val commandLine = sut.makeProgramCommandLine()
+
+        // assert
+        commandLine shouldNotBe null
+
+        val commandString = commandLine.arguments.joinToString(" ")
+        commandString shouldContainOnlyOnce "-logFile"
+        commandString shouldContain "logFile 42.log"
     }
 
     data class QuitArgTestCase(

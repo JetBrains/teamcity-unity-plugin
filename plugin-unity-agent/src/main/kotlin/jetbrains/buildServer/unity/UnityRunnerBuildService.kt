@@ -106,7 +106,7 @@ class UnityRunnerBuildService(
         }.toMutableList()
 
         addRunTestsArgs(arguments)
-        addLogArg(arguments, unityVersion)
+        addLogArgIfNotExists(arguments, unityVersion)
 
         createLineStatusesFile()
         addArgsFromBuildFeature(arguments)
@@ -272,7 +272,12 @@ class UnityRunnerBuildService(
 
     override fun getListeners() = unityListeners
 
-    private fun addLogArg(arguments: MutableList<String>, version: UnityVersion) {
+    private fun addLogArgIfNotExists(arguments: MutableList<String>, version: UnityVersion) {
+        // Log file is already provided by user in command line arguments
+        if (hasCustomLogArg()) {
+            return
+        }
+
         val verbosityArg = verbosityArgument
         arguments.add(verbosityArg)
 
@@ -309,6 +314,9 @@ class UnityRunnerBuildService(
             }
         }, DEFAULT_DELAY_MILLIS, false)
     }
+
+    private fun hasCustomLogArg() = arrayOf(ARG_LOG_FILE, ARG_CLEANED_LOG_FILE)
+        .any { parameters.value[PARAM_ARGUMENTS]?.contains(it) == true }
 
     private fun trimLog(logFile: File) {
         var logFileAccess: RandomAccessFile? = null
