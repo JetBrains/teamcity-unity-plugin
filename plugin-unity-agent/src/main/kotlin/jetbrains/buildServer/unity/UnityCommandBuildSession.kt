@@ -6,14 +6,14 @@ import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
-import jetbrains.buildServer.unity.license.UnityLicenseManager
+import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.util.FileSystemService
 
 class UnityCommandBuildSession(
     private val runnerContext: BuildRunnerContext,
     private val fileSystemService: FileSystemService,
     private val unityEnvironmentProvider: UnityEnvironmentProvider,
-    private val unityLicenseManager: UnityLicenseManager,
+    private val unityLicenseActivator: UnityBuildStepScopeLicenseActivator,
 ) : MultiCommandBuildSession {
 
     private var commands: Iterator<CommandExecution>? = null
@@ -50,7 +50,7 @@ class UnityCommandBuildSession(
 
     private suspend fun SequenceScope<CommandExecution>.activateLicenceIfNeeded() {
         yieldAll(
-            unityLicenseManager.activateLicense(
+            unityLicenseActivator.activateLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 runnerContext,
             )
@@ -72,7 +72,7 @@ class UnityCommandBuildSession(
 
     private suspend fun SequenceScope<CommandExecution>.returnLicenceIfNeeded() {
         yieldAll(
-            unityLicenseManager.returnLicense(
+            unityLicenseActivator.returnLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 runnerContext,
             )

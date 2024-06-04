@@ -12,6 +12,6 @@ interface CommandLineRunner {
 
 class SimpleCommandLineRunner : CommandLineRunner {
     override fun run(command: GeneralCommandLine): ExecResult {
-        return SimpleCommandLineProcessRunner.runCommand(command, null)
+        return SimpleCommandLineProcessRunner.runCommand(command, byteArrayOf())
     }
 }

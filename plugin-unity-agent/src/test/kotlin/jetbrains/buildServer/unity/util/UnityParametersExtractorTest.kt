@@ -7,6 +7,9 @@ import io.mockk.*
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.unity.UnityLicenseScope
+import jetbrains.buildServer.unity.UnityLicenseScope.BUILD_CONFIGURATION
+import jetbrains.buildServer.unity.UnityLicenseScope.BUILD_STEP
 import jetbrains.buildServer.unity.UnityLicenseTypeParameter
 import jetbrains.buildServer.unity.UnityVersion
 import org.testng.annotations.BeforeMethod
@@ -192,5 +195,32 @@ class UnityParametersExtractorTest {
             result shouldBe null
         else
             result!! shouldBeEqual expectedContent
+    }
+
+    @DataProvider
+    fun `license scope test data`(): Array<Array<Any?>> = arrayOf(
+        arrayOf(mapOf("unityLicenseScope" to "buildStep"), BUILD_STEP),
+        arrayOf(mapOf("unityLicenseScope" to "buildConfiguration"), BUILD_CONFIGURATION),
+        arrayOf(mapOf("notRelevantParam" to "some value"), null),
+        arrayOf(emptyMap<String, String>(), null),
+    )
+
+    @Test(dataProvider = "license scope test data")
+    fun `should return unity license scope from build feature parameters`(
+        params: Map<String, String>,
+        expectedLicenseScope: UnityLicenseScope?,
+    ) {
+        // arrange
+        every { runnerContext.runnerParameters } returns mapOf()
+        every { buildFeature.parameters } returns params
+
+        // act
+        val result = build.unityLicenseScopeParam()
+
+        // assert
+        if (expectedLicenseScope == null)
+            result shouldBe null
+        else
+            result!! shouldBeEqual expectedLicenseScope
     }
 }

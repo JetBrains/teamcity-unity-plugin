@@ -30,7 +30,7 @@ class UnityEnvironmentProviderTest {
         val context = mockk<BuildRunnerContext>()
         val unityEnvironment = mockk<UnityEnvironment>()
         every { context.isVirtualContext } returns false
-        every { unityToolProvider.getUnity(any(), any()) } returns unityEnvironment
+        every { unityToolProvider.getUnity(any<BuildRunnerContext>()) } returns unityEnvironment
 
         // act
         val command = provider.provide(context).firstOrNull()
@@ -40,7 +40,7 @@ class UnityEnvironmentProviderTest {
         command shouldBe null
         result shouldBe unityEnvironment
 
-        verify(exactly = 1) { unityToolProvider.getUnity("unity", context) }
+        verify(exactly = 1) { unityToolProvider.getUnity(context) }
         verify { detectCommand wasNot Called }
     }
 

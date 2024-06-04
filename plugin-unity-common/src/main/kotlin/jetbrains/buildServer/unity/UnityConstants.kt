@@ -36,6 +36,7 @@ object UnityConstants {
     const val PARAM_DETECTION_MODE = "detectionMode"
 
     const val PARAM_ACTIVATE_LICENSE = "activateLicense" // deprecated, needed for backwards compatibility
+    const val PARAM_UNITY_LICENSE_SCOPE = "unityLicenseScope"
     const val PARAM_UNITY_LICENSE_TYPE = "unityLicenseType"
     const val PARAM_UNITY_PERSONAL_LICENSE_CONTENT = Constants.SECURE_PROPERTY_PREFIX + "unityPersonalLicenseContent"
     const val PARAM_SERIAL_NUMBER = Constants.SECURE_PROPERTY_PREFIX + "serialNumber"

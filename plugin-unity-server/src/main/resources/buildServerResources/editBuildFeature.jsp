@@ -13,6 +13,9 @@
     .invisibleUpload input[type='file'] {
         color: transparent;
     }
+    .preserveLineBreaks {
+        white-space: pre-line;
+    }
 </style>
 
 <script type="text/javascript">
@@ -148,6 +151,22 @@
     </td>
 </tr>
 <tbody id="professionalLicense">
+<tr>
+    <th class="noBorder">
+        <label for="${params.unityLicenseScopeName}">License scope:</label>
+    </th>
+    <td>
+        <props:selectProperty name="${params.unityLicenseScopeName}" enableFilter="true" className="mediumField">
+            <c:forEach var="option" items="${params.unityLicenseScopeValues}">
+                <props:option value="${option.id}">
+                    <c:out value="${option.displayName}"/>
+                </props:option>
+            </c:forEach>
+        </props:selectProperty>
+        <span class="error" id="error_${params.unityLicenseScopeName}"></span>
+        <span class="smallNote preserveLineBreaks">${params.unityLicenseScopeDescription}</span>
+    </td>
+</tr>
 <tr>
     <th class="noBorder"><label for="${params.serialNumber}">Serial number:</label></th>
     <td>

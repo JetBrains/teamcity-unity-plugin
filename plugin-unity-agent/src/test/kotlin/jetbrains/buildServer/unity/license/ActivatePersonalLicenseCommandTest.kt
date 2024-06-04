@@ -8,24 +8,23 @@ import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.messages.BlockData
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion
+import jetbrains.buildServer.unity.license.commands.ActivatePersonalLicenseCommand
 import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 
 class ActivatePersonalLicenseCommandTest {
-
-    private val runnerContext = mockk<BuildRunnerContext>()
-    private val virtualContext = mockk<VirtualContext>()
     private val build = mockk<AgentRunningBuild>()
-    private val buildLogger = mockk<BuildProgressLogger>()
-    private val buildParameters = mockk<BuildParametersMap>()
+    private val buildLogger = mockk<BuildProgressLogger> {
+        every { logMessage(any()) } just runs
+    }
     private val buildFeature = mockk<AgentBuildFeature>()
 
     private val fileSystemService = mockk<FileSystemService>()
-    private val workingDirectory = mockk<File>()
     private val workingDirectoryPath = "/path/to/workingDir"
     private val agentTempDirectory = mockk<File>()
     private val buildTempDirectory = mockk<File>()
@@ -34,15 +33,13 @@ class ActivatePersonalLicenseCommandTest {
     fun setUp() {
         clearAllMocks()
 
-        every { runnerContext.virtualContext } returns virtualContext
-        every { runnerContext.build } returns build
-        every { runnerContext.buildParameters } returns buildParameters
-        every { runnerContext.workingDirectory } returns workingDirectory
+        every { agentTempDirectory.toPath() } returns Paths.get("temp")
 
-        every { virtualContext.resolvePath(any()) } returnsArgument 0
         every { buildFeature.parameters } returns mapOf()
-        every { buildParameters.environmentVariables } returns mapOf()
-        every { workingDirectory.path } returns workingDirectoryPath
+
+        every { fileSystemService.createTempFile(any(), any(), any()) } returns Paths.get("foo")
+
+        every { buildLogger.logMessage(any()) } just runs
 
         every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
         every { build.buildLogger } returns buildLogger
@@ -107,26 +104,22 @@ class ActivatePersonalLicenseCommandTest {
     }
 
     @Test
-    fun `should open a log block when process is started`() {
+    fun `should open a log block before process started`() {
         // arrange
-        val commandLine = aCommandLine()
         val command = createInstance()
 
         every { buildLogger.logMessage(any()) } returns Unit
         every { buildLogger.message(any()) } returns Unit
 
         // act
-        command.processStarted(commandLine, workingDirectory)
+        command.beforeProcessStarted()
 
         // assert
         verify(exactly = 1) {
             buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Activate Unity license", "unity")
+                it.value shouldBe BlockData("Activate Personal Unity license", "unity")
                 it.typeId shouldBe "BlockStart"
             })
-        }
-        verify(exactly = 1) {
-            buildLogger.message("Starting: $commandLine")
         }
     }
 
@@ -141,7 +134,7 @@ class ActivatePersonalLicenseCommandTest {
             fileSystemService.writeText(licenseFile, "personalLicenseContent")
         } returns Unit
         every {
-            fileSystemService.createTempFile(agentTempDirectory.toPath(), "activate-license-log-", "-1.txt")
+            fileSystemService.createTempFile(agentTempDirectory.toPath(), "activate-personal-license-log-", "-1.txt")
         } returns logFile
         every { licenseFile.absolutePathString() } returns licenseFilePath
         every { logFile.absolutePathString() } returns logFilePath
@@ -153,13 +146,14 @@ class ActivatePersonalLicenseCommandTest {
         return UnityEnvironment(unityPath, unityVersion)
     }
 
-    private fun aCommandLine(): String {
-        return """
-            /path/to/unity -quit -batchmode -nographics 
-            -manualLicenseFile /path/to/license/file.ulf
-            -logFile /path/to/logs.txt"
-            """.trimIndent()
-    }
+    private fun createInstance() = ActivatePersonalLicenseCommand(
+        object : LicenseCommandContext {
+            override val build = this@ActivatePersonalLicenseCommandTest.build
+            override val fileSystemService = this@ActivatePersonalLicenseCommandTest.fileSystemService
+            override val environmentVariables = mapOf<String, String>()
+            override val workingDirectory = workingDirectoryPath
 
-    private fun createInstance() = ActivatePersonalLicenseCommand(runnerContext, fileSystemService)
+            override fun resolvePath(path: String) = path
+        }
+    )
 }

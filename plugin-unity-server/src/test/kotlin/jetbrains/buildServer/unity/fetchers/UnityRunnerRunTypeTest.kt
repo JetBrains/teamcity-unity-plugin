@@ -6,6 +6,7 @@ import jetbrains.buildServer.requirements.Requirement
 import jetbrains.buildServer.requirements.RequirementType
 import jetbrains.buildServer.serverSide.RunTypeRegistry
 import jetbrains.buildServer.unity.UnityConstants
+import jetbrains.buildServer.unity.UnityLicenseScope
 import jetbrains.buildServer.unity.UnityRunnerRunType
 import jetbrains.buildServer.web.openapi.PluginDescriptor
 import org.jmock.Expectations
@@ -66,7 +67,10 @@ class UnityRunnerRunTypeTest {
     fun runnerDefaultData(): Array<Array<Any?>> {
         return arrayOf(
                 arrayOf<Any?>(
-                    mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO)
+                    mapOf(
+                        UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                        UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id,
+                    )
                 )
         )
     }

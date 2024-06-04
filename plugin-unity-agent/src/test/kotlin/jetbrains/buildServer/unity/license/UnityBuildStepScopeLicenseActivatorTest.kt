@@ -9,11 +9,14 @@ import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion
+import jetbrains.buildServer.unity.license.commands.ActivatePersonalLicenseCommand
+import jetbrains.buildServer.unity.license.commands.ActivateProLicenseCommand
+import jetbrains.buildServer.unity.license.commands.ReturnProLicenseCommand
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
 import org.testng.annotations.Test
 
-class UnityLicenseManagerTest {
+class UnityBuildStepScopeLicenseActivatorTest {
 
     private val activatePersonalCommand = mockk<ActivatePersonalLicenseCommand>()
     private val activateProCommand = mockk<ActivateProLicenseCommand>()
@@ -155,7 +158,7 @@ class UnityLicenseManagerTest {
         return UnityEnvironment(unityPath, unityVersion)
     }
 
-    private fun createInstance() = UnityLicenseManager(
+    private fun createInstance() = UnityBuildStepScopeLicenseActivator(
         activatePersonalCommand,
         activateProCommand,
         returnProCommand,

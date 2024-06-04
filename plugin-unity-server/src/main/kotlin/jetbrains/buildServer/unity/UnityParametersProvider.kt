@@ -54,6 +54,10 @@ class UnityParametersProvider {
     val logFilePath: String
         get() = UnityConstants.PARAM_UNITY_LOG_FILE
 
+    val unityLicenseScopeName = UnityConstants.PARAM_UNITY_LICENSE_SCOPE
+    val unityLicenseScopeValues = UnityLicenseScope.values().toList()
+    val unityLicenseScopeDescription = UnityLicenseScope.description
+
     val unityLicenseType: String
         get() = UnityConstants.PARAM_UNITY_LICENSE_TYPE
 

@@ -1,39 +1,44 @@
-package jetbrains.buildServer.unity.license
+package jetbrains.buildServer.unity.license.commands
 
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.agent.AgentRunningBuild
-import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.TerminationAction.KILL_PROCESS_TREE
 import jetbrains.buildServer.messages.DefaultMessagesInfo.createBlockEnd
 import jetbrains.buildServer.messages.DefaultMessagesInfo.createBlockStart
-import jetbrains.buildServer.unity.util.FileSystemService
+import jetbrains.buildServer.unity.license.LicenseCommandContext
 import java.io.File
 import java.lang.System.lineSeparator
 import java.nio.file.Path
 
 abstract class UnityLicenseCommand(
-    private val runnerContext: BuildRunnerContext,
-    private val fileSystemService: FileSystemService,
+    private val context: LicenseCommandContext,
+    private val logBlockName: String,
+    private val logFilePrefix: String,
 ) : CommandExecution {
 
-    protected abstract val logBlockName: String
+    protected val build = context.build
+    protected val fileSystemService = context.fileSystemService
+    protected lateinit var logFile: Path
+    private val buildLogger = build.buildLogger
 
-    protected abstract fun logFile(): Path
-
-    private val buildLogger get() = runnerContext.build.buildLogger
-
-    override fun processStarted(programCommandLine: String, workingDirectory: File) {
+    override fun beforeProcessStarted() {
         buildLogger.logMessage(createBlockStart(logBlockName, BUILD_LOG_BLOCK_TYPE))
-        buildLogger.message("Starting: $programCommandLine")
+
+        logFile = fileSystemService.createTempFile(
+            build.agentTempDirectory.toPath(), logFilePrefix, suffix = "-${build.buildId}.txt"
+        )
     }
 
-    override fun processFinished(exitCode: Int) {
-        if (exitCode != 0)
-            buildLogger.warning("Process exited with code ${exitCode}. Unity log:${lineSeparator()}${readLogFile()}")
+    override fun processStarted(programCommandLine: String, workingDirectory: File) = Unit
 
-        if (LOG.isDebugEnabled)
+    override fun processFinished(exitCode: Int) {
+        if (exitCode != 0) {
+            buildLogger.warning("Process exited with code ${exitCode}. Unity log:${lineSeparator()}${readLogFile()}")
+        }
+
+        if (LOG.isDebugEnabled) {
             LOG.debug("Unity log:${lineSeparator()}${readLogFile()}")
+        }
 
         val blockEnd = createBlockEnd(logBlockName, BUILD_LOG_BLOCK_TYPE)
         buildLogger.logMessage(blockEnd)
@@ -44,14 +49,9 @@ abstract class UnityLicenseCommand(
     override fun interruptRequested() = KILL_PROCESS_TREE
     override fun isCommandLineLoggingEnabled() = true
 
-    protected fun resolvePath(path: String) = runnerContext.virtualContext.resolvePath(path)
+    protected fun resolvePath(path: String) = context.resolvePath(path)
 
-    protected fun generateLogFile(build: AgentRunningBuild, prefix: String): Path =
-        fileSystemService.createTempFile(
-            build.agentTempDirectory.toPath(), prefix, suffix = "-${build.buildId}.txt"
-        )
-
-    private fun readLogFile() = fileSystemService.readText(logFile())
+    private fun readLogFile() = fileSystemService.readText(logFile)
 
     companion object {
         private val LOG = Logger.getInstance(UnityLicenseCommand::class.java.name)

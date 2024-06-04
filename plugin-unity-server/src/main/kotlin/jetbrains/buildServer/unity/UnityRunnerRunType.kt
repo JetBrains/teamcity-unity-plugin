@@ -54,12 +54,10 @@ class UnityRunnerRunType(
         return pluginDescriptor.getPluginResourcesPath("viewUnityParameters.jsp")
     }
 
-    override fun getDefaultRunnerProperties(): MutableMap<String, String> {
-        val parameters = mutableMapOf<String,String>()
-        parameters[UnityConstants.PARAM_DETECTION_MODE] = UnityConstants.DETECTION_MODE_AUTO
-
-        return parameters
-    }
+    override fun getDefaultRunnerProperties(): MutableMap<String, String> = mapOf(
+        UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+        UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id,
+    ).toMutableMap()
 
     override fun describeParameters(parameters: Map<String, String>): String {
         val builder = StringBuilder()

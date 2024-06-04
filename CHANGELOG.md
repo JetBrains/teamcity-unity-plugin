@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+- Allow acquiring a license before a build and returning it afterward [TW-85266](https://youtrack.jetbrains.com/issue/TW-85266) (for serial-based Unity licenses)
 
 ### Changed
 

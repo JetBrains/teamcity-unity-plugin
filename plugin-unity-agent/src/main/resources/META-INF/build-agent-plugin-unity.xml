@@ -13,4 +13,5 @@
     <bean class="jetbrains.buildServer.unity.UnityBuildSessionFactory"/>
     <bean class="jetbrains.buildServer.unity.detectors.UnityToolProvider"/>
     <bean class="jetbrains.buildServer.unity.util.SimpleCommandLineRunner"/>
+    <bean class="jetbrains.buildServer.unity.license.UnityBuildScopeLicenseActivator"/>
 </beans>

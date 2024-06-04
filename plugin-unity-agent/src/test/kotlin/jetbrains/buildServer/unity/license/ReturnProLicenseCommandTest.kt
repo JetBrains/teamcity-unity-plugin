@@ -4,30 +4,30 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.messages.BlockData
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion
+import jetbrains.buildServer.unity.license.commands.ReturnProLicenseCommand
 import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
 import java.io.File
 import java.nio.file.Path
+import java.nio.file.Paths
 import kotlin.io.path.absolutePathString
 
 class ReturnProLicenseCommandTest {
 
-    private val runnerContext = mockk<BuildRunnerContext>()
-    private val virtualContext = mockk<VirtualContext>()
     private val build = mockk<AgentRunningBuild>()
     private val buildLogger = mockk<BuildProgressLogger>()
-    private val buildParameters = mockk<BuildParametersMap>()
     private val buildFeature = mockk<AgentBuildFeature>()
 
     private val fileSystemService = mockk<FileSystemService>()
-    private val workingDirectory = mockk<File>()
     private val workingDirectoryPath = "/path/to/workingDir"
     private val agentTempDirectory = mockk<File>()
 
@@ -35,15 +35,13 @@ class ReturnProLicenseCommandTest {
     fun setUp() {
         clearAllMocks()
 
-        every { runnerContext.virtualContext } returns virtualContext
-        every { runnerContext.build } returns build
-        every { runnerContext.buildParameters } returns buildParameters
-        every { runnerContext.workingDirectory } returns workingDirectory
+        every { agentTempDirectory.toPath() } returns Paths.get("temp")
 
-        every { virtualContext.resolvePath(any()) } returnsArgument 0
         every { buildFeature.parameters } returns mapOf()
-        every { buildParameters.environmentVariables } returns mapOf()
-        every { workingDirectory.path } returns workingDirectoryPath
+
+        every { fileSystemService.createTempFile(any(), any(), any()) } returns Paths.get("foo")
+
+        every { buildLogger.logMessage(any()) } just runs
 
         every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
         every { build.buildLogger } returns buildLogger
@@ -88,16 +86,15 @@ class ReturnProLicenseCommandTest {
     }
 
     @Test
-    fun `should open a log block when process is started`() {
+    fun `should open a log block before process started`() {
         // arrange
-        val commandLine = aCommandLine()
         val command = createInstance()
 
         every { buildLogger.logMessage(any()) } returns Unit
         every { buildLogger.message(any()) } returns Unit
 
         // act
-        command.processStarted(commandLine, workingDirectory)
+        command.beforeProcessStarted()
 
         // assert
         verify(exactly = 1) {
@@ -105,9 +102,6 @@ class ReturnProLicenseCommandTest {
                 it.value shouldBe BlockData("Return Unity license", "unity")
                 it.typeId shouldBe "BlockStart"
             })
-        }
-        verify(exactly = 1) {
-            buildLogger.message("Starting: $commandLine")
         }
     }
 
@@ -135,13 +129,14 @@ class ReturnProLicenseCommandTest {
         return UnityEnvironment(unityPath, unityVersion)
     }
 
-    private fun aCommandLine(): String {
-        return """
-            /path/to/unity -quit -batchmode -nographics -returnlicense
-            -username someUsername -password somePassword 
-            -logFile /path/to/logs.txt"
-            """.trimIndent()
-    }
+    private fun createInstance() = ReturnProLicenseCommand(
+        object : LicenseCommandContext {
+            override val build = this@ReturnProLicenseCommandTest.build
+            override val fileSystemService = this@ReturnProLicenseCommandTest.fileSystemService
+            override val environmentVariables = mapOf<String, String>()
+            override val workingDirectory = workingDirectoryPath
 
-    private fun createInstance() = ReturnProLicenseCommand(runnerContext, fileSystemService)
+            override fun resolvePath(path: String) = path
+        }
+    )
 }

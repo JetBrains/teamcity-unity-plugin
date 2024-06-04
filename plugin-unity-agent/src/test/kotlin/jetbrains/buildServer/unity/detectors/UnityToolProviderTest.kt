@@ -1,6 +1,5 @@
 package jetbrains.buildServer.unity.detectors
 
-import io.kotest.assertions.throwables.shouldThrowExactly
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
@@ -8,7 +7,10 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import jetbrains.buildServer.ExtensionHolder
-import jetbrains.buildServer.agent.*
+import jetbrains.buildServer.agent.AgentLifeCycleListener
+import jetbrains.buildServer.agent.BuildAgentConfiguration
+import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.ToolProvidersRegistry
 import jetbrains.buildServer.unity.DetectionMode
 import jetbrains.buildServer.unity.ProjectAssociatedUnityVersionIdentifier
 import jetbrains.buildServer.unity.UnityConstants
@@ -51,16 +53,6 @@ class UnityToolProviderTest {
     }
 
     @Test
-    fun `should throw exception if wrong tool name is provided`() {
-        // arrange
-        val provider = createInstance()
-
-        // act // assert
-        shouldThrowExactly<ToolCannotBeFoundException> { provider.getUnity("wrong tool name") }
-            .message?.shouldBeEqual("Unsupported tool wrong tool name")
-    }
-
-    @Test
     fun `should detect Unity environment when Unity root param is provided`() {
         // arrange
         val provider = createInstance()
@@ -72,7 +64,7 @@ class UnityToolProviderTest {
         every { unityDetector.getEditorPath(File(unityRootParam)) } returns File("$unityRootParam/Unity")
 
         // act
-        val result = provider.getUnity("unity", runnerContext)
+        val result = provider.getUnity(runnerContext)
 
         // assert
         result shouldBeEqual UnityEnvironment(File("$unityRootParam/Unity").absolutePath, unityVersion, false)
@@ -111,7 +103,7 @@ class UnityToolProviderTest {
         provider.agentStarted(mockk())
 
         // act
-        val result = provider.getUnity("unity", runnerContext)
+        val result = provider.getUnity(runnerContext)
 
         // assert
         result.unityVersion shouldBe expectedVersion
@@ -138,7 +130,7 @@ class UnityToolProviderTest {
         provider.agentStarted(mockk())
 
         // act
-        val result = provider.getUnity("unity", runnerContext)
+        val result = provider.getUnity(runnerContext)
 
         // assert
         result.unityVersion shouldBeEqual expectedVersion
@@ -168,7 +160,7 @@ class UnityToolProviderTest {
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)
 
         // act
-        val environment = provider.getUnity("unity", runnerContext)
+        val environment = provider.getUnity(runnerContext)
 
         // assert
         assertEquals(expectedVersion, environment.unityVersion)

@@ -1,23 +1,26 @@
-package jetbrains.buildServer.unity.license
+package jetbrains.buildServer.unity.license.commands
 
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.AgentRunningBuild
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
 import jetbrains.buildServer.agent.runner.SimpleProgramCommandLine
+import jetbrains.buildServer.unity.UnityConstants.BUILD_FEATURE_TYPE
+import jetbrains.buildServer.unity.UnityConstants.PARAM_UNITY_PERSONAL_LICENSE_CONTENT
 import jetbrains.buildServer.unity.UnityEnvironment
-import jetbrains.buildServer.unity.util.FileSystemService
-import jetbrains.buildServer.unity.util.unityPersonalLicenseContentParam
+import jetbrains.buildServer.unity.license.LicenseCommandContext
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 
 class ActivatePersonalLicenseCommand(
-    private val runnerContext: BuildRunnerContext,
-    private val fileSystemService: FileSystemService,
-) : UnityLicenseCommand(runnerContext, fileSystemService) {
+    private val context: LicenseCommandContext,
+) : UnityLicenseCommand(
+    context,
+    "Activate Personal Unity license",
+    "activate-personal-license-log-"
+    ) {
 
     private lateinit var unityEnvironment: UnityEnvironment
     private lateinit var tempLicenseFile: Path
-    private lateinit var commandLogFile: Path
 
     fun withUnityEnvironment(unityEnvironment: UnityEnvironment): ActivatePersonalLicenseCommand {
         this.unityEnvironment = unityEnvironment
@@ -26,34 +29,26 @@ class ActivatePersonalLicenseCommand(
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         tempLicenseFile = fileSystemService.createTempFile(
-            directory = runnerContext.build.buildTempDirectory.toPath(),
+            directory = build.buildTempDirectory.toPath(),
             prefix = "unity-personal-license-",
             suffix = ".ulf",
         )
 
-        val licenseContent = runnerContext.unityPersonalLicenseContentParam()
+        val licenseContent = build.licenseContent()
             ?: throw IllegalStateException("Personal license content is not provided")
         fileSystemService.writeText(tempLicenseFile, licenseContent)
         val arguments = listOf(
             "-quit", "-batchmode", "-nographics",
             "-manualLicenseFile", resolvePath(tempLicenseFile.absolutePathString()),
-            "-logFile", resolvePath(commandLogFile.absolutePathString()),
+            "-logFile", resolvePath(logFile.absolutePathString()),
         )
 
         return SimpleProgramCommandLine(
-            runnerContext.buildParameters.environmentVariables,
-            resolvePath(runnerContext.workingDirectory.path),
+            context.environmentVariables,
+            resolvePath(context.workingDirectory),
             resolvePath(unityEnvironment.unityPath),
             arguments,
         )
-    }
-
-    override val logBlockName = "Activate Unity license"
-
-    override fun logFile(): Path = commandLogFile
-
-    override fun beforeProcessStarted() {
-        commandLogFile = generateLogFile(runnerContext.build, "activate-license-log-")
     }
 
     override fun processFinished(exitCode: Int) {
@@ -65,6 +60,13 @@ class ActivatePersonalLicenseCommand(
             LOG.error("Failed to delete .ulf file", e)
         }
     }
+
+    private fun AgentRunningBuild.licenseContent(): String? =
+        this
+            .getBuildFeaturesOfType(BUILD_FEATURE_TYPE)
+            .firstOrNull()
+            ?.parameters
+            ?.let { it[PARAM_UNITY_PERSONAL_LICENSE_CONTENT] }
 
     companion object {
         private val LOG = Logger.getInstance(UnityLicenseCommand::class.java.name)
