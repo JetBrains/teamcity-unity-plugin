@@ -200,7 +200,7 @@
         </label>
     </th>
     <td>
-        <props:textProperty name="${params.arguments}" className="longField"/>
+        <props:multilineProperty expanded="true" name="${params.arguments}" rows="3" cols="49" className="longField" linkTitle=""/>
         <span class="error" id="error_${params.arguments}"></span>
         <span class="smallNote">Specify additional command line arguments for Unity.</span>
     </td>

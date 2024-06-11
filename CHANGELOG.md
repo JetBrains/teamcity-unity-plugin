@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow acquiring a license before a build and returning it afterward [TW-85266](https://youtrack.jetbrains.com/issue/TW-85266) (for serial-based Unity licenses)
 
 ### Changed
+- Custom command line arguments field is now multiline and expandable [TW-84677](https://youtrack.jetbrains.com/issue/TW-84677)
 
 ### Fixed
 
