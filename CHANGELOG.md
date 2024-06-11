@@ -6,12 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Added
+
+### Changed
+
+### Fixed
+
+## 1.3.0 - 2024-06-11
+
+### Added
 - Allow acquiring a license before a build and returning it afterward [TW-85266](https://youtrack.jetbrains.com/issue/TW-85266) (for serial-based Unity licenses)
 
 ### Changed
 - Custom command line arguments field is now multiline and expandable [TW-84677](https://youtrack.jetbrains.com/issue/TW-84677)
-
-### Fixed
 
 ## 1.2.1 - 2023-12-12
 
