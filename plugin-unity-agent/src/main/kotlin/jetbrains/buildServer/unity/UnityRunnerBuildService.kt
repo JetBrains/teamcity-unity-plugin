@@ -46,6 +46,7 @@ import kotlin.io.path.absolutePathString
 
 class UnityRunnerBuildService(
     private val unityEnvironment: UnityEnvironment,
+    private val unityProject: UnityProject,
     private val overriddenRunnerParameters: Map<String, String>,
     private val fileSystemService: FileSystemService,
 ) : BuildServiceAdapter() {
@@ -109,7 +110,7 @@ class UnityRunnerBuildService(
         addLogArgIfNotExists(arguments, unityVersion)
 
         createLineStatusesFile()
-        addArgsFromBuildFeature(arguments)
+        addArgsFromBuildFeature(arguments, unityProject)
 
         return createProgramCommandline(unityPath, arguments)
     }
@@ -168,11 +169,23 @@ class UnityRunnerBuildService(
         }
     }
 
-    private fun addArgsFromBuildFeature(arguments: MutableList<String>) {
+    private fun addArgsFromBuildFeature(arguments: MutableList<String>, unityProject: UnityProject) {
         build.getBuildFeaturesOfType(BUILD_FEATURE_TYPE).firstOrNull()?.let { feature ->
-            feature.parameters[PARAM_CACHE_SERVER]?.let {
-                if (it.isNotEmpty()) {
-                    arguments.addAll(listOf(ARG_CACHE_SERVER_IP_ADDRESS, it.trim()))
+            val cacheServerParam = feature.parameters[PARAM_CACHE_SERVER]?.trim()
+            if (!cacheServerParam.isNullOrEmpty()) {
+                when (unityProject.assetPipelineVersion) {
+                    null, AssetPipelineVersion.V1 -> {
+                        val cacheServerLog = "Asset Pipeline version is either not specified or is V1. Arguments for the old cache server will be used"
+                        logger.message(cacheServerLog)
+                        LOG.info(cacheServerLog)
+                        arguments.addAll(listOf(ARG_CACHE_SERVER_IP_ADDRESS, cacheServerParam))
+                    }
+                    AssetPipelineVersion.V2 -> {
+                        val unityAcceleratorLog = "Asset Pipeline version is determined as V2. Arguments for the new Unity Accelerator cache server will be used"
+                        logger.message(unityAcceleratorLog)
+                        LOG.info(unityAcceleratorLog)
+                        arguments.addAll(listOf(ARG_ENABLE_CACHE_SERVER, ARG_CACHE_SERVER_ENDPOINT, cacheServerParam))
+                    }
                 }
             }
         }
@@ -362,6 +375,8 @@ class UnityRunnerBuildService(
         private const val ARG_NO_GRAPHICS = "-nographics"
         private const val ARG_QUIT = "-quit"
         private const val ARG_CACHE_SERVER_IP_ADDRESS = "-CacheServerIPAddress"
+        private const val ARG_ENABLE_CACHE_SERVER = "-EnableCacheServer"
+        private const val ARG_CACHE_SERVER_ENDPOINT = "-cacheServerEndpoint"
 
         private const val LOG_FILE_ACCESS_MODE = "rw"
 
@@ -370,14 +385,19 @@ class UnityRunnerBuildService(
 
         fun createAdapters(
             unityEnvironment: UnityEnvironment,
-            context: BuildRunnerContext,
+            context: UnityBuildRunnerContext,
             fileSystemService: FileSystemService,
         ) = getParameterVariants(context)
             .ifEmpty {
                 sequenceOf(emptyMap())
             }
             .map {
-                UnityRunnerBuildService(unityEnvironment, it, fileSystemService)
+                UnityRunnerBuildService(
+                    unityEnvironment,
+                    context.unityProject,
+                    it,
+                    fileSystemService,
+                )
             }
 
         private fun getParameterVariants(context: BuildRunnerContext) = sequence {

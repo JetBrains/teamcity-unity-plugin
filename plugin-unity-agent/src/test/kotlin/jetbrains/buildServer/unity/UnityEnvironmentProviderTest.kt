@@ -5,8 +5,11 @@ import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
-import io.mockk.*
-import jetbrains.buildServer.agent.BuildRunnerContext
+import io.mockk.Called
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
 import jetbrains.buildServer.unity.detectors.UnityToolProvider
@@ -27,10 +30,10 @@ class UnityEnvironmentProviderTest {
     fun `should initialize unity environment when context is NOT virtual`() {
         // arrange
         val provider = createInstance()
-        val context = mockk<BuildRunnerContext>()
+        val context = mockk<UnityBuildRunnerContext>()
         val unityEnvironment = mockk<UnityEnvironment>()
         every { context.isVirtualContext } returns false
-        every { unityToolProvider.getUnity(any<BuildRunnerContext>()) } returns unityEnvironment
+        every { unityToolProvider.getUnity(any<UnityBuildRunnerContext>()) } returns unityEnvironment
 
         // act
         val command = provider.provide(context).firstOrNull()
@@ -48,7 +51,7 @@ class UnityEnvironmentProviderTest {
     fun `should initialize unity environment when context is virtual`() {
         // arrange
         val provider = createInstance()
-        val context = mockk<BuildRunnerContext>()
+        val context = mockk<UnityBuildRunnerContext>()
         val unityEnvironment = mockk<UnityEnvironment>()
         every { context.isVirtualContext } returns true
         every { detectCommand.results } returns mutableSetOf(unityEnvironment)
@@ -81,7 +84,7 @@ class UnityEnvironmentProviderTest {
     fun `should fail to initialize unity environment when context is virtual and no environment detected`() {
         // arrange
         val provider = createInstance()
-        val context = mockk<BuildRunnerContext>()
+        val context = mockk<UnityBuildRunnerContext>()
         every { context.isVirtualContext } returns true
         every { detectCommand.results } returns mutableSetOf()
 

@@ -1,7 +1,6 @@
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
-import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.ToolCannotBeFoundException
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
@@ -17,7 +16,7 @@ class UnityEnvironmentProvider(
     fun unityEnvironment() =
         unityEnvironment ?: throw ToolCannotBeFoundException("Unity environment is not initialized yet")
 
-    fun provide(runnerContext: BuildRunnerContext): Sequence<CommandExecution> = sequence {
+    fun provide(runnerContext: UnityBuildRunnerContext): Sequence<CommandExecution> = sequence {
         unityEnvironment = if (runnerContext.isVirtualContext) {
             LOG.debug("Detecting Unity virtual environment")
             yield(detectVirtualEnvCommand)

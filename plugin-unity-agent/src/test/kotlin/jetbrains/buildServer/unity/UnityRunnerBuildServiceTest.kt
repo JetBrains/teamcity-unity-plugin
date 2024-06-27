@@ -12,8 +12,8 @@ import io.mockk.every
 import io.mockk.mockk
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
-import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.VirtualContext
+import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
 import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
 import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.DataProvider
@@ -21,13 +21,14 @@ import java.io.File
 import kotlin.random.Random
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertNotNull
 
 class UnityRunnerBuildServiceTest {
     private val defaultEditorPath = "somePath"
     private val defaultUnityVersion = parseVersion("2021.3.16")
     private val defaultUnityEnvironment = UnityEnvironment(defaultEditorPath, defaultUnityVersion)
 
-    private val buildRunnerContextMock = mockk<BuildRunnerContext>(relaxed = true)
+    private val unityBuildRunnerContextMock = mockk<UnityBuildRunnerContext>(relaxed = true)
     private val agentRunningBuildMock = mockk<AgentRunningBuild>(relaxed = true)
     private val fileSystemServiceMock = mockk<FileSystemService>(relaxed = true)
 
@@ -38,7 +39,7 @@ class UnityRunnerBuildServiceTest {
     }
 
     private fun defaultMockSetup() {
-        buildRunnerContextMock.apply {
+        unityBuildRunnerContextMock.apply {
             every { runnerParameters } returns mapOf(
                 "noGraphics" to true.toString()
             )
@@ -76,13 +77,13 @@ class UnityRunnerBuildServiceTest {
     @Test(dataProvider = "consoleLogOutput")
     fun `should add correct log argument`(case: LogArgumentTestCase) {
         // arrange
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
-        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
 
         System.setProperty("os.name", case.system)
 
         // act
-        val commandLine = sut.makeProgramCommandLine()
+        val commandLine = buildService.makeProgramCommandLine()
 
         // assert
         commandLine shouldNotBe null
@@ -94,17 +95,17 @@ class UnityRunnerBuildServiceTest {
     @Test
     fun `should not add log argument if provided by user`() {
         // arrange
-        buildRunnerContextMock.apply {
+        unityBuildRunnerContextMock.apply {
             every { runnerParameters } returns mapOf(
                 "arguments" to "-logFile 42.log",
             )
         }
 
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
-        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
 
         // act
-        val commandLine = sut.makeProgramCommandLine()
+        val commandLine = buildService.makeProgramCommandLine()
 
         // assert
         commandLine shouldNotBe null
@@ -112,6 +113,68 @@ class UnityRunnerBuildServiceTest {
         val commandString = commandLine.arguments.joinToString(" ")
         commandString shouldContainOnlyOnce "-logFile"
         commandString shouldContain "logFile 42.log"
+    }
+
+    @DataProvider
+    fun `cache server cases`(): Array<Array<Any?>>  = arrayOf(
+        arrayOf(null),
+        arrayOf(AssetPipelineVersion.V1)
+    )
+
+    @Test(dataProvider = "cache server cases")
+    fun `should use arguments for old Unity Cache Server if Asset Pipeline version is unknown or determined as V1`(
+        version: AssetPipelineVersion?,
+    ) {
+        // arrange
+        every { agentRunningBuildMock.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(
+            FakeUnityBuildFeature(mapOf(
+                PARAM_CACHE_SERVER to "1.1.1.1:1111"
+            ))
+        )
+
+        val unityProject = mockk<UnityProject> {
+            every { assetPipelineVersion } returns version
+        }
+
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, unityProject, emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+
+        // act
+        val commandLine = buildService.makeProgramCommandLine()
+
+        // assert
+        assertNotNull(commandLine)
+        val arguments = commandLine.arguments.joinToString(separator = " ")
+        arguments shouldNotContain "-EnableCacheServer"
+        arguments shouldNotContain "-cacheServerEndpoint"
+        arguments shouldContain "-CacheServerIPAddress"
+    }
+
+    @Test
+    fun `should use arguments for Unity Accelerator if Asset Pipeline version determined as V2`() {
+        // arrange
+        every { agentRunningBuildMock.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(
+            FakeUnityBuildFeature(mapOf(
+                PARAM_CACHE_SERVER to "1.1.1.1:1111"
+            ))
+        )
+
+        val unityProject = mockk<UnityProject> {
+            every { assetPipelineVersion } returns AssetPipelineVersion.V2
+        }
+
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, unityProject, emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+
+        // act
+        val commandLine = buildService.makeProgramCommandLine()
+
+        // assert
+        assertNotNull(commandLine)
+        val arguments = commandLine.arguments.joinToString(separator = " ")
+        arguments shouldContain "-EnableCacheServer"
+        arguments shouldContain "-cacheServerEndpoint"
+        arguments shouldNotContain "-CacheServerIPAddress"
     }
 
     data class QuitArgTestCase(
@@ -138,17 +201,17 @@ class UnityRunnerBuildServiceTest {
     @Test(dataProvider = "noQuitTestData")
     fun `should correctly handle -quit argument`(case: QuitArgTestCase) {
         // arrange
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
-        buildRunnerContextMock.apply {
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        unityBuildRunnerContextMock.apply {
             every { runnerParameters } returns mapOf(
                 "noQuit" to case.noQuitParam,
                 "runEditorTests" to case.runEditorTestsParam,
             )
         }
-        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
 
         // act
-        val commandLine = sut.makeProgramCommandLine()
+        val commandLine = buildService.makeProgramCommandLine()
 
         // assert
         commandLine shouldNotBe null
@@ -169,7 +232,7 @@ class UnityRunnerBuildServiceTest {
             every { resolvePath(File("/player").absolutePath) } returns "/converted/player"
         }
 
-        buildRunnerContextMock.apply {
+        unityBuildRunnerContextMock.apply {
             every { isVirtualContext } returns true
             every { getVirtualContext() } returns virtualContext
             every { runnerParameters } returns mapOf(
@@ -180,13 +243,13 @@ class UnityRunnerBuildServiceTest {
             )
         }
 
-        val sut = UnityRunnerBuildService(defaultUnityEnvironment, emptyMap(), fileSystemServiceMock)
-        sut.initialize(agentRunningBuildMock, buildRunnerContextMock)
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
 
         System.setProperty("os.name", "linux")
 
         // act
-        val commandLine = sut.makeProgramCommandLine()
+        val commandLine = buildService.makeProgramCommandLine()
 
         // assert
         commandLine shouldNotBe null
@@ -195,16 +258,14 @@ class UnityRunnerBuildServiceTest {
                 "-player /converted/player -nographics -quit -logFile /converted/logs"
     }
 
+    private fun createUnityProject() = UnityProject(mockk())
+
     private inner class FakeUnityBuildFeature(
         init: Map<String, String> = mapOf()
     ) : AgentBuildFeature {
-        private val parameters: MutableMap<String, String>
-
-        init {
-            parameters = (mapOf(
-                UnityConstants.PARAM_UNITY_VERSION to defaultUnityVersion.toString(),
-            ) + init).toMutableMap()
-        }
+        private val parameters: MutableMap<String, String> = (mapOf(
+            UnityConstants.PARAM_UNITY_VERSION to defaultUnityVersion.toString(),
+        ) + init).toMutableMap()
 
         override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
         override fun getParameters(): MutableMap<String, String> = parameters

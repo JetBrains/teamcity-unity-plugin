@@ -11,36 +11,32 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 
 class UnityRunnerDiscoveryExtensionTests {
-    private val versionIdentifierMock = mockk<ProjectAssociatedUnityVersionIdentifier>()
-
     @Test
     fun `should detect Unity project`() {
         // arrange
-        val discoverer = UnityRunnerDiscoveryExtension(versionIdentifierMock)
-        every { versionIdentifierMock.identify(any()) } returns UnityVersion.tryParseVersion("2021.3.16f1")
+        val discoverer = UnityRunnerDiscoveryExtension()
+        val unityVersion = "2021.3.16"
 
         // act
         val result = discoverer.discover(
             mockk(),
             mockk {
-                every { root } returns createUnityProjectMock("", "UnityGame")
+                every { root } returns createUnityProjectMock("", "UnityGame", unityVersion)
             }
         )
 
         // assert
         assertNotNull(result)
         result.size shouldBeExactly 1
-        result.first().shouldBeUnityProject("UnityGame", "2021.3.16")
+        result.first().shouldBeUnityProject("UnityGame", unityVersion)
     }
 
     @Test
     fun `should detect many Unity projects deeper in hierarchy`() {
         // arrange
-        val discoverer = UnityRunnerDiscoveryExtension(versionIdentifierMock)
-        every { versionIdentifierMock.identify(any()) } returnsMany listOf(
-            UnityVersion.tryParseVersion("2023.1.17"),
-            UnityVersion.tryParseVersion("2021.3.30")
-        )
+        val discoverer = UnityRunnerDiscoveryExtension()
+        val firstProjectUnityVersion = "2023.1.17"
+        val secondProjectUnityVersion = "2021.3.30"
 
         // act
         val result = discoverer.discover(
@@ -51,8 +47,8 @@ class UnityRunnerDiscoveryExtensionTests {
                     every { fullName } returns "projects"
                     every { isLeaf } returns false
                     every { children } returns listOf(
-                        createUnityProjectMock("projects", "FooUnityGame"),
-                        createUnityProjectMock("projects", "BarUnityGame"),
+                        createUnityProjectMock("projects", "FooUnityGame", firstProjectUnityVersion),
+                        createUnityProjectMock("projects", "BarUnityGame", secondProjectUnityVersion),
                     )
                 }
             }
@@ -61,8 +57,8 @@ class UnityRunnerDiscoveryExtensionTests {
         // assert
         assertNotNull(result)
         result.size shouldBeExactly 2
-        result.first().shouldBeUnityProject("projects/FooUnityGame", "2023.1.17")
-        result.last().shouldBeUnityProject("projects/BarUnityGame", "2021.3.30")
+        result.first().shouldBeUnityProject("projects/FooUnityGame", firstProjectUnityVersion)
+        result.last().shouldBeUnityProject("projects/BarUnityGame", secondProjectUnityVersion)
     }
 
     private fun DiscoveredObject.shouldBeUnityProject(path: String, associatedVersion: String) {
@@ -74,6 +70,7 @@ class UnityRunnerDiscoveryExtensionTests {
     private fun createUnityProjectMock(
         containingDirectory: String,
         projectName: String,
+        unityVersion: String,
     ): Element {
         return mockk {
             every { fullName } returns sequenceOf(containingDirectory, projectName)
@@ -89,6 +86,16 @@ class UnityRunnerDiscoveryExtensionTests {
                 mockk {
                     every { name } returns "ProjectSettings"
                     every { isLeaf } returns false
+                    every { children } returns listOf(
+                        mockk {
+                            every { name } returns "ProjectVersion.txt"
+                            every { inputStream } returns """
+                                m_EditorVersion: $unityVersion
+                            """.trimIndent().byteInputStream()
+                            every { isContentAvailable } returns true
+                            every { isLeaf } returns true
+                        }
+                    )
                 }
             )
         }
