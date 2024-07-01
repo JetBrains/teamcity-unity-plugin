@@ -6,13 +6,13 @@ repositories {
     mavenCentral()
 }
 
-tasks {
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
     }
+}
 
+tasks {
     test {
         useTestNG()
     }

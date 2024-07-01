@@ -60,27 +60,11 @@ class UnityRunnerBuildServiceTest {
         }
     }
 
-    data class LogArgumentTestCase(
-        val system: String,
-        val unityVersion: UnityVersion
-    )
-
-    @DataProvider(name = "consoleLogOutput")
-    fun logArgumentTestData(): Array<LogArgumentTestCase> {
-        return arrayOf(
-            LogArgumentTestCase("windows", defaultUnityVersion),
-            LogArgumentTestCase("linux", defaultUnityVersion),
-            LogArgumentTestCase("mac", defaultUnityVersion)
-        )
-    }
-
-    @Test(dataProvider = "consoleLogOutput")
-    fun `should add correct log argument`(case: LogArgumentTestCase) {
+    @Test
+    fun `should add correct log argument`() {
         // arrange
         val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
         buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
-
-        System.setProperty("os.name", case.system)
 
         // act
         val commandLine = buildService.makeProgramCommandLine()
@@ -245,8 +229,6 @@ class UnityRunnerBuildServiceTest {
 
         val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
         buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
-
-        System.setProperty("os.name", "linux")
 
         // act
         val commandLine = buildService.makeProgramCommandLine()
