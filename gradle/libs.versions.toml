@@ -1,0 +1,25 @@
+[versions]
+rodm = "1.5"
+kotlin = "1.7.21"
+teamcity = "2023.07-SNAPSHOT"
+
+[libraries]
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.5.1" }
+mockk = { module = "io.mockk:mockk", version = "1.13.5" }
+semver4j = { module = "com.vdurmont:semver4j", version = "3.1.0" }
+commons-configuration = { module = "commons-configuration:commons-configuration", version = "1.10" }
+commons-io = { module = "commons-io:commons-io", version = "2.11.0" }
+teamcity-internal-agent = { module = "org.jetbrains.teamcity.internal:agent", version.ref = "teamcity" }
+teamcity-internal-server = { module = "org.jetbrains.teamcity.internal:server", version.ref = "teamcity" }
+kotlin-kotest = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+testng = { module = "org.testng:testng", version = "7.5" }
+kotest-assertions = { module = "io.kotest:kotest-assertions-core-jvm", version = "5.6.2" }
+antlr = { module = "org.antlr:antlr4", version = "4.11.1" }
+
+[plugins]
+changelog = { id = "org.jetbrains.changelog", version = "2.0.0" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+teamcity-server = { id = "io.github.rodm.teamcity-server" }
+teamcity-agent = { id = "io.github.rodm.teamcity-agent" }
+teamcity-common = { id = "io.github.rodm.teamcity-common" }

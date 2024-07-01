@@ -1,0 +1,22 @@
+import com.github.rodm.teamcity.ValidationMode
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+plugins {
+    id("io.github.rodm.teamcity-base")
+}
+
+project.group = "teamcity-unity-plugin"
+project.version = if (project.findProperty("version") == "unspecified") {
+    "SNAPSHOT-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
+} else {
+    project.version
+}
+
+teamcity {
+    // dirty hack
+    // https://github.com/gradle/gradle/issues/15383
+    version = buildSrcLibs.findVersion("teamcity").get().requiredVersion
+    allowSnapshotVersions = true
+    validateBeanDefinition = ValidationMode.FAIL
+}

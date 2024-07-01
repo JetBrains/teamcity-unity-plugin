@@ -1,13 +1,11 @@
 plugins {
-    id("io.github.rodm.teamcity-agent") version "1.5"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
+    alias(libs.plugins.teamcity.agent)
+    alias(libs.plugins.kotlin.serialization)
+    id("plugin.teamcity.common")
     id("plugin.common")
 }
 
 teamcity {
-    version = "2023.07-SNAPSHOT"
-    allowSnapshotVersions = true
-
     agent {
         descriptor {
             pluginDeployment {
@@ -33,14 +31,14 @@ teamcity {
 
 dependencies {
     implementation(project(":plugin-unity-common"))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.7.21")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
-    implementation("com.vdurmont:semver4j:3.1.0")
-    implementation("commons-configuration:commons-configuration:1.10")
-    implementation("commons-io:commons-io:2.11.0")
-    provided("org.jetbrains.teamcity.internal:agent:2023.07-SNAPSHOT")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.21")
-    testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("org.testng:testng:7.5")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.6.2")
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlin.serialization.json)
+    implementation(libs.semver4j)
+    implementation(libs.commons.configuration)
+    implementation(libs.commons.io)
+    provided(libs.teamcity.internal.agent)
+    testImplementation(libs.kotlin.kotest)
+    testImplementation(libs.mockk)
+    testImplementation(libs.testng)
+    testImplementation(libs.kotest.assertions)
 }

@@ -1,8 +1,9 @@
 import org.jetbrains.changelog.Changelog
 
 plugins {
-    id("io.github.rodm.teamcity-server") version "1.5"
-    id("org.jetbrains.changelog") version "2.0.0"
+    alias(libs.plugins.teamcity.server)
+    alias(libs.plugins.changelog)
+    id("plugin.teamcity.common")
     id("plugin.common")
 }
 
@@ -12,9 +13,6 @@ changelog {
 }
 
 teamcity {
-    version = "2023.07-SNAPSHOT"
-    allowSnapshotVersions = true
-
     server {
         descriptor {
             name = "unity"
@@ -47,19 +45,11 @@ dependencies {
     implementation((project(":csharp-parser"))) {
         exclude(group = "com.ibm.icu")
     }
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.21")
-    provided("org.jetbrains.teamcity.internal:server:2023.07-SNAPSHOT")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.6.2")
-}
-
-tasks {
-    compileKotlin {
-        kotlinOptions {
-            jvmTarget = "1.8"
-        }
-    }
+    implementation(libs.kotlin.stdlib)
+    provided(libs.teamcity.internal.server)
+    testImplementation(libs.kotlin.kotest)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotest.assertions)
 }
 
 tasks.register("getLatestChangelogVersion") {

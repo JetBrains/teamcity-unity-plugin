@@ -9,8 +9,7 @@ repositories {
 }
 
 dependencies {
-    antlr("org.antlr:antlr4:4.11.1")
-    testImplementation("junit:junit:4.13.2")
+    antlr(libs.antlr)
 }
 
 // generate java from the ANTLR g4 files
