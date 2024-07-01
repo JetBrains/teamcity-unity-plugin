@@ -1,6 +1,7 @@
 plugins {
     antlr
     id("idea")
+    id("plugin.common")
 }
 
 repositories {
@@ -11,8 +12,6 @@ dependencies {
     antlr("org.antlr:antlr4:4.11.1")
     testImplementation("junit:junit:4.13.2")
 }
-
-
 
 // generate java from the ANTLR g4 files
 val generatedSrc = file("./build/generated-src/antlr/main")

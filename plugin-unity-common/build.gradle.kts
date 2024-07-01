@@ -2,6 +2,7 @@
 
 plugins {
     id("io.github.rodm.teamcity-common") version "1.5"
+    id("plugin.common")
 }
 
 dependencies {

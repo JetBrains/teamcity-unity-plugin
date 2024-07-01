@@ -1,7 +1,7 @@
 plugins {
     id("io.github.rodm.teamcity-agent") version "1.5"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.7.21"
-    kotlin("jvm") version "1.7.21"
+    id("plugin.common")
 }
 
 teamcity {

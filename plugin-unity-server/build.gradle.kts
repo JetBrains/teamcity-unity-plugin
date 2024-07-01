@@ -3,7 +3,7 @@ import org.jetbrains.changelog.Changelog
 plugins {
     id("io.github.rodm.teamcity-server") version "1.5"
     id("org.jetbrains.changelog") version "2.0.0"
-    kotlin("jvm") version "1.7.21"
+    id("plugin.common")
 }
 
 changelog {
@@ -35,6 +35,8 @@ teamcity {
             token = project.findProperty("jetbrains.marketplace.token").toString()
             notes = changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML)
         }
+
+        archiveName = rootProject.name
     }
 }
 
