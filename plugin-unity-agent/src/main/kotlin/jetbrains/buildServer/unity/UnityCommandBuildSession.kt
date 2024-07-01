@@ -3,14 +3,13 @@
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.agent.BuildFinishedStatus
-import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.agent.runner.MultiCommandBuildSession
 import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.util.FileSystemService
 
 class UnityCommandBuildSession(
-    private val runnerContext: BuildRunnerContext,
+    private val unityBuildRunnerContext: UnityBuildRunnerContext,
     private val fileSystemService: FileSystemService,
     private val unityEnvironmentProvider: UnityEnvironmentProvider,
     private val unityLicenseActivator: UnityBuildStepScopeLicenseActivator,
@@ -45,14 +44,14 @@ class UnityCommandBuildSession(
     }
 
     private suspend fun SequenceScope<CommandExecution>.detectUnityEnvironment() {
-        yieldAll(unityEnvironmentProvider.provide(runnerContext))
+        yieldAll(unityEnvironmentProvider.provide(unityBuildRunnerContext))
     }
 
     private suspend fun SequenceScope<CommandExecution>.activateLicenceIfNeeded() {
         yieldAll(
             unityLicenseActivator.activateLicense(
                 unityEnvironmentProvider.unityEnvironment(),
-                runnerContext,
+                unityBuildRunnerContext,
             )
         )
     }
@@ -60,9 +59,9 @@ class UnityCommandBuildSession(
     private suspend fun SequenceScope<CommandExecution>.executeBuild() {
         yieldAll(
             UnityRunnerBuildService
-                .createAdapters(unityEnvironmentProvider.unityEnvironment(), runnerContext, fileSystemService)
+                .createAdapters(unityEnvironmentProvider.unityEnvironment(), unityBuildRunnerContext, fileSystemService)
                 .map {
-                    it.initialize(runnerContext.build, runnerContext)
+                    it.initialize(unityBuildRunnerContext.build, unityBuildRunnerContext)
                     val command = BuildCommandExecutionAdapter(it)
                     lastBuildCommands.add(command)
                     command
@@ -74,7 +73,7 @@ class UnityCommandBuildSession(
         yieldAll(
             unityLicenseActivator.returnLicense(
                 unityEnvironmentProvider.unityEnvironment(),
-                runnerContext,
+                unityBuildRunnerContext,
             )
         )
     }

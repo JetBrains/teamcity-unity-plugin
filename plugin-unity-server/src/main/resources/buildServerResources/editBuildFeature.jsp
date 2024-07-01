@@ -205,7 +205,11 @@
 <tr>
   <th class="withTopBorder">
       <label for="${params.cacheServer}">
-          Cache server address: <bs:help urlPrefix="https://docs.unity3d.com/Manual/CacheServer.html" file=""/>
+          Cache server address: <bs:help
+              urlPrefix="https://docs.unity3d.com/Manual/UnityAccelerator.html"
+              file=""
+              shortHelp="This could be either the former Cache Server or the new Unity Accelerator. <br/>
+              The appropriate arguments will be used based on the asset pipeline version in your project."/>
       </label>
   </th>
   <td class="withTopBorder">

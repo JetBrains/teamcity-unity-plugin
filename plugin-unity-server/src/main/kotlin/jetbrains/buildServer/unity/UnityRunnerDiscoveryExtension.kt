@@ -18,9 +18,7 @@ private data class DiscoveredUnityProject(
     }
 })
 
-class UnityRunnerDiscoveryExtension(
-    private val projectAssociatedUnityVersionIdentifier: ProjectAssociatedUnityVersionIdentifier,
-) : BreadthFirstRunnerDiscoveryExtension(DEPTH_LIMIT) {
+class UnityRunnerDiscoveryExtension: BreadthFirstRunnerDiscoveryExtension(DEPTH_LIMIT) {
     companion object {
         private const val DEPTH_LIMIT = 3
         private const val PROJECT_SETTINGS_DIR = "ProjectSettings"
@@ -37,20 +35,7 @@ class UnityRunnerDiscoveryExtension(
             return mutableListOf()
         }
 
-        val unityVersion = projectAssociatedUnityVersionIdentifier.identify(
-            object : UnityProjectFilesAccessor {
-                private var current = dir
-                override fun directory(name: String): UnityProjectFilesAccessor? {
-                    current = current.children
-                        ?.firstOrNull { it.name == name } ?: return null
-                    return this
-                }
-
-                override fun file(name: String) = current.children
-                    ?.filter { it.isContentAvailable }
-                    ?.firstOrNull { it.name == name }
-                    ?.inputStream
-            })
+        val unityVersion = UnityProject(VcsUnityProjectFileAccessor(dir)).unityVersion
 
         logger.info("Unity project was found in directory '${dir.fullName}'${if (unityVersion == null) "" else ", associated Unity version: '$unityVersion'"}")
         return mutableListOf(DiscoveredUnityProject(dir.fullName, unityVersion))
@@ -62,4 +47,19 @@ class UnityRunnerDiscoveryExtension(
             ?.map { it.name }
             ?.containsAll(PROJECTS_DIRS)
             ?: false
+}
+
+private class VcsUnityProjectFileAccessor(projectPath: Element): UnityProjectFilesAccessor {
+    private var current = projectPath
+
+    override fun directory(name: String): UnityProjectFilesAccessor? {
+        current = current.children
+            ?.firstOrNull { it.name == name } ?: return null
+        return this
+    }
+
+    override fun file(name: String) = current.children
+        ?.filter { it.isContentAvailable }
+        ?.firstOrNull { it.name == name }
+        ?.inputStream
 }

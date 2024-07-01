@@ -85,7 +85,9 @@
         <span class="error" id="error_${params.executeMethod}"></span>
         <span class="smallNote">
             Specify a static method reference to execute after the project is loaded.<br/>
-            The class should be located in the Assets/Editor project directory.
+            The class should be located in an
+                <a href="https://docs.unity3d.com/Manual/SpecialFolders.html#Editor" target="_blank">Editor</a>
+            folder.
         </span>
     </td>
 </tr>

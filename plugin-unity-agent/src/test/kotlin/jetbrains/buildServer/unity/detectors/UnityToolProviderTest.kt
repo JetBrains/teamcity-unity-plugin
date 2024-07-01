@@ -9,10 +9,9 @@ import io.mockk.mockkStatic
 import jetbrains.buildServer.ExtensionHolder
 import jetbrains.buildServer.agent.AgentLifeCycleListener
 import jetbrains.buildServer.agent.BuildAgentConfiguration
-import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.ToolProvidersRegistry
 import jetbrains.buildServer.unity.DetectionMode
-import jetbrains.buildServer.unity.ProjectAssociatedUnityVersionIdentifier
+import jetbrains.buildServer.unity.UnityBuildRunnerContext
 import jetbrains.buildServer.unity.UnityConstants
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion
@@ -27,14 +26,13 @@ import kotlin.test.assertEquals
 
 class UnityToolProviderTest {
 
-    private val runnerContext = mockk<BuildRunnerContext>()
+    private val runnerContext = mockk<UnityBuildRunnerContext>()
     private val agentConfiguration = mockk<BuildAgentConfiguration>()
     private val unityDetectorFactory = mockk<UnityDetectorFactory>()
     private val unityDetector = mockk<UnityDetector>()
     private val toolsRegistry = mockk<ToolProvidersRegistry>()
     private val extensionHolder = mockk<ExtensionHolder>()
     private val eventDispatcher = mockk<EventDispatcher<AgentLifeCycleListener>>()
-    private val associatedVersionIdentifier = mockk<ProjectAssociatedUnityVersionIdentifier>()
 
     @BeforeMethod
     fun setUp() {
@@ -49,7 +47,10 @@ class UnityToolProviderTest {
         mockkStatic(runnerContext::unityVersionParam)
         every { runnerContext.unityRootParam() } returns null
         every { runnerContext.unityVersionParam() } returns null
-        every { associatedVersionIdentifier.identify(any()) } returns null
+        every { runnerContext.unityProjectPath } returns "foo/bar"
+        every { runnerContext.workingDirectory } returns File("foo")
+        every { runnerContext.runnerParameters } returns mapOf()
+        every { runnerContext.unityProject } returns mockk(relaxed = true)
     }
 
     @Test
@@ -119,15 +120,16 @@ class UnityToolProviderTest {
         )
         every { runnerContext.unityVersionParam() } returns null
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)
-        every { runnerContext.workingDirectory } returns mockk(relaxed = true)
         val expectedVersion = UnityVersion(2022, 3, 9)
         every { agentConfiguration.configurationParameters } returns mapOf(
             "${UnityConstants.UNITY_CONFIG_NAME}${expectedVersion}" to "/foo/${expectedVersion}",
             "${UnityConstants.UNITY_CONFIG_NAME}2023.3.9" to "/foo/2023.3.9",
             "${UnityConstants.UNITY_CONFIG_NAME}2021.3.9" to "/foo/2021.3.9",
         )
-        every { associatedVersionIdentifier.identify(any()) } returns expectedVersion
         provider.agentStarted(mockk())
+        every { runnerContext.unityProject } returns mockk {
+            every { unityVersion } returns expectedVersion
+        }
 
         // act
         val result = provider.getUnity(runnerContext)
@@ -137,12 +139,12 @@ class UnityToolProviderTest {
     }
 
     @DataProvider
-    fun `should return latest Unity version if no one is specified explicitly and project settings unavailable params`(): Array<Array<Any>> = arrayOf(
+    fun `should return latest Unity version if no one is specified explicitly and project settings unavailable cases`(): Array<Array<Any>> = arrayOf(
         arrayOf(listOf("2020.3.38f1", "2020.3.43f1", "2020.3.32f1"), UnityVersion(2020, 3, 43)),
         arrayOf(listOf("2020.1.0f1", "2020.2.43f1", "2020.10.32f1"), UnityVersion(2020, 10, 32))
     )
 
-    @Test(dataProvider = "should return latest Unity version if no one is specified explicitly and project settings unavailable params")
+    @Test(dataProvider = "should return latest Unity version if no one is specified explicitly and project settings unavailable cases")
     fun `should return latest Unity version if no one is specified explicitly and project settings unavailable`(versions: List<String>, expectedVersion: UnityVersion) {
         // arrange
         val provider = createInstance()
@@ -151,12 +153,6 @@ class UnityToolProviderTest {
             .associate { "${UnityConstants.UNITY_CONFIG_NAME}${it}" to "/Applications/Unity/Hub/Editor/${it}" }
         provider.agentStarted(mockk())
         every { runnerContext.unityRootParam() } returns null
-        every { runnerContext.runnerParameters } returns mapOf(
-            UnityConstants.PARAM_PROJECT_PATH to "/foo"
-        )
-        every { runnerContext.workingDirectory } returns mockk {
-            every { absolutePath } returns "/foo"
-        }
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)
 
         // act
@@ -168,7 +164,6 @@ class UnityToolProviderTest {
 
     private fun createInstance() = UnityToolProvider(
         agentConfiguration,
-        associatedVersionIdentifier,
         unityDetectorFactory,
         toolsRegistry,
         extensionHolder,
