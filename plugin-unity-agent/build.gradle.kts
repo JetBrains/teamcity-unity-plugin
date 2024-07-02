@@ -18,13 +18,13 @@ teamcity {
         }
 
         archiveName = "teamcity-unity-agent"
-    }
 
-    files {
-        into("tools") {
-            from("tools/pe-product-version-detector/binaries/PeProductVersionDetector.exe")
-            from("tools/unity-environment-detector/unity-environment-detector.sh")
-            from("tools/unity-environment-detector/unity-environment-detector.bat")
+        files {
+            into("tools") {
+                from("tools/pe-product-version-detector/binaries/PeProductVersionDetector.exe")
+                from("tools/unity-environment-detector/unity-environment-detector.sh")
+                from("tools/unity-environment-detector/unity-environment-detector.bat")
+            }
         }
     }
 }
@@ -37,6 +37,13 @@ dependencies {
     implementation(libs.commons.configuration)
     implementation(libs.commons.io)
     provided(libs.teamcity.internal.agent)
+
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because("previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)")
+        }
+    }
+
     testImplementation(libs.kotlin.kotest)
     testImplementation(libs.mockk)
     testImplementation(libs.testng)

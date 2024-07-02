@@ -11,8 +11,8 @@ import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
 import jetbrains.buildServer.unity.util.unityRootParam
 import jetbrains.buildServer.unity.util.unityVersionParam
 import jetbrains.buildServer.util.OSType.WINDOWS
-import org.apache.commons.lang.StringUtils.substringAfter
-import org.apache.commons.lang.StringUtils.substringBetween
+import org.apache.commons.lang3.StringUtils.substringAfter
+import org.apache.commons.lang3.StringUtils.substringBetween
 import java.io.File
 import java.nio.file.Paths
 import java.util.Collections.synchronizedSet

@@ -47,6 +47,13 @@ dependencies {
     }
     implementation(libs.kotlin.stdlib)
     provided(libs.teamcity.internal.server)
+
+    constraints {
+        implementation(libs.constraint.transitive.icu4j) {
+            because("previous versions have faulty jar files which cause problems during incremental compilation (which is enabled by default since Kotlin 1.8.20)")
+        }
+    }
+
     testImplementation(libs.kotlin.kotest)
     testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions)

@@ -102,6 +102,7 @@ class UnityBuildScopeLicenseActivatorTest {
     fun `skip license activation test cases`(): Array<Array<Any>> {
         return arrayOf(
             arrayOf(mapOf(
+                UnityConstants.PARAM_ACTIVATE_LICENSE to null,
                 UnityConstants.PARAM_UNITY_LICENSE_TYPE to UnityLicenseTypeParameter.PERSONAL.toString()
             )),
             arrayOf(mapOf(
@@ -128,7 +129,7 @@ class UnityBuildScopeLicenseActivatorTest {
         licensePerBuildActivator().preparationFinished(build)
 
         // assert
-        verify { commandLineRunnerMock.run(any()) wasNot Called }
+        verify(exactly = 0) { commandLineRunnerMock.run(any()) }
     }
 
     @Test(dataProvider = "skip license activation test cases")
@@ -143,7 +144,7 @@ class UnityBuildScopeLicenseActivatorTest {
         licensePerBuildActivator().beforeBuildFinish(build, mockk())
 
         // assert
-        verify { commandLineRunnerMock.run(any()) wasNot Called }
+        verify(exactly = 0) { commandLineRunnerMock.run(any()) }
     }
 
     private fun licensePerBuildActivator() =

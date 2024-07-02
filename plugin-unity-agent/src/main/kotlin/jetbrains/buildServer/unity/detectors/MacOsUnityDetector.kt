@@ -5,7 +5,9 @@ package jetbrains.buildServer.unity.detectors
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.unity.UnityVersion
 import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
-import org.apache.commons.configuration.plist.XMLPropertyListConfiguration
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder
+import org.apache.commons.configuration2.builder.fluent.Parameters
+import org.apache.commons.configuration2.plist.XMLPropertyListConfiguration
 import java.io.File
 
 class MacOsUnityDetector : UnityDetectorBase() {
@@ -40,7 +42,11 @@ class MacOsUnityDetector : UnityDetectorBase() {
           return null
         }
 
-        val version = XMLPropertyListConfiguration(plistFile).getString("CFBundleVersion")
+        val config = FileBasedConfigurationBuilder(XMLPropertyListConfiguration::class.java)
+                .configure(Parameters().fileBased().setFile(plistFile))
+                .configuration
+
+        val version = config.getString("CFBundleVersion")
         return try {
             tryParseVersion(version)
         } catch (e: Exception) {

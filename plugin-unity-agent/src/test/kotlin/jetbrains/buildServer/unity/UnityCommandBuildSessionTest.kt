@@ -48,7 +48,7 @@ class UnityCommandBuildSessionTest {
         command!! shouldBeEqual detectCommand
 
         verify(exactly = 1) { envProviderMock.provide(unityBuildRunnerContext) }
-        verify { envProviderMock.unityEnvironment() wasNot Called }
+        verify(exactly = 0) { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock wasNot Called }
     }
 
@@ -74,7 +74,8 @@ class UnityCommandBuildSessionTest {
                 unityBuildRunnerContext
             )
         }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -99,7 +100,7 @@ class UnityCommandBuildSessionTest {
                 unityBuildRunnerContext
             )
         }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -122,7 +123,7 @@ class UnityCommandBuildSessionTest {
         verify { envProviderMock.provide(unityBuildRunnerContext) }
         verify { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock.activateLicense(envProviderMock.unityEnvironment(), unityBuildRunnerContext) }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -145,7 +146,7 @@ class UnityCommandBuildSessionTest {
         verify { envProviderMock.provide(unityBuildRunnerContext) }
         verify { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock.activateLicense(envProviderMock.unityEnvironment(), unityBuildRunnerContext) }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -168,7 +169,7 @@ class UnityCommandBuildSessionTest {
         verify { envProviderMock.provide(unityBuildRunnerContext) }
         verify { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock.activateLicense(envProviderMock.unityEnvironment(), unityBuildRunnerContext) }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -194,7 +195,7 @@ class UnityCommandBuildSessionTest {
         verify { envProviderMock.provide(unityBuildRunnerContext) }
         verify { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock.activateLicense(envProviderMock.unityEnvironment(), unityBuildRunnerContext) }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
@@ -220,7 +221,7 @@ class UnityCommandBuildSessionTest {
         verify { envProviderMock.provide(unityBuildRunnerContext) }
         verify { envProviderMock.unityEnvironment() }
         verify { licenceActivatorMock.activateLicense(envProviderMock.unityEnvironment(), unityBuildRunnerContext) }
-        verify { licenceActivatorMock.returnLicense(any(), any()) wasNot Called }
+        verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }
     }
 
     @Test
