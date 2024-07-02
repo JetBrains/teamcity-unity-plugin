@@ -16,7 +16,12 @@ project.version = if (project.findProperty("version") == "unspecified") {
 teamcity {
     // dirty hack
     // https://github.com/gradle/gradle/issues/15383
-    version = buildSrcLibs.findVersion("teamcity").get().requiredVersion
+    version = extensions.getByType<VersionCatalogsExtension>()
+        .named("libs")
+        .findVersion("teamcity")
+        .get()
+        .requiredVersion
+
     allowSnapshotVersions = true
     validateBeanDefinition = ValidationMode.FAIL
 }
