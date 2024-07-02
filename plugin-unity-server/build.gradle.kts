@@ -34,7 +34,8 @@ teamcity {
             notes = changelog.renderItem(changelog.getLatest(), Changelog.OutputType.HTML)
         }
 
-        archiveName = rootProject.name
+        // preserving the old archive name
+        archiveName = project.name
     }
 }
 

@@ -17,6 +17,7 @@ teamcity {
             }
         }
 
+        // preserving the old archive name
         archiveName = "teamcity-unity-agent"
 
         files {
