@@ -4,6 +4,7 @@ import java.time.format.DateTimeFormatter
 
 plugins {
     id("io.github.rodm.teamcity-base")
+    id("com.diffplug.spotless")
 }
 
 project.group = "teamcity-unity-plugin"
@@ -24,4 +25,11 @@ teamcity {
 
     allowSnapshotVersions = true
     validateBeanDefinition = ValidationMode.FAIL
+}
+
+spotless {
+//    kotlin {
+//        ratchetFrom = "origin/master"
+//        ktlint()
+//    }
 }

@@ -8,12 +8,18 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
 
 tasks {
     test {
         useTestNG()
+    }
+
+    compileKotlin {
+        compilerOptions {
+            allWarningsAsErrors.set(true)
+        }
     }
 }

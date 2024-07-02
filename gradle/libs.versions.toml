@@ -2,6 +2,7 @@
 rodm = "1.5.4"
 kotlin = "2.0.0"
 teamcity = "2024.03"
+spotless = "6.13.0"
 
 [libraries]
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
