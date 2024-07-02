@@ -2,7 +2,7 @@
 
 package jetbrains.buildServer.unity.logging
 
-class PerformanceBlock :LogBlock {
+class PerformanceBlock : LogBlock {
 
     override val name = blockName
 

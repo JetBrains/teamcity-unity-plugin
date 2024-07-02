@@ -8,9 +8,9 @@ import io.mockk.*
 import jetbrains.buildServer.agent.runner.CommandExecution
 import jetbrains.buildServer.unity.UnityConstants.PARAM_TEST_PLATFORM
 import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
+import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.license.commands.ActivateProLicenseCommand
 import jetbrains.buildServer.unity.license.commands.ReturnProLicenseCommand
-import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
@@ -71,7 +71,7 @@ class UnityCommandBuildSessionTest {
         verify(exactly = 1) {
             licenceActivatorMock.activateLicense(
                 envProviderMock.unityEnvironment(),
-                unityBuildRunnerContext
+                unityBuildRunnerContext,
             )
         }
 
@@ -97,7 +97,7 @@ class UnityCommandBuildSessionTest {
         verify(exactly = 1) {
             licenceActivatorMock.activateLicense(
                 envProviderMock.unityEnvironment(),
-                unityBuildRunnerContext
+                unityBuildRunnerContext,
             )
         }
         verify(exactly = 0) { licenceActivatorMock.returnLicense(any(), any()) }

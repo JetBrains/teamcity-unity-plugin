@@ -42,12 +42,12 @@ class LinuxUnityDetector : UnityDetectorBase() {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
         if (!executable.exists()) {
-          LOG.debug("Cannot find $executable")
-          return null
+            LOG.debug("Cannot find $executable")
+            return null
         }
 
         LOG.debug("Looking for package manager in $editorRoot")
-        var version : String? = null
+        var version: String? = null
         val packageVersions = File(editorRoot, "Editor/Data/PackageManager/Unity/PackageManager")
         if (packageVersions.exists()) {
             LOG.debug("A package manager was found")
@@ -88,8 +88,10 @@ class LinuxUnityDetector : UnityDetectorBase() {
                     LOG.info("Version detected via editor: ${result.stdout}")
                     return result.stdout.ifEmpty { null }
                 }
-                else -> LOG.info("Version detection process exited with non-zero code: ${result.exitCode}\n" +
-                        "Error: ${result.stderr}")
+                else -> LOG.info(
+                    "Version detection process exited with non-zero code: ${result.exitCode}\n" +
+                        "Error: ${result.stderr}",
+                )
             }
             is Timeout -> LOG.info("Version detection timed out")
             is Error -> LOG.info("Unable to detect version via editor binary", result.exception)

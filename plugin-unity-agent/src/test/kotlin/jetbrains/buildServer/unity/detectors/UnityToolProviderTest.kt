@@ -99,7 +99,7 @@ class UnityToolProviderTest {
         every { runnerContext.unityVersionParam() } returns specifiedVersion
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)
         every { agentConfiguration.configurationParameters } returns versions.associate {
-            "${UnityConstants.UNITY_CONFIG_NAME}${it}" to "/foo/${it}"
+            "${UnityConstants.UNITY_CONFIG_NAME}$it" to "/foo/$it"
         }
         provider.agentStarted(mockk())
 
@@ -116,13 +116,13 @@ class UnityToolProviderTest {
         val provider = createInstance()
         every { runnerContext.runnerParameters } returns mapOf(
             UnityConstants.PARAM_DETECTION_MODE to DetectionMode.Auto.id,
-            UnityConstants.PARAM_PROJECT_PATH to "/bar"
+            UnityConstants.PARAM_PROJECT_PATH to "/bar",
         )
         every { runnerContext.unityVersionParam() } returns null
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)
         val expectedVersion = UnityVersion(2022, 3, 9)
         every { agentConfiguration.configurationParameters } returns mapOf(
-            "${UnityConstants.UNITY_CONFIG_NAME}${expectedVersion}" to "/foo/${expectedVersion}",
+            "${UnityConstants.UNITY_CONFIG_NAME}$expectedVersion" to "/foo/$expectedVersion",
             "${UnityConstants.UNITY_CONFIG_NAME}2023.3.9" to "/foo/2023.3.9",
             "${UnityConstants.UNITY_CONFIG_NAME}2021.3.9" to "/foo/2021.3.9",
         )
@@ -141,7 +141,7 @@ class UnityToolProviderTest {
     @DataProvider
     fun `should return latest Unity version if no one is specified explicitly and project settings unavailable cases`(): Array<Array<Any>> = arrayOf(
         arrayOf(listOf("2020.3.38f1", "2020.3.43f1", "2020.3.32f1"), UnityVersion(2020, 3, 43)),
-        arrayOf(listOf("2020.1.0f1", "2020.2.43f1", "2020.10.32f1"), UnityVersion(2020, 10, 32))
+        arrayOf(listOf("2020.1.0f1", "2020.2.43f1", "2020.10.32f1"), UnityVersion(2020, 10, 32)),
     )
 
     @Test(dataProvider = "should return latest Unity version if no one is specified explicitly and project settings unavailable cases")
@@ -150,7 +150,7 @@ class UnityToolProviderTest {
         val provider = createInstance()
 
         every { agentConfiguration.configurationParameters } returns versions
-            .associate { "${UnityConstants.UNITY_CONFIG_NAME}${it}" to "/Applications/Unity/Hub/Editor/${it}" }
+            .associate { "${UnityConstants.UNITY_CONFIG_NAME}$it" to "/Applications/Unity/Hub/Editor/$it" }
         provider.agentStarted(mockk())
         every { runnerContext.unityRootParam() } returns null
         every { unityDetector.getEditorPath(any()) } returns mockk(relaxed = true)

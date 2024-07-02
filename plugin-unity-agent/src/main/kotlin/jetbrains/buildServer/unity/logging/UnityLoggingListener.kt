@@ -11,8 +11,10 @@ import jetbrains.buildServer.messages.serviceMessages.Message
 import jetbrains.buildServer.unity.messages.BuildProblem
 import java.util.*
 
-class UnityLoggingListener(private val logger: BuildProgressLogger,
-                           private val problemsProvider: LineStatusProvider) : ProcessListenerAdapter() {
+class UnityLoggingListener(
+    private val logger: BuildProgressLogger,
+    private val problemsProvider: LineStatusProvider,
+) : ProcessListenerAdapter() {
 
     private var blocks = Stack<LogBlock>()
     private val currentBlock: LogBlock
@@ -94,19 +96,19 @@ class UnityLoggingListener(private val logger: BuildProgressLogger,
     companion object {
         private val defaultBlock = DefaultBlock()
         private val loggers = listOf(
-                BuildReportBlock(),
-                CommandLineBlock(),
-                CompileBlock(),
-                ExtensionsBlock(),
-                LightmapBlock(),
-                MonoBlock(),
-                PackageManagerBlock(),
-                PerformanceBlock(),
-                PlayerStatisticsBlock(),
-                PrepareBlock(),
-                RefreshBlock(),
-                ScriptCompilationBlock(),
-                UpdateBlock()
+            BuildReportBlock(),
+            CommandLineBlock(),
+            CompileBlock(),
+            ExtensionsBlock(),
+            LightmapBlock(),
+            MonoBlock(),
+            PackageManagerBlock(),
+            PerformanceBlock(),
+            PlayerStatisticsBlock(),
+            PrepareBlock(),
+            RefreshBlock(),
+            ScriptCompilationBlock(),
+            UpdateBlock(),
         )
     }
 }

@@ -32,19 +32,19 @@ class MacOsUnityDetector : UnityDetectorBase() {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
         if (!executable.exists()) {
-          LOG.debug("Cannot find $executable")
-          return null
+            LOG.debug("Cannot find $executable")
+            return null
         }
 
         val plistFile = File(editorRoot, "Unity.app/Contents/Info.plist")
         if (!plistFile.exists()) {
-          LOG.debug("Cannot find $plistFile")
-          return null
+            LOG.debug("Cannot find $plistFile")
+            return null
         }
 
         val config = FileBasedConfigurationBuilder(XMLPropertyListConfiguration::class.java)
-                .configure(Parameters().fileBased().setFile(plistFile))
-                .configuration
+            .configure(Parameters().fileBased().setFile(plistFile))
+            .configuration
 
         val version = config.getString("CFBundleVersion")
         return try {

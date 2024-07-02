@@ -16,7 +16,7 @@ class ActivateProLicenseCommand(
 ) : UnityLicenseCommand(
     context,
     "Activate Unity license",
-    "activate-license-log-"
+    "activate-license-log-",
 ) {
     private lateinit var unityEnvironment: UnityEnvironment
 

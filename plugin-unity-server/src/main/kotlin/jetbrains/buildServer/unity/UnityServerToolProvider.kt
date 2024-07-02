@@ -14,7 +14,7 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
     }
 
     override fun tryGetPackageVersion(toolPackage: File): GetPackageVersionResult {
-        if(!createPackageFilter().accept(toolPackage)) {
+        if (!createPackageFilter().accept(toolPackage)) {
             return GetPackageVersionResult.error("Package file is invalid")
         }
 
@@ -24,11 +24,11 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
         }
 
         val version = toolPackage.nameWithoutExtension.substring(prefix.length)
-        if(version.isEmpty()) {
+        if (version.isEmpty()) {
             return GetPackageVersionResult.error("Could not determine ${type.type} version based on its package file name ${toolPackage.name}.")
         }
 
-        return GetPackageVersionResult.version(SimpleToolVersion(type, version, "${type.shortDisplayName}-${version}",type.displayName))
+        return GetPackageVersionResult.version(SimpleToolVersion(type, version, "${type.shortDisplayName}-$version", type.displayName))
     }
 
     override fun unpackToolPackage(toolPackage: File, targetDirectory: File) {
@@ -36,11 +36,11 @@ class UnityServerToolProvider : ServerToolProviderAdapter() {
     }
 
     private fun createPackageFilter() =
-            FileFilter {
-                it.isFile
-                        && it.nameWithoutExtension.startsWith(type.type, true)
-                        && UnityConstants.UNITY_TOOL_EXTENSION.equals(it.extension, true)
-            }
+        FileFilter {
+            it.isFile &&
+                it.nameWithoutExtension.startsWith(type.type, true) &&
+                UnityConstants.UNITY_TOOL_EXTENSION.equals(it.extension, true)
+        }
 
     companion object {
         private val unityToolType = UnityToolType()

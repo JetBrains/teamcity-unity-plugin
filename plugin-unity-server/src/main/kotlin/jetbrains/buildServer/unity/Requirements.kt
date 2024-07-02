@@ -11,17 +11,19 @@ object Requirements {
         fun create(unityVersion: String): Requirement {
             val unityPath = buildString {
                 append(escapeRegex(UnityConstants.UNITY_CONFIG_NAME))
-                append(if (unityVersion.isNotBlank()) {
-                    escapeRegex(unityVersion) + ".*"
-                } else {
-                    ".+"
-                })
+                append(
+                    if (unityVersion.isNotBlank()) {
+                        escapeRegex(unityVersion) + ".*"
+                    } else {
+                        ".+"
+                    },
+                )
             }
 
             return Requirement(RequirementQualifier.EXISTS_QUALIFIER + unityPath, null, RequirementType.EXISTS)
         }
 
         private fun escapeRegex(value: String) =
-                if(value.contains('%')) value else value.replace(".", "\\.")
+            if (value.contains('%')) value else value.replace(".", "\\.")
     }
 }

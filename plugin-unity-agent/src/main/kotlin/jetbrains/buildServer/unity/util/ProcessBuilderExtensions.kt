@@ -9,7 +9,7 @@ class Error(val exception: Throwable) : ProcessExecutionResult
 class Completed(
     val exitCode: Int,
     val stdout: String,
-    val stderr: String
+    val stderr: String,
 ) : ProcessExecutionResult
 
 fun ProcessBuilder.execute(timeoutSeconds: Long = 3): ProcessExecutionResult {
@@ -29,8 +29,7 @@ fun ProcessBuilder.execute(timeoutSeconds: Long = 3): ProcessExecutionResult {
             process.destroyForcibly()
             Timeout
         }
-    }
-    catch (e: Throwable) {
+    } catch (e: Throwable) {
         return Error(e)
     }
 }

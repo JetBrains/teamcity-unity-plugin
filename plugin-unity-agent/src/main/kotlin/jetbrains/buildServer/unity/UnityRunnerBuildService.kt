@@ -228,7 +228,7 @@ class UnityRunnerBuildService(
                     arguments.addAll(listOf(ARG_RUN_TESTS, ARG_TEST_PLATFORM, testPlatform))
                 }
             } else {
-				val shouldAddQuitArg = !parameters.value[PARAM_NO_QUIT].toBoolean()
+                val shouldAddQuitArg = !parameters.value[PARAM_NO_QUIT].toBoolean()
                 if (shouldAddQuitArg) {
                     arguments.add(ARG_QUIT)
                 }
@@ -300,8 +300,8 @@ class UnityRunnerBuildService(
         // On Windows unity could not write log into stdout, so we need to read a log file contents:
         // https://issuetracker.unity3d.com/issues/command-line-logfile-with-no-parameters-outputs-to-screen-on-os-x-but-not-on-windows
         // Was resolved in 2019.1 but only for -logFile with -nographics option
-        fun currentSetupSupportsConsoleOutput() = !TCSystemInfo.isWindows
-                || (version >= UNITY_2019_1_0 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS))
+        fun currentSetupSupportsConsoleOutput() = !TCSystemInfo.isWindows ||
+            (version >= UNITY_2019_1_0 && verbosityArg == ARG_LOG_FILE && arguments.contains(ARG_NO_GRAPHICS))
 
         if (logFilePath.isNullOrEmpty() && currentSetupSupportsConsoleOutput()) {
             arguments.add("-")
@@ -355,9 +355,11 @@ class UnityRunnerBuildService(
     }
 
     private fun resolvePath(path: String) =
-        if (runnerContext.isVirtualContext)
+        if (runnerContext.isVirtualContext) {
             runnerContext.virtualContext.resolvePath(path)
-        else path
+        } else {
+            path
+        }
 
     companion object {
         private val LOG = Logger.getInstance(UnityRunnerBuildService::class.java.name)

@@ -61,16 +61,16 @@ class UnityLoggingListenerTest {
     @DataProvider
     fun testTransformations(): Array<Array<Any>> {
         return arrayOf(
-                arrayOf<Any>("unityCommandLineArgs1.txt"),
-                arrayOf<Any>("packageManager.txt"),
-                arrayOf<Any>("unityExtensions.txt"),
-                arrayOf<Any>("mono.txt"),
-                arrayOf<Any>("performance.txt"),
-                arrayOf<Any>("refresh.txt"),
-                arrayOf<Any>("scriptCompilation.txt"),
-                arrayOf<Any>("compile.txt"),
-                arrayOf<Any>("buildReport.txt"),
-                arrayOf<Any>("buildProblems.txt")
+            arrayOf<Any>("unityCommandLineArgs1.txt"),
+            arrayOf<Any>("packageManager.txt"),
+            arrayOf<Any>("unityExtensions.txt"),
+            arrayOf<Any>("mono.txt"),
+            arrayOf<Any>("performance.txt"),
+            arrayOf<Any>("refresh.txt"),
+            arrayOf<Any>("scriptCompilation.txt"),
+            arrayOf<Any>("compile.txt"),
+            arrayOf<Any>("buildReport.txt"),
+            arrayOf<Any>("buildProblems.txt"),
         )
     }
 }

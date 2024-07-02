@@ -18,8 +18,10 @@ class UnityDetectorTest {
         } ?: throw SkipException("Not supported platform")
 
         val installations = detector.findInstallations()
-        println(installations.joinToString("\n") { (version, path) ->
-            "$version in $path"
-        })
+        println(
+            installations.joinToString("\n") { (version, path) ->
+                "$version in $path"
+            },
+        )
     }
 }

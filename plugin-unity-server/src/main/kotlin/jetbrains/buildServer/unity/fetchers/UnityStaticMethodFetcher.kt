@@ -15,13 +15,13 @@ class UnityStaticMethodFetcher : ProjectDataFetcher {
         val items = mutableListOf<DataItem>()
 
         fsBrowser.getElement(File(projectPath, "Assets/Editor").path)
-                ?.children
-                ?.forEach { file ->
-                    if (!file.isLeaf || !file.name.endsWith(".cs") || !file.isContentAvailable) return@forEach
-                    CSharpFileParser.readStaticMethods(file.inputStream).entries.forEach { (key, value) ->
-                        items.add(DataItem(key, value))
-                    }
+            ?.children
+            ?.forEach { file ->
+                if (!file.isLeaf || !file.name.endsWith(".cs") || !file.isContentAvailable) return@forEach
+                CSharpFileParser.readStaticMethods(file.inputStream).entries.forEach { (key, value) ->
+                    items.add(DataItem(key, value))
                 }
+            }
 
         return items
     }

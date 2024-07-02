@@ -29,6 +29,8 @@ class UnityConfigReader {
         .let {
             if (it.size == 2) {
                 it[0].trim() to it[1].trim()
-            } else null
+            } else {
+                null
+            }
         }
 }

@@ -41,7 +41,7 @@ class UnityRunnerBuildServiceTest {
     private fun defaultMockSetup() {
         unityBuildRunnerContextMock.apply {
             every { runnerParameters } returns mapOf(
-                "noGraphics" to true.toString()
+                "noGraphics" to true.toString(),
             )
             every { buildParameters } returns mockk(relaxed = true)
             every { workingDirectory } returns File("dir")
@@ -75,7 +75,6 @@ class UnityRunnerBuildServiceTest {
         commandString shouldContain "-logFile -"
     }
 
-
     @Test
     fun `should not add log argument if provided by user`() {
         // arrange
@@ -100,9 +99,9 @@ class UnityRunnerBuildServiceTest {
     }
 
     @DataProvider
-    fun `cache server cases`(): Array<Array<Any?>>  = arrayOf(
+    fun `cache server cases`(): Array<Array<Any?>> = arrayOf(
         arrayOf(null),
-        arrayOf(AssetPipelineVersion.V1)
+        arrayOf(AssetPipelineVersion.V1),
     )
 
     @Test(dataProvider = "cache server cases")
@@ -111,9 +110,11 @@ class UnityRunnerBuildServiceTest {
     ) {
         // arrange
         every { agentRunningBuildMock.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(
-            FakeUnityBuildFeature(mapOf(
-                PARAM_CACHE_SERVER to "1.1.1.1:1111"
-            ))
+            FakeUnityBuildFeature(
+                mapOf(
+                    PARAM_CACHE_SERVER to "1.1.1.1:1111",
+                ),
+            ),
         )
 
         val unityProject = mockk<UnityProject> {
@@ -138,9 +139,11 @@ class UnityRunnerBuildServiceTest {
     fun `should use arguments for Unity Accelerator if Asset Pipeline version determined as V2`() {
         // arrange
         every { agentRunningBuildMock.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE) } returns listOf(
-            FakeUnityBuildFeature(mapOf(
-                PARAM_CACHE_SERVER to "1.1.1.1:1111"
-            ))
+            FakeUnityBuildFeature(
+                mapOf(
+                    PARAM_CACHE_SERVER to "1.1.1.1:1111",
+                ),
+            ),
         )
 
         val unityProject = mockk<UnityProject> {
@@ -223,7 +226,7 @@ class UnityRunnerBuildServiceTest {
                 "noGraphics" to true.toString(),
                 "logFilePath" to File("/logs").absolutePath,
                 "buildPlayer" to "player",
-                "buildPlayerPath" to File("/player").absolutePath
+                "buildPlayerPath" to File("/player").absolutePath,
             )
         }
 
@@ -237,17 +240,19 @@ class UnityRunnerBuildServiceTest {
         commandLine shouldNotBe null
         val commandString = commandLine.arguments.joinToString(" ")
         commandString shouldBeEqual "-batchmode -projectPath /converted/project " +
-                "-player /converted/player -nographics -quit -logFile /converted/logs"
+            "-player /converted/player -nographics -quit -logFile /converted/logs"
     }
 
     private fun createUnityProject() = UnityProject(mockk())
 
     private inner class FakeUnityBuildFeature(
-        init: Map<String, String> = mapOf()
+        init: Map<String, String> = mapOf(),
     ) : AgentBuildFeature {
-        private val parameters: MutableMap<String, String> = (mapOf(
-            UnityConstants.PARAM_UNITY_VERSION to defaultUnityVersion.toString(),
-        ) + init).toMutableMap()
+        private val parameters: MutableMap<String, String> = (
+            mapOf(
+                UnityConstants.PARAM_UNITY_VERSION to defaultUnityVersion.toString(),
+            ) + init
+            ).toMutableMap()
 
         override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
         override fun getParameters(): MutableMap<String, String> = parameters

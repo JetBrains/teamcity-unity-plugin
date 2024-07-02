@@ -22,7 +22,7 @@ class UnityRunnerDiscoveryExtensionTests {
             mockk(),
             mockk {
                 every { root } returns createUnityProjectMock("", "UnityGame", unityVersion)
-            }
+            },
         )
 
         // assert
@@ -51,7 +51,7 @@ class UnityRunnerDiscoveryExtensionTests {
                         createUnityProjectMock("projects", "BarUnityGame", secondProjectUnityVersion),
                     )
                 }
-            }
+            },
         )
 
         // assert
@@ -94,9 +94,9 @@ class UnityRunnerDiscoveryExtensionTests {
                             """.trimIndent().byteInputStream()
                             every { isContentAvailable } returns true
                             every { isLeaf } returns true
-                        }
+                        },
                     )
-                }
+                },
             )
         }
     }

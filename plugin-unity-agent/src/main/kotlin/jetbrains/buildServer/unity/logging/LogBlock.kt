@@ -14,5 +14,5 @@ interface LogBlock {
 enum class LogType {
     None,
     Inside,
-    Outside
+    Outside,
 }

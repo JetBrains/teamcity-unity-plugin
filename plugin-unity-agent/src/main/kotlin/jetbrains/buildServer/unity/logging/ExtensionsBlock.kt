@@ -2,7 +2,7 @@
 
 package jetbrains.buildServer.unity.logging
 
-class ExtensionsBlock :LogBlock {
+class ExtensionsBlock : LogBlock {
 
     override val name = "Initializing Unity extensions"
 

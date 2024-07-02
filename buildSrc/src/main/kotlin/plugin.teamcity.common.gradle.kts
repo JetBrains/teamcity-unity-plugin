@@ -28,8 +28,8 @@ teamcity {
 }
 
 spotless {
-//    kotlin {
-//        ratchetFrom = "origin/master"
-//        ktlint()
-//    }
+    kotlin {
+        ratchetFrom = "origin/master"
+        ktlint()
+    }
 }

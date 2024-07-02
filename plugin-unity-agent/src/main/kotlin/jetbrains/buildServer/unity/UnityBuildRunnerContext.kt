@@ -6,7 +6,7 @@ import java.io.InputStream
 
 class UnityBuildRunnerContext(
     private val context: BuildRunnerContext,
-): BuildRunnerContext by context {
+) : BuildRunnerContext by context {
     val unityProjectPath: String by lazy {
         runnerParameters[UnityConstants.PARAM_PROJECT_PATH].let {
             val relativeProjectPath = if (!it.isNullOrBlank()) it.trim() else ""

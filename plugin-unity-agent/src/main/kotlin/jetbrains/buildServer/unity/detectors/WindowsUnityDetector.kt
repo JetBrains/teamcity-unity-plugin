@@ -40,7 +40,7 @@ class WindowsUnityDetector(
         LOG.debug("Looking for Unity installation in $editorRoot")
 
         val executable = getEditorPath(editorRoot)
-        if(!executable.exists()) {
+        if (!executable.exists()) {
             LOG.debug("Cannot find $executable")
             return null
         }

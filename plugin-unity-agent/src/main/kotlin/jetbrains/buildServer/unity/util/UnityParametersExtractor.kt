@@ -49,8 +49,9 @@ fun BuildRunnerContext.unityLicenseTypeParam() = this.build.unityLicenseTypePara
 
 fun AgentRunningBuild.unityLicenseTypeParam(): UnityLicenseTypeParameter? {
     unityBuildFeatureParams(this)?.let { params ->
-        if (params[PARAM_ACTIVATE_LICENSE].toBoolean())
+        if (params[PARAM_ACTIVATE_LICENSE].toBoolean()) {
             return UnityLicenseTypeParameter.PROFESSIONAL
+        }
         params[PARAM_UNITY_LICENSE_TYPE]?.let { licenseTypeId ->
             return UnityLicenseTypeParameter.from(licenseTypeId)
         }

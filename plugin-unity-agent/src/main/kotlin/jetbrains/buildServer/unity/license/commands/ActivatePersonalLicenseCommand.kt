@@ -16,8 +16,8 @@ class ActivatePersonalLicenseCommand(
 ) : UnityLicenseCommand(
     context,
     "Activate Personal Unity license",
-    "activate-personal-license-log-"
-    ) {
+    "activate-personal-license-log-",
+) {
 
     private lateinit var unityEnvironment: UnityEnvironment
     private lateinit var tempLicenseFile: Path
@@ -38,9 +38,13 @@ class ActivatePersonalLicenseCommand(
             ?: throw IllegalStateException("Personal license content is not provided")
         fileSystemService.writeText(tempLicenseFile, licenseContent)
         val arguments = listOf(
-            "-quit", "-batchmode", "-nographics",
-            "-manualLicenseFile", resolvePath(tempLicenseFile.absolutePathString()),
-            "-logFile", resolvePath(logFile.absolutePathString()),
+            "-quit",
+            "-batchmode",
+            "-nographics",
+            "-manualLicenseFile",
+            resolvePath(tempLicenseFile.absolutePathString()),
+            "-logFile",
+            resolvePath(logFile.absolutePathString()),
         )
 
         return SimpleProgramCommandLine(
@@ -54,8 +58,9 @@ class ActivatePersonalLicenseCommand(
     override fun processFinished(exitCode: Int) {
         super.processFinished(exitCode)
         try {
-            if (!fileSystemService.deleteFile(tempLicenseFile))
+            if (!fileSystemService.deleteFile(tempLicenseFile)) {
                 LOG.warn("The .ulf file does not exist")
+            }
         } catch (e: Exception) {
             LOG.error("Failed to delete .ulf file", e)
         }

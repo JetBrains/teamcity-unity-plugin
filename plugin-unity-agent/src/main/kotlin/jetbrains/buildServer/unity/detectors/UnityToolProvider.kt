@@ -40,7 +40,7 @@ class UnityToolProvider(
     unityDetectorFactory: UnityDetectorFactory,
     toolsRegistry: ToolProvidersRegistry,
     extensionHolder: ExtensionHolder,
-    events: EventDispatcher<AgentLifeCycleListener>
+    events: EventDispatcher<AgentLifeCycleListener>,
 ) : AgentLifeCycleAdapter(), AgentParametersSupplier, ToolProvider {
 
     private val unityDetector = unityDetectorFactory.unityDetector()
@@ -99,7 +99,7 @@ class UnityToolProvider(
     override fun getPath(
         toolName: String,
         ignored: AgentRunningBuild,
-        runner: BuildRunnerContext
+        runner: BuildRunnerContext,
     ): String {
         ensureToolIsSupported(toolName)
         return getUnity(UnityBuildRunnerContext(runner)).unityPath
@@ -150,8 +150,11 @@ class UnityToolProvider(
 
     private fun getDetectionMode(rawValue: String?, unityRoot: String?) = rawValue
         ?.let { DetectionMode.tryParse(it) }
-        ?: if (unityRoot.isNullOrEmpty())
-            DetectionMode.Auto else DetectionMode.Manual
+        ?: if (unityRoot.isNullOrEmpty()) {
+            DetectionMode.Auto
+        } else {
+            DetectionMode.Manual
+        }
 
     private fun ensureToolIsSupported(toolName: String) {
         if (!supports(toolName)) {
@@ -190,7 +193,7 @@ class UnityToolProvider(
             """
             Unable to locate tool $RUNNER_TYPE $version in system. 
             Please make sure to specify UNITY_PATH environment variable
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -209,12 +212,12 @@ class UnityToolProvider(
 
     private fun discoverUnityByPath(rootPath: String?): UnityEnvironment {
         if (rootPath.isNullOrEmpty()) { throw ToolCannotBeFoundException(
-            "Unable to locate tool $RUNNER_TYPE in system. Manual detection mode has been chosen, but no path has been specified"
-        )}
+            "Unable to locate tool $RUNNER_TYPE in system. Manual detection mode has been chosen, but no path has been specified",
+        ) }
 
         val version = unityDetector.getVersionFromInstall(File(rootPath))
             ?: throw ToolCannotBeFoundException(
-                "Unable to locate tool $RUNNER_TYPE in system. Please make sure correct Unity binary tool is installed"
+                "Unable to locate tool $RUNNER_TYPE in system. Please make sure correct Unity binary tool is installed",
             )
 
         return createEnvironment(rootPath, version)

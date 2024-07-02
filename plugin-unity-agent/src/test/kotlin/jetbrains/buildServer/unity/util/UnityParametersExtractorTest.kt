@@ -166,10 +166,11 @@ class UnityParametersExtractorTest {
         val result = runnerContext.unityLicenseTypeParam()
 
         // assert
-        if (expectedLicenseType == null)
+        if (expectedLicenseType == null) {
             result shouldBe null
-        else
+        } else {
             result!! shouldBeEqual expectedLicenseType
+        }
     }
 
     @DataProvider
@@ -191,10 +192,11 @@ class UnityParametersExtractorTest {
         val result = runnerContext.unityPersonalLicenseContentParam()
 
         // assert
-        if (expectedContent == null)
+        if (expectedContent == null) {
             result shouldBe null
-        else
+        } else {
             result!! shouldBeEqual expectedContent
+        }
     }
 
     @DataProvider
@@ -218,9 +220,10 @@ class UnityParametersExtractorTest {
         val result = build.unityLicenseScopeParam()
 
         // assert
-        if (expectedLicenseScope == null)
+        if (expectedLicenseScope == null) {
             result shouldBe null
-        else
+        } else {
             result!! shouldBeEqual expectedLicenseScope
+        }
     }
 }

@@ -25,7 +25,9 @@ abstract class UnityLicenseCommand(
         buildLogger.logMessage(createBlockStart(logBlockName, BUILD_LOG_BLOCK_TYPE))
 
         logFile = fileSystemService.createTempFile(
-            build.agentTempDirectory.toPath(), logFilePrefix, suffix = "-${build.buildId}.txt"
+            build.agentTempDirectory.toPath(),
+            logFilePrefix,
+            suffix = "-${build.buildId}.txt",
         )
     }
 
@@ -33,7 +35,7 @@ abstract class UnityLicenseCommand(
 
     override fun processFinished(exitCode: Int) {
         if (exitCode != 0) {
-            buildLogger.warning("Process exited with code ${exitCode}. Unity log:${lineSeparator()}${readLogFile()}")
+            buildLogger.warning("Process exited with code $exitCode. Unity log:${lineSeparator()}${readLogFile()}")
         }
 
         if (LOG.isDebugEnabled) {

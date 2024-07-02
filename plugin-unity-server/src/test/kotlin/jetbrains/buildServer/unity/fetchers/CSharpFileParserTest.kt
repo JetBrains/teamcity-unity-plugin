@@ -12,17 +12,20 @@ class CSharpFileParserTest {
     @DataProvider
     fun testData(): Array<Array<Any>> {
         return arrayOf(
-                arrayOf("file1.cs", mapOf("TestScript.Build" to null)),
-                arrayOf("file2.cs", mapOf("MyScriptName.MyMethod" to null)),
-                arrayOf("file3.cs", mapOf("WebGLBuilder.build" to null)),
-                arrayOf("file4.cs", mapOf(
-                        "BuildScript.BuildAndroid" to "Custom Build",
-                        "BuildScript.Method1" to null,
-                        "BuildScript.Method2" to null,
-                        "BuildScript.Method3" to null
-                )),
-                arrayOf("file5.cs", mapOf("BuildScript.CustomBuild" to "Description")),
-                arrayOf("file6.cs", mapOf("Namespace.BuildScript.CustomBuild" to "Description"))
+            arrayOf("file1.cs", mapOf("TestScript.Build" to null)),
+            arrayOf("file2.cs", mapOf("MyScriptName.MyMethod" to null)),
+            arrayOf("file3.cs", mapOf("WebGLBuilder.build" to null)),
+            arrayOf(
+                "file4.cs",
+                mapOf(
+                    "BuildScript.BuildAndroid" to "Custom Build",
+                    "BuildScript.Method1" to null,
+                    "BuildScript.Method2" to null,
+                    "BuildScript.Method3" to null,
+                ),
+            ),
+            arrayOf("file5.cs", mapOf("BuildScript.CustomBuild" to "Description")),
+            arrayOf("file6.cs", mapOf("Namespace.BuildScript.CustomBuild" to "Description")),
         )
     }
 

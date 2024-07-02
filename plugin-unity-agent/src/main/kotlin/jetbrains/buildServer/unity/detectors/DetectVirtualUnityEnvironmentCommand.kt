@@ -25,8 +25,9 @@ class DetectVirtualUnityEnvironmentCommand(
     private val errors: MutableSet<String> = synchronizedSet(LinkedHashSet())
 
     override fun onStandardOutput(text: String) {
-        if (text.isBlank())
+        if (text.isBlank()) {
             return
+        }
 
         text.split(LINE_END).forEach {
             if (it.startsWith("log:")) {
@@ -41,7 +42,7 @@ class DetectVirtualUnityEnvironmentCommand(
                 if (expectedVersion != null && version != expectedVersion) {
                     LOG.info(
                         "Skipping Unity environment because the Unity version is different, " +
-                                "path=$path; version=$version; expected version=$expectedVersion"
+                            "path=$path; version=$version; expected version=$expectedVersion",
                     )
                     return
                 }
@@ -56,31 +57,34 @@ class DetectVirtualUnityEnvironmentCommand(
     }
 
     override fun onErrorOutput(text: String) {
-        if (text.isBlank())
+        if (text.isBlank()) {
             return
+        }
 
         text.split(LINE_END).forEach {
             val error = substringAfter(it, ERROR_START)
-            if (error.isNullOrBlank())
+            if (error.isNullOrBlank()) {
                 LOG.warn("Failed to parse error output: $text")
-            else if (!errors.contains(error))
+            } else if (!errors.contains(error)) {
                 errors.add(error)
+            }
         }
     }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
         val unityRootParam = runnerContext.unityRootParam()
         val environmentVariables =
-            if (unityRootParam == null)
+            if (unityRootParam == null) {
                 runnerContext.buildParameters.environmentVariables
-            else
+            } else {
                 runnerContext.buildParameters.environmentVariables + mapOf(UNITY_ROOT_PARAMETER to unityRootParam)
+            }
 
         return SimpleProgramCommandLine(
             environmentVariables,
             resolvePath(runnerContext.workingDirectory.path),
             resolvePath(scriptSourcePath.toFile().canonicalPath.toString()),
-            emptyList()
+            emptyList(),
         )
     }
 
@@ -100,10 +104,11 @@ class DetectVirtualUnityEnvironmentCommand(
                 LOG.warn("Command execution error: $it")
             }
         }
-        if (results.isEmpty())
+        if (results.isEmpty()) {
             LOG.warn(
-                "Virtual Unity environment was not found. Please make sure that Unity executable exists inside specified image"
+                "Virtual Unity environment was not found. Please make sure that Unity executable exists inside specified image",
             )
+        }
     }
 
     override fun interruptRequested() = KILL_PROCESS_TREE
@@ -113,8 +118,11 @@ class DetectVirtualUnityEnvironmentCommand(
 
     private val scriptSourcePath
         get() =
-            if (isWindows) Paths.get(UNITY_ENVIRONMENT_DETECTOR_BAT_PATH).toAbsolutePath()
-            else Paths.get(UNITY_ENVIRONMENT_DETECTOR_SH_PATH).toAbsolutePath()
+            if (isWindows) {
+                Paths.get(UNITY_ENVIRONMENT_DETECTOR_BAT_PATH).toAbsolutePath()
+            } else {
+                Paths.get(UNITY_ENVIRONMENT_DETECTOR_SH_PATH).toAbsolutePath()
+            }
 
     private fun resolvePath(path: String) = runnerContext.virtualContext.resolvePath(path)
 
