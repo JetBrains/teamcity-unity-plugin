@@ -18,8 +18,8 @@ enum class AssetPipelineVersion {
 }
 
 interface UnityProjectFilesAccessor {
-    fun directory(name: String) : UnityProjectFilesAccessor?
-    fun file(name: String) : InputStream?
+    fun directory(name: String): UnityProjectFilesAccessor?
+    fun file(name: String): InputStream?
 }
 
 class UnityProject(
@@ -40,8 +40,10 @@ class UnityProject(
             ?.file(EDITOR_SETTINGS_FILE_NAME)
 
         if (settings == null) {
-            logger.debug("Unable to detect asset pipeline version: either the Editor settings file " +
-                    "'$EDITOR_SETTINGS_FILE_NAME' or the settings directory '$PROJECT_SETTINGS_DIR_NAME' was not found")
+            logger.debug(
+                "Unable to detect asset pipeline version: either the Editor settings file " +
+                    "'$EDITOR_SETTINGS_FILE_NAME' or the settings directory '$PROJECT_SETTINGS_DIR_NAME' was not found",
+            )
             return@lazy null
         }
 
@@ -63,8 +65,10 @@ class UnityProject(
             ?.file(PROJECT_VERSION_FILE_NAME)
 
         if (projectVersionFile == null) {
-            logger.debug("Unable to detect Unity version associated with the project: either the project version file " +
-                    "'$PROJECT_VERSION_FILE_NAME' or the settings directory '$PROJECT_SETTINGS_DIR_NAME' was not found")
+            logger.debug(
+                "Unable to detect Unity version associated with the project: either the project version file " +
+                    "'$PROJECT_VERSION_FILE_NAME' or the settings directory '$PROJECT_SETTINGS_DIR_NAME' was not found",
+            )
 
             return@lazy null
         }

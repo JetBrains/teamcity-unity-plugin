@@ -11,10 +11,10 @@ import jetbrains.buildServer.unity.UnityConstants.RUNNER_TYPE
 import jetbrains.buildServer.unity.detectors.DetectVirtualUnityEnvironmentCommand
 import jetbrains.buildServer.unity.detectors.UnityToolProvider
 import jetbrains.buildServer.unity.license.LicenseCommandContext
+import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.license.commands.ActivatePersonalLicenseCommand
 import jetbrains.buildServer.unity.license.commands.ActivateProLicenseCommand
 import jetbrains.buildServer.unity.license.commands.ReturnProLicenseCommand
-import jetbrains.buildServer.unity.license.UnityBuildStepScopeLicenseActivator
 import jetbrains.buildServer.unity.util.FileSystemService
 
 class UnityBuildSessionFactory(

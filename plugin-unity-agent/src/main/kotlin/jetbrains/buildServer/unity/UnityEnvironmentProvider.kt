@@ -8,7 +8,7 @@ import jetbrains.buildServer.unity.detectors.UnityToolProvider
 
 class UnityEnvironmentProvider(
     private val unityToolProvider: UnityToolProvider,
-    private val detectVirtualEnvCommand: DetectVirtualUnityEnvironmentCommand
+    private val detectVirtualEnvCommand: DetectVirtualUnityEnvironmentCommand,
 ) {
 
     private var unityEnvironment: UnityEnvironment? = null
@@ -22,8 +22,9 @@ class UnityEnvironmentProvider(
             yield(detectVirtualEnvCommand)
 
             val results = detectVirtualEnvCommand.results
-            if (results.isEmpty())
+            if (results.isEmpty()) {
                 throw ToolCannotBeFoundException("Failed to detect Unity virtual environment")
+            }
             results.first()
         } else {
             LOG.debug("Detecting Unity environment")

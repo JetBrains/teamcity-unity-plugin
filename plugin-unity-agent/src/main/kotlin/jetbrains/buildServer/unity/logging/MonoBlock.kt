@@ -2,7 +2,7 @@
 
 package jetbrains.buildServer.unity.logging
 
-class MonoBlock :LogBlock {
+class MonoBlock : LogBlock {
 
     override val name = "Initialize mono"
 

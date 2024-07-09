@@ -67,7 +67,7 @@ class UnityBuildScopeLicenseActivator(
     }
 
     private fun getLicenseCommandContext(build: AgentRunningBuild) =
-        object: LicenseCommandContext {
+        object : LicenseCommandContext {
             override val build = build
             override val fileSystemService = this@UnityBuildScopeLicenseActivator.fileSystemService
             override val environmentVariables = build.sharedBuildParameters.environmentVariables

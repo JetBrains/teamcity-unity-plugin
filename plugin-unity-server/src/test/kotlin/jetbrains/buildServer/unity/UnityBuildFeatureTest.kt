@@ -30,7 +30,7 @@ class UnityBuildFeatureTest {
 
         val unityVersion = "2021.3.16"
         val parameters = mutableMapOf(
-            PARAM_UNITY_VERSION to unityVersion
+            PARAM_UNITY_VERSION to unityVersion,
         )
 
         // act
@@ -116,36 +116,36 @@ class UnityBuildFeatureTest {
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "auto",
-                    PARAM_UNITY_VERSION to "2020.1.1"
+                    PARAM_UNITY_VERSION to "2020.1.1",
                 ),
                 setOf("2020.1.1"),
-                setOf<String>()
+                setOf<String>(),
             ),
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "auto",
                     PARAM_UNITY_VERSION to "2020.1.1",
-                    PARAM_UNITY_ROOT to "path/to/unity"
+                    PARAM_UNITY_ROOT to "path/to/unity",
                 ),
                 setOf("2020.1.1"),
-                setOf("path/to/unity")
+                setOf("path/to/unity"),
             ),
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "manual",
-                    PARAM_UNITY_ROOT to "path/to/unity"
+                    PARAM_UNITY_ROOT to "path/to/unity",
                 ),
                 setOf("path/to/unity"),
-                setOf<String>()
+                setOf<String>(),
             ),
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "manual",
                     PARAM_UNITY_VERSION to "2020.1.1",
-                    PARAM_UNITY_ROOT to "path/to/unity"
+                    PARAM_UNITY_ROOT to "path/to/unity",
                 ),
                 setOf("path/to/unity"),
-                setOf("2020.1.1")
+                setOf("2020.1.1"),
             ),
         )
     }
@@ -154,7 +154,7 @@ class UnityBuildFeatureTest {
     fun describeParameters_correctUnityLocationParamsSet_describeDistinctively(
         parameters: MutableMap<String, String>,
         shouldContain: Set<String>,
-        shouldNotContain: Set<String>
+        shouldNotContain: Set<String>,
     ) {
         // arrange
         val sut = buildFeature
@@ -172,25 +172,25 @@ class UnityBuildFeatureTest {
     fun incorrectUnityLocationParamsSet(): Array<Array<Any?>> {
         return arrayOf(
             arrayOf(
-                mapOf<String, String>()
+                mapOf<String, String>(),
             ),
             arrayOf(
                 mapOf(
                     PARAM_UNITY_VERSION to "2020.1.1",
-                    PARAM_UNITY_ROOT to "path/to/unity"
-                )
+                    PARAM_UNITY_ROOT to "path/to/unity",
+                ),
             ),
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "auto",
-                    PARAM_UNITY_ROOT to "path/to/unity"
-                )
+                    PARAM_UNITY_ROOT to "path/to/unity",
+                ),
             ),
             arrayOf(
                 mapOf(
                     PARAM_DETECTION_MODE to "manual",
                     PARAM_UNITY_VERSION to "2020.1.1",
-                )
+                ),
             ),
         )
     }

@@ -20,58 +20,66 @@ class UnityRunnerRunTypeTest {
     @DataProvider
     fun runnerRequirementsData(): Array<Array<Any?>> {
         return arrayOf(
-                arrayOf<Any?>(
-                        emptyMap<String, String>(),
-                        emptyList<Requirement>()
+            arrayOf<Any?>(
+                emptyMap<String, String>(),
+                emptyList<Requirement>(),
+            ),
+            arrayOf<Any?>(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_VERSION to "",
                 ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                                UnityConstants.PARAM_UNITY_VERSION to ""),
-                        listOf(Requirement("Exists=>unity\\.path\\..+", null, RequirementType.EXISTS))
+                listOf(Requirement("Exists=>unity\\.path\\..+", null, RequirementType.EXISTS)),
+            ),
+            arrayOf<Any?>(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                    UnityConstants.PARAM_UNITY_ROOT to "C:\\My\\Custom\\Unity",
                 ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
-                                UnityConstants.PARAM_UNITY_ROOT to "C:\\My\\Custom\\Unity"),
-                        emptyList<Requirement>()
+                emptyList<Requirement>(),
+            ),
+            arrayOf<Any?>(
+                mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
+                listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS)),
+            ),
+            arrayOf<Any?>(
+                mapOf(UnityConstants.PARAM_UNITY_VERSION to "%SOME_VAR.1%"),
+                listOf(Requirement("Exists=>unity\\.path\\.%SOME_VAR.1%.*", null, RequirementType.EXISTS)),
+            ),
+            arrayOf<Any?>(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                    UnityConstants.PARAM_UNITY_VERSION to "2018.2",
                 ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
-                        listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
+                emptyList<Requirement>(),
+            ),
+            arrayOf<Any?>(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_VERSION to "2018.2",
                 ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_UNITY_VERSION to "%SOME_VAR.1%"),
-                        listOf(Requirement("Exists=>unity\\.path\\.%SOME_VAR.1%.*", null, RequirementType.EXISTS))
+                listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS)),
+            ),
+            arrayOf(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_VERSION to "",
+                    UnityConstants.PLUGIN_DOCKER_IMAGE to "some-image",
                 ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
-                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
-                        emptyList<Requirement>()
-                ),
-                arrayOf<Any?>(
-                        mapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                                UnityConstants.PARAM_UNITY_VERSION to "2018.2"),
-                        listOf(Requirement("Exists=>unity\\.path\\.2018\\.2.*", null, RequirementType.EXISTS))
-                ),
-                arrayOf(
-                    mapOf(
-                        UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                        UnityConstants.PARAM_UNITY_VERSION to "",
-                        UnityConstants.PLUGIN_DOCKER_IMAGE to "some-image"
-                    ),
-                    emptyList<Requirement>()
-                ),
+                emptyList<Requirement>(),
+            ),
         )
     }
 
     @DataProvider
     fun runnerDefaultData(): Array<Array<Any?>> {
         return arrayOf(
-                arrayOf<Any?>(
-                    mapOf(
-                        UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                        UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id,
-                    )
-                )
+            arrayOf<Any?>(
+                mapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id,
+                ),
+            ),
         )
     }
 

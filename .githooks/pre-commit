@@ -1,0 +1,19 @@
+#!/bin/sh
+branch=$(git symbolic-ref -q HEAD)
+
+# probably we're in the process of rebasing, do nothing
+if [ "$branch" = "" ]
+then
+  exit 0
+fi
+
+git stash -q --keep-index
+
+./gradlew clean build
+
+if [ $? -ne 0 ]; then
+  git stash pop -q
+  exit 1
+fi
+
+git stash pop -q || true

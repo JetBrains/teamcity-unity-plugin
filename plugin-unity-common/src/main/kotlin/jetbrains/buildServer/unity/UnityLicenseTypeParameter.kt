@@ -5,7 +5,8 @@ enum class UnityLicenseTypeParameter(
     val displayName: String,
 ) {
     PROFESSIONAL("professionalLicense", "Unity Plus or Pro license"),
-    PERSONAL("personalLicense", "Unity Personal license");
+    PERSONAL("personalLicense", "Unity Personal license"),
+    ;
 
     companion object {
 

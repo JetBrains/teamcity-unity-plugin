@@ -64,8 +64,10 @@ class PEProductVersionDetector {
         when (val result = ProcessBuilder(detectorPath.toString(), executable.absolutePath).execute(timeoutSeconds = 3)) {
             is Completed -> when (result.exitCode) {
                 0 -> parseStdoutToVersion(result.stdout)
-                else -> LOG.info("Version detection process exited with non-zero code: ${result.exitCode}\n" +
-                        "Error: ${result.stderr}")
+                else -> LOG.info(
+                    "Version detection process exited with non-zero code: ${result.exitCode}\n" +
+                        "Error: ${result.stderr}",
+                )
             }
             is Error -> LOG.info(result.exception)
             Timeout -> LOG.info("PE product version detection timed out")
@@ -79,7 +81,7 @@ class PEProductVersionDetector {
         @SerialName("MajorPart") val majorPart: Int?,
         @SerialName("MinorPart") val minorPart: Int?,
         @SerialName("BuildPart") val buildPart: Int?,
-        @SerialName("PrivatePart") val privatePart: Int?
+        @SerialName("PrivatePart") val privatePart: Int?,
     )
 
     companion object {

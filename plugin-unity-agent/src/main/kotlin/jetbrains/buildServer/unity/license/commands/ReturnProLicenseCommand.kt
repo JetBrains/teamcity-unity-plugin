@@ -15,8 +15,8 @@ class ReturnProLicenseCommand(
 ) : UnityLicenseCommand(
     context,
     "Return Unity license",
-    "return-license-log-"
-    ) {
+    "return-license-log-",
+) {
 
     private lateinit var unityEnvironment: UnityEnvironment
 

@@ -108,13 +108,14 @@ class UnityRunnerRunType(
     }
 
     override fun supports(runTypeExtension: RunTypeExtension): Boolean {
-        if (runTypeExtension is PositionAware && runTypeExtension.orderId == DOCKER_WRAPPER_ID)
+        if (runTypeExtension is PositionAware && runTypeExtension.orderId == DOCKER_WRAPPER_ID) {
             return true
+        }
         return super.supports(runTypeExtension)
     }
 
     private fun escapeRegex(value: String) =
-        if(value.contains('%')) value else value.replace(".", "\\.")
+        if (value.contains('%')) value else value.replace(".", "\\.")
 
     private fun StringBuilder.addParameter(parameter: String) {
         if (this.isNotEmpty()) {

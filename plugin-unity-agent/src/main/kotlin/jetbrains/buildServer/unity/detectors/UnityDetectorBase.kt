@@ -33,10 +33,12 @@ abstract class UnityDetectorBase : UnityDetector {
         System.getenv(UnityConstants.VAR_UNITY_HOME)?.let { unityHome ->
             LOG.info("UNITY_HOME: $unityHome")
             if (unityHome.isEmpty()) return@let
-            yieldAll(unityHome.split(File.pathSeparatorChar).map { path ->
-                LOG.info("UNITY_HOME path: $path")
-                File(path)
-            })
+            yieldAll(
+                unityHome.split(File.pathSeparatorChar).map { path ->
+                    LOG.info("UNITY_HOME path: $path")
+                    File(path)
+                },
+            )
         }
 
         // Get paths from "UNITY_HINT_PATH" environment variables
@@ -117,11 +119,13 @@ abstract class UnityDetectorBase : UnityDetector {
         tryParse(mapSerializer, File(unityHub, "editors.json"))?.let { editors ->
             editors.values.forEach { editor ->
                 editor.location?.let { locations ->
-                    yieldAll(locations.map { location ->
-                        val directory = FileUtil.getCanonicalFile(File(location, "../..") )
-                        LOG.info("Found: $directory")
-                        directory
-                    })
+                    yieldAll(
+                        locations.map { location ->
+                            val directory = FileUtil.getCanonicalFile(File(location, "../.."))
+                            LOG.info("Found: $directory")
+                            directory
+                        },
+                    )
                 }
             }
         }
@@ -142,7 +146,9 @@ abstract class UnityDetectorBase : UnityDetector {
     private fun unquoteString(text: String): String {
         return if (text.startsWith('"') && text.endsWith('"')) {
             text.substring(1, text.length - 1)
-        } else text
+        } else {
+            text
+        }
     }
 
     private fun <T> tryParse(deserializer: DeserializationStrategy<T>, file: File): T? {

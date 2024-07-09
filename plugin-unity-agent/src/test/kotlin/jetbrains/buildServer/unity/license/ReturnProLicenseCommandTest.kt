@@ -81,7 +81,7 @@ class ReturnProLicenseCommandTest {
                 "-quit", "-batchmode", "-nographics", "-returnlicense",
                 "-username", "someUsername", "-password", "somePassword",
                 "-logFile", logPath,
-            )
+            ),
         )
     }
 
@@ -98,10 +98,12 @@ class ReturnProLicenseCommandTest {
 
         // assert
         verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Return Unity license", "unity")
-                it.typeId shouldBe "BlockStart"
-            })
+            buildLogger.logMessage(
+                withArg {
+                    it.value shouldBe BlockData("Return Unity license", "unity")
+                    it.typeId shouldBe "BlockStart"
+                },
+            )
         }
     }
 
@@ -116,10 +118,12 @@ class ReturnProLicenseCommandTest {
 
         // assert
         verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Return Unity license", "unity")
-                it.typeId shouldBe "BlockEnd"
-            })
+            buildLogger.logMessage(
+                withArg {
+                    it.value shouldBe BlockData("Return Unity license", "unity")
+                    it.typeId shouldBe "BlockEnd"
+                },
+            )
         }
     }
 
@@ -137,6 +141,6 @@ class ReturnProLicenseCommandTest {
             override val workingDirectory = workingDirectoryPath
 
             override fun resolvePath(path: String) = path
-        }
+        },
     )
 }

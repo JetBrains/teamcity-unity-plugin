@@ -10,7 +10,7 @@ import jetbrains.buildServer.serverSide.parameters.types.PasswordsProvider
 class UnityPasswordsProvider : PasswordsProvider {
 
     override fun getPasswordParameters(build: SBuild): List<Parameter> {
-        val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull()?:return emptyList()
+        val feature = build.getBuildFeaturesOfType(UnityConstants.BUILD_FEATURE_TYPE).firstOrNull() ?: return emptyList()
 
         val parameters = mutableListOf<Parameter>()
 

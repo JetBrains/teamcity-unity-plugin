@@ -11,7 +11,7 @@ class UnityProjectTests {
     @DataProvider
     fun `unity version cases`(): Array<Array<Any>> = arrayOf(
         arrayOf("2022.3.12f1", UnityVersion.parseVersion("2022.3.12f1")),
-        arrayOf("6000.0.7f1", UnityVersion.parseVersion("6000.0.7f1"))
+        arrayOf("6000.0.7f1", UnityVersion.parseVersion("6000.0.7f1")),
     )
 
     @Test(dataProvider = "unity version cases")
@@ -52,9 +52,13 @@ class UnityProjectTests {
         // arrange
         val fileAccessor = object : UnityProjectFilesAccessor {
             override fun directory(name: String) = this
-            override fun file(name: String) = if (name == "ProjectVersion.txt") null else """
+            override fun file(name: String) = if (name == "ProjectVersion.txt") {
+                null
+            } else {
+                """
                 m_EditorVersion: 2022.3.12f1
-            """.trimIndent().byteInputStream()
+                """.trimIndent().byteInputStream()
+            }
         }
 
         // act
@@ -66,16 +70,22 @@ class UnityProjectTests {
 
     @DataProvider
     fun `missing or malformed Unity version cases`(): Array<Array<Any>> = arrayOf(
-        arrayOf("""
+        arrayOf(
+            """
             foo: bar
             key: value
-        """.trimIndent()),
-        arrayOf("""
+            """.trimIndent(),
+        ),
+        arrayOf(
+            """
             EditorVersion: 2022.3.12f1
-        """.trimIndent()),
-        arrayOf("""
+            """.trimIndent(),
+        ),
+        arrayOf(
+            """
             m_EditorVersion: foo
-        """.trimIndent()),
+            """.trimIndent(),
+        ),
     )
 
     @Test(dataProvider = "missing or malformed Unity version cases")
@@ -92,7 +102,7 @@ class UnityProjectTests {
     @DataProvider
     fun `asset pipeline version cases`(): Array<Array<Any>> = arrayOf(
         arrayOf("0", AssetPipelineVersion.V1),
-        arrayOf("1", AssetPipelineVersion.V2)
+        arrayOf("1", AssetPipelineVersion.V2),
     )
 
     @Test(dataProvider = "asset pipeline version cases")
@@ -139,11 +149,15 @@ class UnityProjectTests {
         // arrange
         val fileAccessor = object : UnityProjectFilesAccessor {
             override fun directory(name: String) = this
-            override fun file(name: String) = if (name == "EditorSettings.asset") null else """
+            override fun file(name: String) = if (name == "EditorSettings.asset") {
+                null
+            } else {
+                """
                 EditorSettings:
                   m_ObjectHideFlags: 0
                   m_AssetPipelineMode: 0
-            """.trimIndent().byteInputStream()
+                """.trimIndent().byteInputStream()
+            }
         }
 
         // act
@@ -155,16 +169,22 @@ class UnityProjectTests {
 
     @DataProvider
     fun `missing or malformed Asset Pipeline version cases`(): Array<Array<Any>> = arrayOf(
-        arrayOf("""
+        arrayOf(
+            """
             foo: bar
             key: value
-        """.trimIndent()),
-        arrayOf("""
+            """.trimIndent(),
+        ),
+        arrayOf(
+            """
             EditorVersion: 2022.3.12f1
-        """.trimIndent()),
-        arrayOf("""
+            """.trimIndent(),
+        ),
+        arrayOf(
+            """
             m_EditorVersion: foo
-        """.trimIndent()),
+            """.trimIndent(),
+        ),
     )
 
     @Test(dataProvider = "missing or malformed Asset Pipeline version cases")
@@ -177,7 +197,6 @@ class UnityProjectTests {
         // assert
         assertNull(assetPipelineVersion)
     }
-
 
     @Test
     fun `performs project property read only once`() {
@@ -195,7 +214,6 @@ class UnityProjectTests {
                     m_EditorVersion: 2022.3.12f1
                 """.trimIndent().byteInputStream()
             }
-
         }
 
         val project = UnityProject(filesAccessor)

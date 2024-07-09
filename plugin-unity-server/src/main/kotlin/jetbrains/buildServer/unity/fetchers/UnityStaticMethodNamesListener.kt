@@ -31,8 +31,10 @@ class UnityStaticMethodNamesListener : CSharpParserBaseListener() {
         names += getMethodReference(classMember, method) to getDescription(classMember)
     }
 
-    private fun getMethodReference(classMember: CSharpParser.Class_member_declarationContext,
-                                   method: CSharpParser.Method_declarationContext): String {
+    private fun getMethodReference(
+        classMember: CSharpParser.Class_member_declarationContext,
+        method: CSharpParser.Method_declarationContext,
+    ): String {
         val builder = StringBuilder()
 
         val classDefinition = classMember.parent.parent.parent as CSharpParser.Class_definitionContext
@@ -49,15 +51,15 @@ class UnityStaticMethodNamesListener : CSharpParserBaseListener() {
 
     private fun getDescription(classMember: CSharpParser.Class_member_declarationContext): String? {
         classMember.attributes()?.children
-                ?.filterIsInstance<CSharpParser.Attribute_sectionContext>()
-                ?.forEach {
-                    val attribute = it.attribute_list().children
-                            .filterIsInstance<CSharpParser.AttributeContext>()
-                            .firstOrNull { attribute ->
-                                attribute.namespace_or_type_name().text == "MenuItem"
-                            } ?: return null
-                    return attribute.attribute_argument().first().text.trim('"')
-                } ?: return null
+            ?.filterIsInstance<CSharpParser.Attribute_sectionContext>()
+            ?.forEach {
+                val attribute = it.attribute_list().children
+                    .filterIsInstance<CSharpParser.AttributeContext>()
+                    .firstOrNull { attribute ->
+                        attribute.namespace_or_type_name().text == "MenuItem"
+                    } ?: return null
+                return attribute.attribute_argument().first().text.trim('"')
+            } ?: return null
         return null
     }
 

@@ -74,10 +74,14 @@ class ActivatePersonalLicenseCommandTest {
         result.environment shouldBe mapOf()
         result.arguments.shouldContainExactly(
             listOf(
-                "-quit", "-batchmode", "-nographics",
-                "-manualLicenseFile", licenseFilePath,
-                "-logFile", logFilePath,
-            )
+                "-quit",
+                "-batchmode",
+                "-nographics",
+                "-manualLicenseFile",
+                licenseFilePath,
+                "-logFile",
+                logFilePath,
+            ),
         )
     }
 
@@ -116,10 +120,12 @@ class ActivatePersonalLicenseCommandTest {
 
         // assert
         verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Activate Personal Unity license", "unity")
-                it.typeId shouldBe "BlockStart"
-            })
+            buildLogger.logMessage(
+                withArg {
+                    it.value shouldBe BlockData("Activate Personal Unity license", "unity")
+                    it.typeId shouldBe "BlockStart"
+                },
+            )
         }
     }
 
@@ -154,6 +160,6 @@ class ActivatePersonalLicenseCommandTest {
             override val workingDirectory = workingDirectoryPath
 
             override fun resolvePath(path: String) = path
-        }
+        },
     )
 }

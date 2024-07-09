@@ -80,7 +80,7 @@ class ActivateProLicenseCommandTest {
                 "-quit", "-batchmode", "-nographics",
                 "-serial", "someSerialNumber", "-username", "someUsername", "-password", "somePassword",
                 "-logFile", logPath,
-            )
+            ),
         )
     }
 
@@ -97,10 +97,12 @@ class ActivateProLicenseCommandTest {
 
         // assert
         verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Activate Unity license", "unity")
-                it.typeId shouldBe "BlockStart"
-            })
+            buildLogger.logMessage(
+                withArg {
+                    it.value shouldBe BlockData("Activate Unity license", "unity")
+                    it.typeId shouldBe "BlockStart"
+                },
+            )
         }
     }
 
@@ -115,10 +117,12 @@ class ActivateProLicenseCommandTest {
 
         // assert
         verify(exactly = 1) {
-            buildLogger.logMessage(withArg {
-                it.value shouldBe BlockData("Activate Unity license", "unity")
-                it.typeId shouldBe "BlockEnd"
-            })
+            buildLogger.logMessage(
+                withArg {
+                    it.value shouldBe BlockData("Activate Unity license", "unity")
+                    it.typeId shouldBe "BlockEnd"
+                },
+            )
         }
     }
 
@@ -136,6 +140,6 @@ class ActivateProLicenseCommandTest {
             override val workingDirectory = workingDirectoryPath
 
             override fun resolvePath(path: String) = path
-        }
+        },
     )
 }

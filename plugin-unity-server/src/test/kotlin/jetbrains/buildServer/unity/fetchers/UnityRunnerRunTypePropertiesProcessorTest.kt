@@ -13,38 +13,46 @@ class UnityRunnerRunTypePropertiesProcessorTest {
     @DataProvider
     fun processData(): Array<Array<Any?>> {
         return arrayOf(
-                arrayOf<Any?>(
-                        emptyMap<String, String>(),
-                        listOf<InvalidProperty>()
+            arrayOf<Any?>(
+                emptyMap<String, String>(),
+                listOf<InvalidProperty>(),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1"),
+                listOf<InvalidProperty>(),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(UnityConstants.PARAM_UNITY_ROOT to ""),
+                listOf<InvalidProperty>(),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                    UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1",
                 ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1"),
-                        listOf<InvalidProperty>()
+                listOf<InvalidProperty>(),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
+                    UnityConstants.PARAM_UNITY_ROOT to "",
                 ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_UNITY_ROOT to ""),
-                        listOf<InvalidProperty>()
+                listOf(InvalidProperty(UnityConstants.PARAM_UNITY_ROOT, "")),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1",
                 ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
-                                UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1"),
-                        listOf<InvalidProperty>()
+                listOf<InvalidProperty>(),
+            ),
+            arrayOf<Any?>(
+                mutableMapOf(
+                    UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
+                    UnityConstants.PARAM_UNITY_ROOT to "",
                 ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_MANUAL,
-                                UnityConstants.PARAM_UNITY_ROOT to ""),
-                        listOf(InvalidProperty(UnityConstants.PARAM_UNITY_ROOT, ""))
-                ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                                UnityConstants.PARAM_UNITY_ROOT to "C:\\Program Files\\Unity\\2018.4.9f1"),
-                        listOf<InvalidProperty>()
-                ),
-                arrayOf<Any?>(
-                        mutableMapOf(UnityConstants.PARAM_DETECTION_MODE to UnityConstants.DETECTION_MODE_AUTO,
-                                UnityConstants.PARAM_UNITY_ROOT to ""),
-                        listOf<InvalidProperty>()
-                )
+                listOf<InvalidProperty>(),
+            ),
         )
     }
 

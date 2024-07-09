@@ -52,7 +52,7 @@ class UnityCommandBuildSession(
             unityLicenseActivator.activateLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 unityBuildRunnerContext,
-            )
+            ),
         )
     }
 
@@ -65,7 +65,7 @@ class UnityCommandBuildSession(
                     val command = BuildCommandExecutionAdapter(it)
                     lastBuildCommands.add(command)
                     command
-                }
+                },
         )
     }
 
@@ -74,7 +74,7 @@ class UnityCommandBuildSession(
             unityLicenseActivator.returnLicense(
                 unityEnvironmentProvider.unityEnvironment(),
                 unityBuildRunnerContext,
-            )
+            ),
         )
     }
 }

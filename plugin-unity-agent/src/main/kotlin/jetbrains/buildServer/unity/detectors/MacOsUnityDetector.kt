@@ -5,7 +5,8 @@ package jetbrains.buildServer.unity.detectors
 import com.intellij.openapi.diagnostic.Logger
 import jetbrains.buildServer.unity.UnityVersion
 import jetbrains.buildServer.unity.UnityVersion.Companion.tryParseVersion
-import org.apache.commons.configuration.plist.XMLPropertyListConfiguration
+import org.apache.commons.configuration2.io.FileHandler
+import org.apache.commons.configuration2.plist.XMLPropertyListConfiguration
 import java.io.File
 
 class MacOsUnityDetector : UnityDetectorBase() {
@@ -30,17 +31,21 @@ class MacOsUnityDetector : UnityDetectorBase() {
         LOG.debug("Looking for Unity installation in $editorRoot")
         val executable = getEditorPath(editorRoot)
         if (!executable.exists()) {
-          LOG.debug("Cannot find $executable")
-          return null
+            LOG.debug("Cannot find $executable")
+            return null
         }
 
         val plistFile = File(editorRoot, "Unity.app/Contents/Info.plist")
         if (!plistFile.exists()) {
-          LOG.debug("Cannot find $plistFile")
-          return null
+            LOG.debug("Cannot find $plistFile")
+            return null
         }
 
-        val version = XMLPropertyListConfiguration(plistFile).getString("CFBundleVersion")
+        val version = XMLPropertyListConfiguration().let {
+            FileHandler(it).load(plistFile)
+            it.getString("CFBundleVersion")
+        }
+
         return try {
             tryParseVersion(version)
         } catch (e: Exception) {

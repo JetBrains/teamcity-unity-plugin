@@ -54,40 +54,40 @@ class DetectVirtualUnityEnvironmentCommandTest {
     fun `correct standard output`(): Array<Array<out Any?>> = arrayOf(
         arrayOf(
             "path=/path/to/Unity;version=2023.3.4",
-            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true))
+            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true)),
         ),
         arrayOf(
             "path=/path/to/Unity;version=2023.3.4\n",
-            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true))
+            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true)),
         ),
         arrayOf(
             "path=/path/to/Unity;version=2023.3.4\r",
-            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true))
+            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true)),
         ),
         arrayOf(
             "path=/path/to/Unity;version=2023.3.4\r\n",
-            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true))
+            linkedSetOf(UnityEnvironment("/path/to/Unity", parseVersion("2023.3.4"), true)),
         ),
         arrayOf(
             "path=/path/to/1/Unity;version=2023.0.1\npath=/path/to/2/Unity;version=2023.0.2\n",
             linkedSetOf(
                 UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true),
                 UnityEnvironment("/path/to/2/Unity", parseVersion("2023.0.2"), true),
-            )
+            ),
         ),
         arrayOf(
             "path=/path/to/1/Unity;version=2023.0.1\rpath=/path/to/2/Unity;version=2023.0.2\r",
             linkedSetOf(
                 UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true),
                 UnityEnvironment("/path/to/2/Unity", parseVersion("2023.0.2"), true),
-            )
+            ),
         ),
         arrayOf(
             "path=/path/to/1/Unity;version=2023.0.1\r\npath=/path/to/2/Unity;version=2023.0.2\r\n",
             linkedSetOf(
                 UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true),
                 UnityEnvironment("/path/to/2/Unity", parseVersion("2023.0.2"), true),
-            )
+            ),
         ),
         arrayOf(
             "path=/path/to/1/Unity;version=2023.0.1\npath=/path/to/2/Unity;version=2023.0.2\npath=/path/to/3/Unity;version=2023.0.3\n",
@@ -95,7 +95,7 @@ class DetectVirtualUnityEnvironmentCommandTest {
                 UnityEnvironment("/path/to/1/Unity", parseVersion("2023.0.1"), true),
                 UnityEnvironment("/path/to/2/Unity", parseVersion("2023.0.2"), true),
                 UnityEnvironment("/path/to/3/Unity", parseVersion("2023.0.3"), true),
-            )
+            ),
         ),
     )
 
@@ -205,7 +205,7 @@ class DetectVirtualUnityEnvironmentCommandTest {
         // assert
         commandLine.environment shouldContainExactly mapOf(
             "ENV" to "VALUE",
-            "UNITY_ROOT_PARAMETER" to "/path/to/unity"
+            "UNITY_ROOT_PARAMETER" to "/path/to/unity",
         )
     }
 

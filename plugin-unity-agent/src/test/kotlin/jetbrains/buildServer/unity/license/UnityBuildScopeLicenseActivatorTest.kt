@@ -1,7 +1,6 @@
 package jetbrains.buildServer.unity.license
 
 import com.intellij.execution.configurations.GeneralCommandLine
-import io.mockk.Called
 import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
@@ -37,7 +36,7 @@ class UnityBuildScopeLicenseActivatorTest {
 
     private val unityEnvironment = UnityEnvironment(
         "somePath",
-        UnityVersion(2022,3, 31)
+        UnityVersion(2022, 3, 31),
     )
     private val toolProviderMock = mockk<UnityToolProvider>()
     private val commandLineRunnerMock = mockk<CommandLineRunner>()
@@ -101,18 +100,27 @@ class UnityBuildScopeLicenseActivatorTest {
     @DataProvider
     fun `skip license activation test cases`(): Array<Array<Any>> {
         return arrayOf(
-            arrayOf(mapOf(
-                UnityConstants.PARAM_UNITY_LICENSE_TYPE to UnityLicenseTypeParameter.PERSONAL.toString()
-            )),
-            arrayOf(mapOf(
-                UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id
-            )),
-            arrayOf(mapOf(
-                UnityConstants.PARAM_ACTIVATE_LICENSE to false.toString()
-            )),
-            arrayOf(mapOf(
-                UnityConstants.PARAM_UNITY_LICENSE_SCOPE to null
-            )),
+            arrayOf(
+                mapOf(
+                    UnityConstants.PARAM_ACTIVATE_LICENSE to null,
+                    UnityConstants.PARAM_UNITY_LICENSE_TYPE to UnityLicenseTypeParameter.PERSONAL.toString(),
+                ),
+            ),
+            arrayOf(
+                mapOf(
+                    UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_STEP.id,
+                ),
+            ),
+            arrayOf(
+                mapOf(
+                    UnityConstants.PARAM_ACTIVATE_LICENSE to false.toString(),
+                ),
+            ),
+            arrayOf(
+                mapOf(
+                    UnityConstants.PARAM_UNITY_LICENSE_SCOPE to null,
+                ),
+            ),
         )
     }
 
@@ -128,7 +136,7 @@ class UnityBuildScopeLicenseActivatorTest {
         licensePerBuildActivator().preparationFinished(build)
 
         // assert
-        verify { commandLineRunnerMock.run(any()) wasNot Called }
+        verify(exactly = 0) { commandLineRunnerMock.run(any()) }
     }
 
     @Test(dataProvider = "skip license activation test cases")
@@ -143,7 +151,7 @@ class UnityBuildScopeLicenseActivatorTest {
         licensePerBuildActivator().beforeBuildFinish(build, mockk())
 
         // assert
-        verify { commandLineRunnerMock.run(any()) wasNot Called }
+        verify(exactly = 0) { commandLineRunnerMock.run(any()) }
     }
 
     private fun licensePerBuildActivator() =
@@ -157,15 +165,17 @@ class UnityBuildScopeLicenseActivatorTest {
     private class FakeUnityBuildFeature(
         init: Map<String, String> = mapOf(),
     ) : AgentBuildFeature {
-        private val parameters: MutableMap<String, String> = (mapOf(
-            UnityConstants.PARAM_ACTIVATE_LICENSE to true.toString(),
-            UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_CONFIGURATION.id,
-            UnityConstants.PARAM_UNITY_LICENSE_TYPE to UnityLicenseTypeParameter.PROFESSIONAL.toString(),
-            UnityConstants.PARAM_UNITY_VERSION to "2022.3.33",
-            UnityConstants.PARAM_SERIAL_NUMBER to UNITY_SERIAL_NUMBER,
-            UnityConstants.PARAM_USERNAME to UNITY_USERNAME,
-            UnityConstants.PARAM_PASSWORD to UNITY_PASSWORD,
-        ) + init).toMutableMap()
+        private val parameters: MutableMap<String, String> = (
+            mapOf(
+                UnityConstants.PARAM_ACTIVATE_LICENSE to true.toString(),
+                UnityConstants.PARAM_UNITY_LICENSE_SCOPE to UnityLicenseScope.BUILD_CONFIGURATION.id,
+                UnityConstants.PARAM_UNITY_LICENSE_TYPE to UnityLicenseTypeParameter.PROFESSIONAL.toString(),
+                UnityConstants.PARAM_UNITY_VERSION to "2022.3.33",
+                UnityConstants.PARAM_SERIAL_NUMBER to UNITY_SERIAL_NUMBER,
+                UnityConstants.PARAM_USERNAME to UNITY_USERNAME,
+                UnityConstants.PARAM_PASSWORD to UNITY_PASSWORD,
+            ) + init
+            ).toMutableMap()
 
         override fun getType() = UnityConstants.BUILD_FEATURE_TYPE
         override fun getParameters(): MutableMap<String, String> = parameters
