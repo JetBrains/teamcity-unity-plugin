@@ -21,7 +21,9 @@ The plugin supports building Unity projects on TeamCity.
 
 This [TeamCity build feature](https://confluence.jetbrains.com/display/TCDL/Adding+Build+Features) allows to **automatically activate and return Unity Editor license** before build start and after build completion.
 
-Also it allows to configure **Unity cache server** address in one place to use this setting within Unity build steps.
+Additionally, it allows you to configure the address for the assets caching proxy,
+which can be either the [Cache server][cache-server] or the [Unity accelerator][unity-accelerator].
+The appropriate arguments will be used based on the asset pipeline version used in the project.
 
 # Download
 
@@ -141,3 +143,5 @@ Send a Pull Request to contribute or contact us via [YouTrack][youtrack] to repo
 [plugin-descriptor]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Tools
 [plugin-descriptor.executables]: https://plugins.jetbrains.com/docs/teamcity/plugins-packaging.html#Making+File+Executable
 [youtrack]: https://youtrack.jetbrains.com/newIssue?project=TW&c=Team%20Build%20Tools%20Integrations&c=tag%20tc-unity
+[cache-server]: https://docs.unity3d.com/2019.2/Documentation/Manual/CacheServer.html
+[unity-accelerator]: https://docs.unity3d.com/Manual/UnityAccelerator.html
