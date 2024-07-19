@@ -1,27 +1,35 @@
 package jetbrains.buildServer.unity.license
 
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldNotBeEmpty
+import io.kotest.matchers.collections.shouldBeSingleton
+import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.*
+import jetbrains.buildServer.ExecResult
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
+import jetbrains.buildServer.agent.BuildParametersMap
 import jetbrains.buildServer.agent.BuildRunnerContext
+import jetbrains.buildServer.agent.runner.CommandExecution
+import jetbrains.buildServer.agent.runner.ProgramCommandLine
+import jetbrains.buildServer.agent.runner.TerminationAction
 import jetbrains.buildServer.unity.UnityEnvironment
 import jetbrains.buildServer.unity.UnityVersion
 import jetbrains.buildServer.unity.license.commands.ActivatePersonalLicenseCommand
 import jetbrains.buildServer.unity.license.commands.ActivateProLicenseCommand
 import jetbrains.buildServer.unity.license.commands.ReturnProLicenseCommand
+import jetbrains.buildServer.unity.util.CommandLineRunner
+import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.DataProvider
-import org.testng.annotations.Test
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class UnityBuildStepScopeLicenseActivatorTest {
-
-    private val activatePersonalCommand = mockk<ActivatePersonalLicenseCommand>()
-    private val activateProCommand = mockk<ActivateProLicenseCommand>()
-    private val returnProCommand = mockk<ReturnProLicenseCommand>()
-
+    private val fileSystemService = mockk<FileSystemService>()
+    private val commandLineRunner = mockk<CommandLineRunner>()
     private val runnerContext = mockk<BuildRunnerContext>()
     private val build = mockk<AgentRunningBuild>()
     private val buildFeature = mockk<AgentBuildFeature>()
@@ -30,100 +38,66 @@ class UnityBuildStepScopeLicenseActivatorTest {
     fun setUp() {
         clearAllMocks()
 
-        every { runnerContext.build } returns build
-        every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
+        every { buildFeature.parameters } returns emptyMap()
+
+        with(runnerContext) {
+            every { build } returns this@UnityBuildStepScopeLicenseActivatorTest.build
+            every { buildParameters } returns object : BuildParametersMap {
+                override fun getEnvironmentVariables() = mapOf<String, String>()
+                override fun getSystemProperties() = mapOf<String, String>()
+                override fun getAllParameters() = mapOf<String, String>()
+            }
+            every { workingDirectory } returns mockk(relaxed = true)
+            every { virtualContext } returns mockk(relaxed = true)
+        }
+        with(build) {
+            every { getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
+            every { buildLogger } returns mockk(relaxed = true)
+        }
     }
 
     @DataProvider
-    fun `should manage professional license params`(): Array<Array<Any>> = arrayOf(
+    fun `should issue professional license activation & return commands`(): Array<Array<Any>> = arrayOf(
         arrayOf(mapOf("unityLicenseType" to "professionalLicense")),
         arrayOf(mapOf("activateLicense" to "true")),
     )
 
-    @Test(dataProvider = "should manage professional license params")
-    fun `should activate professional license`(params: Map<String, String>) {
+    @Test(dataProvider = "should issue professional license activation & return commands")
+    fun `should issue professional license activation & return commands`(params: Map<String, String>) {
         // arrange
-        val manager = createInstance()
-        val unityEnvironment = anUnityEnvironment()
-
         every { buildFeature.parameters } returns params
-        every { activateProCommand.withUnityEnvironment(unityEnvironment) } returns activateProCommand
+        val buildCommand = commandExecutionStub()
 
         // act
-        val commands = manager.activateLicense(unityEnvironment, runnerContext).toList()
+        val commands = act(sequenceOf(buildCommand))
 
         // assert
-        commands.shouldNotBeEmpty()
-        commands.shouldContainExactly(activateProCommand)
+        commands shouldHaveSize 3
 
-        verify(exactly = 1) { activateProCommand.withUnityEnvironment(unityEnvironment) }
-        verify { activatePersonalCommand wasNot Called }
-        verify { returnProCommand wasNot Called }
-    }
+        val activateLicense = commands.first()
+        activateLicense shouldNotBe null
+        activateLicense.shouldBeInstanceOf<ActivateProLicenseCommand>()
 
-    @Test(dataProvider = "should manage professional license params")
-    fun `should return professional license`(params: Map<String, String>) {
-        // arrange
-        val manager = createInstance()
-        val unityEnvironment = anUnityEnvironment()
-
-        every { buildFeature.parameters } returns params
-        every { returnProCommand.withUnityEnvironment(unityEnvironment) } returns returnProCommand
-
-        // act
-        val commands = manager.returnLicense(unityEnvironment, runnerContext).toList()
-
-        // assert
-        commands.shouldNotBeEmpty()
-        commands.shouldContainExactly(returnProCommand)
-
-        verify(exactly = 1) { returnProCommand.withUnityEnvironment(unityEnvironment) }
-        verify { activatePersonalCommand wasNot Called }
-        verify { activateProCommand wasNot Called }
+        val returnLicense = commands.last()
+        returnLicense shouldNotBe null
+        returnLicense.shouldBeInstanceOf<ReturnProLicenseCommand>()
     }
 
     @Test
-    fun `should activate personal license`() {
+    fun `should issue personal license activation command`() {
         // arrange
-        val manager = createInstance()
-        val unityEnvironment = anUnityEnvironment()
-
-        every { buildFeature.parameters } returns mapOf("unityLicenseType" to "personalLicense")
-        every { activatePersonalCommand.withUnityEnvironment(unityEnvironment) } returns activatePersonalCommand
-
-        // act
-        val commands = manager.activateLicense(unityEnvironment, runnerContext).toList()
-
-        // assert
-        commands.shouldNotBeEmpty()
-        commands.shouldContainExactly(activatePersonalCommand)
-
-        verify(exactly = 1) { activatePersonalCommand.withUnityEnvironment(unityEnvironment) }
-        verify { activateProCommand wasNot Called }
-        verify { returnProCommand wasNot Called }
-    }
-
-    @Test
-    fun `should not return personal license`() {
-        // arrange
-        val manager = createInstance()
-        val unityEnvironment = anUnityEnvironment()
-
         every { buildFeature.parameters } returns mapOf("unityLicenseType" to "personalLicense")
 
         // act
-        val commands = manager.returnLicense(unityEnvironment, runnerContext).toList()
+        val commands = act()
 
         // assert
-        commands.shouldBeEmpty()
-
-        verify { activatePersonalCommand wasNot Called }
-        verify { activateProCommand wasNot Called }
-        verify { returnProCommand wasNot Called }
+        commands.shouldBeSingleton()
+        commands.first().shouldBeInstanceOf<ActivatePersonalLicenseCommand>()
     }
 
     @DataProvider
-    fun `should not manage licenses params`(): Array<Array<Any>> = arrayOf(
+    fun `should not issue any license commands`(): Array<Array<Any>> = arrayOf(
         arrayOf(emptyMap<String, String>()),
         arrayOf(mapOf("unityLicenseType" to "invalid license type")),
         arrayOf(mapOf("activateLicense" to "false")),
@@ -131,26 +105,50 @@ class UnityBuildStepScopeLicenseActivatorTest {
         arrayOf(mapOf("notRelevantParam" to "some value")),
     )
 
-    @Test(dataProvider = "should not manage licenses params")
-    fun `should not manage licenses`(params: Map<String, String>) {
+    @Test(dataProvider = "should not issue any license commands")
+    fun `should not issue any license commands`(params: Map<String, String>) {
         // arrange
-        val manager = createInstance()
-        val unityEnvironment = anUnityEnvironment()
-
         every { buildFeature.parameters } returns params
 
         // act
-        val activateCommands = manager.activateLicense(unityEnvironment, runnerContext).toList()
-        val returnCommands = manager.returnLicense(unityEnvironment, runnerContext).toList()
+        val commands = act()
 
         // assert
-        activateCommands.shouldBeEmpty()
-        returnCommands.shouldBeEmpty()
-
-        verify { activatePersonalCommand wasNot Called }
-        verify { activateProCommand wasNot Called }
-        verify { returnProCommand wasNot Called }
+        commands.shouldBeEmpty()
     }
+
+    @Test
+    fun `should return pro license on interruption of the original command if it was activated`() {
+        // arrange
+        every { buildFeature.parameters } returns mapOf("unityLicenseType" to "professionalLicense")
+
+        var originalCommandHookWasCalled = false
+        val buildCommand = object : CommandExecution by commandExecutionStub() {
+            override fun interruptRequested(): TerminationAction {
+                originalCommandHookWasCalled = true
+                return TerminationAction.KILL_PROCESS_TREE
+            }
+        }
+
+        val runnerExecutedCommandSlot = slot<CommandExecution>()
+        mockkStatic(CommandLineRunner::execute)
+        every { commandLineRunner.run(any()) } returns ExecResult()
+        every { commandLineRunner.execute(capture(runnerExecutedCommandSlot), any()) } just Runs
+
+        // act
+        val commands = act(sequenceOf(buildCommand))
+        commands.firstOrNull()?.processFinished(0)
+        commands.getOrNull(1)?.interruptRequested()
+
+        // assert
+        assertTrue(originalCommandHookWasCalled)
+        val command = runnerExecutedCommandSlot.captured
+        command shouldNotBe null
+        command.shouldBeInstanceOf<ReturnProLicenseCommand>()
+    }
+
+    private fun act(buildCommands: Sequence<CommandExecution> = emptySequence()) =
+        createInstance().withLicense(anUnityEnvironment()) { buildCommands }.toList()
 
     private fun anUnityEnvironment(): UnityEnvironment {
         val unityPath = "/path/to/unity"
@@ -159,8 +157,19 @@ class UnityBuildStepScopeLicenseActivatorTest {
     }
 
     private fun createInstance() = UnityBuildStepScopeLicenseActivator(
-        activatePersonalCommand,
-        activateProCommand,
-        returnProCommand,
+        fileSystemService,
+        runnerContext,
+        commandLineRunner,
     )
+
+    private fun commandExecutionStub() = object : CommandExecution {
+        override fun onStandardOutput(p0: String) {}
+        override fun onErrorOutput(p0: String) {}
+        override fun processStarted(p0: String, p1: File) {}
+        override fun processFinished(p0: Int) {}
+        override fun makeProgramCommandLine() = mockk<ProgramCommandLine>(relaxed = true)
+        override fun beforeProcessStarted() {}
+        override fun interruptRequested() = TerminationAction.KILL_PROCESS_TREE
+        override fun isCommandLineLoggingEnabled() = true
+    }
 }

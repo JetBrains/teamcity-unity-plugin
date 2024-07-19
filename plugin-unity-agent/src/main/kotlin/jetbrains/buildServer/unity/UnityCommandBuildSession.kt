@@ -38,23 +38,20 @@ class UnityCommandBuildSession(
 
     private fun commandsSequence() = sequence {
         detectUnityEnvironment()
-        activateLicenceIfNeeded()
-        executeBuild()
-        returnLicenceIfNeeded()
+        withLicense {
+            executeBuild()
+        }
     }
 
-    private suspend fun SequenceScope<CommandExecution>.detectUnityEnvironment() {
+    private suspend fun SequenceScope<CommandExecution>.detectUnityEnvironment() =
         yieldAll(unityEnvironmentProvider.provide(unityBuildRunnerContext))
-    }
 
-    private suspend fun SequenceScope<CommandExecution>.activateLicenceIfNeeded() {
+    private suspend fun SequenceScope<CommandExecution>.withLicense(commands: suspend SequenceScope<CommandExecution>.() -> Unit) =
         yieldAll(
-            unityLicenseActivator.activateLicense(
-                unityEnvironmentProvider.unityEnvironment(),
-                unityBuildRunnerContext,
-            ),
+            unityLicenseActivator.withLicense(unityEnvironmentProvider.unityEnvironment()) {
+                sequence { commands() }
+            },
         )
-    }
 
     private suspend fun SequenceScope<CommandExecution>.executeBuild() {
         yieldAll(
@@ -66,15 +63,6 @@ class UnityCommandBuildSession(
                     lastBuildCommands.add(command)
                     command
                 },
-        )
-    }
-
-    private suspend fun SequenceScope<CommandExecution>.returnLicenceIfNeeded() {
-        yieldAll(
-            unityLicenseActivator.returnLicense(
-                unityEnvironmentProvider.unityEnvironment(),
-                unityBuildRunnerContext,
-            ),
         )
     }
 }

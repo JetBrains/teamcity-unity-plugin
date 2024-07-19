@@ -12,11 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Return build-step-scoped, serial-based (Pro) license on build interruption [TW-88607](https://youtrack.jetbrains.com/issue/TW-88607)
+
 ## 1.4.0 - 2024-07-09
 
 ### Added
 
-- Unity Accelerator support [TW-81927](https://youtrack.jetbrains.com/issue/TW-81927/Unity-plugin-add-support-for-Accelerator-cache-server-build-feature)
+- Unity Accelerator support [TW-81927](https://youtrack.jetbrains.com/issue/TW-81927)
 
 ## 1.3.0 - 2024-06-11
 
@@ -33,21 +35,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Unity environment detection fails in a Windows container [TW-85189](https://youtrack.jetbrains.com/issue/TW-85189)
-- Broken Unity environment detection in a Linux container since version 1.2.0 [TW-85468](https://youtrack.jetbrains.com/issue/TW-85468/Unity-Plugin-package-1.2.0-is-broken-because-it-was-built-on-Windows)
+- Broken Unity environment detection in a Linux container since version 1.2.0 [TW-85468](https://youtrack.jetbrains.com/issue/TW-85468)
 
 ## 1.2.0 - 2023-11-08
 
 ### Added
 
-- The plugin can now pick up the Unity version specified in the project settings (ProjectVersion.txt). 
-This means that this version will be pre-filled in auto-detected build steps. Additionally, when in 'auto' 
+- The plugin can now pick up the Unity version specified in the project settings (ProjectVersion.txt).
+This means that this version will be pre-filled in auto-detected build steps. Additionally, when in 'auto'
 Unity detection mode and no version is explicitly specified, the version from the project will be chosen if it's available on an agent
-[TW-59619](https://youtrack.jetbrains.com/issue/TW-59619/Unity-Plugin-set-Unity-Version-from-ProjectVersion-file-for-auto-detected-build-step), [TW-84683](https://youtrack.jetbrains.com/issue/TW-84683/Unity-Plugin-use-Unity-version-from-a-project-in-auto-detection-mode-when-no-version-is-specified)
+[TW-59619](https://youtrack.jetbrains.com/issue/TW-59619), [TW-84683](https://youtrack.jetbrains.com/issue/TW-84683)
 
 ### Fixed
 
-- Previously, random Unity version was selected when no one is specified. 
-The new behavior ensures the latest Unity version is consistently chosen [TW-84210](https://youtrack.jetbrains.com/issue/TW-84210/Unity-plugin-random-Unity-version-is-selected-when-no-one-is-specified)
+- Previously, random Unity version was selected when no one is specified.
+The new behavior ensures the latest Unity version is consistently chosen [TW-84210](https://youtrack.jetbrains.com/issue/TW-84210)
 - Runner now has a logo
 
 ## 1.1.1 - 2023-09-20
@@ -106,7 +108,7 @@ So if you used an old version of the plugin, please uninstall it before installi
 ### Fixed
 
 - Automatic licence return on the latest versions of Unity (via build feature)
-- [TW-59710](https://youtrack.jetbrains.com/issue/TW-59710/Unity-build-feature-setting-Unity-version-doesnt-generate-an-agent-requirement) 
+- [TW-59710](https://youtrack.jetbrains.com/issue/TW-59710)
 \: Build feature now generates agent requirement when Unity version specified
-- [TW-68480](https://youtrack.jetbrains.com/issue/TW-68480/Unity-plugin-Unity-not-detected-with-no-apparent-reason-why)
+- [TW-68480](https://youtrack.jetbrains.com/issue/TW-68480)
 \: Unity CN (Chinese version) installation discovery on Windows

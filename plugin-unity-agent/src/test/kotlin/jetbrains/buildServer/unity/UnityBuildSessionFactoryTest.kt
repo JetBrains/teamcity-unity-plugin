@@ -8,6 +8,7 @@ import io.mockk.every
 import io.mockk.mockk
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.unity.detectors.UnityToolProvider
+import jetbrains.buildServer.unity.util.CommandLineRunner
 import jetbrains.buildServer.unity.util.FileSystemService
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.Test
@@ -16,6 +17,7 @@ import java.io.File
 class UnityBuildSessionFactoryTest {
     private val unityToolProvider = mockk<UnityToolProvider>()
     private val fileSystemService = mockk<FileSystemService>()
+    private val commandLineRunner = mockk<CommandLineRunner>()
 
     @BeforeMethod
     fun setUp() {
@@ -56,5 +58,6 @@ class UnityBuildSessionFactoryTest {
     private fun createInstance() = UnityBuildSessionFactory(
         unityToolProvider,
         fileSystemService,
+        commandLineRunner,
     )
 }

@@ -12,8 +12,10 @@ import kotlin.io.path.absolutePathString
 
 class ReturnProLicenseCommand(
     private val context: LicenseCommandContext,
+    onFinish: (Int) -> Unit = {},
 ) : UnityLicenseCommand(
     context,
+    onFinish,
     "Return Unity license",
     "return-license-log-",
 ) {

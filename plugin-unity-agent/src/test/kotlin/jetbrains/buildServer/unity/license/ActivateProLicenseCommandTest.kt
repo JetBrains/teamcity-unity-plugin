@@ -4,9 +4,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
 import io.mockk.verify
 import jetbrains.buildServer.agent.*
 import jetbrains.buildServer.messages.BlockData
@@ -24,7 +22,7 @@ import kotlin.io.path.absolutePathString
 class ActivateProLicenseCommandTest {
 
     private val build = mockk<AgentRunningBuild>()
-    private val buildLogger = mockk<BuildProgressLogger>()
+    private val buildLogger = mockk<FlowLogger>(relaxed = true)
     private val buildFeature = mockk<AgentBuildFeature>()
 
     private val fileSystemService = mockk<FileSystemService>()
@@ -39,10 +37,11 @@ class ActivateProLicenseCommandTest {
 
         every { fileSystemService.createTempFile(any(), any(), any()) } returns Paths.get("foo")
 
-        every { buildLogger.logMessage(any()) } just runs
+        every { buildLogger.getFlowLogger(any()) } returns buildLogger
+        every { build.buildLogger } returns buildLogger
 
         every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
-        every { build.buildLogger } returns buildLogger
+
         every { build.agentTempDirectory } returns agentTempDirectory
         every { build.buildId } returns 1
     }
@@ -135,6 +134,7 @@ class ActivateProLicenseCommandTest {
     private fun createInstance() = ActivateProLicenseCommand(
         object : LicenseCommandContext {
             override val build = this@ActivateProLicenseCommandTest.build
+            override val buildLogger = this@ActivateProLicenseCommandTest.buildLogger
             override val fileSystemService = this@ActivateProLicenseCommandTest.fileSystemService
             override val environmentVariables = mapOf<String, String>()
             override val workingDirectory = workingDirectoryPath

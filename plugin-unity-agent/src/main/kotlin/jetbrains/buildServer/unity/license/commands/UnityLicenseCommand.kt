@@ -12,17 +12,17 @@ import java.nio.file.Path
 
 abstract class UnityLicenseCommand(
     private val context: LicenseCommandContext,
-    private val logBlockName: String,
+    private val onFinish: (Int) -> Unit,
+    private val commandName: String,
     private val logFilePrefix: String,
 ) : CommandExecution {
 
     protected val build = context.build
     protected val fileSystemService = context.fileSystemService
     protected lateinit var logFile: Path
-    private val buildLogger = build.buildLogger
 
     override fun beforeProcessStarted() {
-        buildLogger.logMessage(createBlockStart(logBlockName, BUILD_LOG_BLOCK_TYPE))
+        context.buildLogger.logMessage(createBlockStart(commandName, BUILD_LOG_BLOCK_TYPE))
 
         logFile = fileSystemService.createTempFile(
             build.agentTempDirectory.toPath(),
@@ -34,16 +34,18 @@ abstract class UnityLicenseCommand(
     override fun processStarted(programCommandLine: String, workingDirectory: File) = Unit
 
     override fun processFinished(exitCode: Int) {
+        LOG.debug("License command \"$commandName\" has finished with exit code: $exitCode")
+
         if (exitCode != 0) {
-            buildLogger.warning("Process exited with code $exitCode. Unity log:${lineSeparator()}${readLogFile()}")
+            context.buildLogger.warning("Process exited with code $exitCode. Unity log:${lineSeparator()}${readLogFile()}")
         }
 
         if (LOG.isDebugEnabled) {
             LOG.debug("Unity log:${lineSeparator()}${readLogFile()}")
         }
 
-        val blockEnd = createBlockEnd(logBlockName, BUILD_LOG_BLOCK_TYPE)
-        buildLogger.logMessage(blockEnd)
+        context.buildLogger.logMessage(createBlockEnd(commandName, BUILD_LOG_BLOCK_TYPE))
+        onFinish(exitCode)
     }
 
     override fun onStandardOutput(text: String) = Unit

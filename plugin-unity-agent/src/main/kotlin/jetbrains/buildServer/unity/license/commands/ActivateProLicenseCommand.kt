@@ -13,8 +13,10 @@ import kotlin.io.path.absolutePathString
 
 class ActivateProLicenseCommand(
     private val context: LicenseCommandContext,
+    onFinish: (Int) -> Unit = {},
 ) : UnityLicenseCommand(
     context,
+    onFinish,
     "Activate Unity license",
     "activate-license-log-",
 ) {

@@ -19,9 +19,7 @@ import kotlin.io.path.absolutePathString
 
 class ActivatePersonalLicenseCommandTest {
     private val build = mockk<AgentRunningBuild>()
-    private val buildLogger = mockk<BuildProgressLogger> {
-        every { logMessage(any()) } just runs
-    }
+    private val buildLogger = mockk<FlowLogger>(relaxed = true)
     private val buildFeature = mockk<AgentBuildFeature>()
 
     private val fileSystemService = mockk<FileSystemService>()
@@ -39,7 +37,7 @@ class ActivatePersonalLicenseCommandTest {
 
         every { fileSystemService.createTempFile(any(), any(), any()) } returns Paths.get("foo")
 
-        every { buildLogger.logMessage(any()) } just runs
+        every { buildLogger.getFlowLogger(any()) } returns buildLogger
 
         every { build.getBuildFeaturesOfType(any()) } returns listOf(buildFeature)
         every { build.buildLogger } returns buildLogger
@@ -155,6 +153,7 @@ class ActivatePersonalLicenseCommandTest {
     private fun createInstance() = ActivatePersonalLicenseCommand(
         object : LicenseCommandContext {
             override val build = this@ActivatePersonalLicenseCommandTest.build
+            override val buildLogger = this@ActivatePersonalLicenseCommandTest.buildLogger
             override val fileSystemService = this@ActivatePersonalLicenseCommandTest.fileSystemService
             override val environmentVariables = mapOf<String, String>()
             override val workingDirectory = workingDirectoryPath
