@@ -64,6 +64,7 @@ class UnityBuildStepScopeLicenseActivator(
     ) = sequence {
         if (!runnerContext.buildStepLicenseScope()) {
             yieldAll(commands())
+            return@sequence
         }
 
         yieldAll(activateLicense(unityEnvironment))

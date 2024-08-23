@@ -1,8 +1,9 @@
 package jetbrains.buildServer.unity.license
 
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldBeSingleton
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.sequences.shouldContainExactly
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import io.mockk.*
@@ -97,24 +98,32 @@ class UnityBuildStepScopeLicenseActivatorTest {
     }
 
     @DataProvider
-    fun `should not issue any license commands`(): Array<Array<Any>> = arrayOf(
+    fun `does not modify the original commands when activation isn't enabled`(): Array<Array<Any>> = arrayOf(
         arrayOf(emptyMap<String, String>()),
         arrayOf(mapOf("unityLicenseType" to "invalid license type")),
         arrayOf(mapOf("activateLicense" to "false")),
         arrayOf(mapOf("activateLicense" to "invalid boolean")),
         arrayOf(mapOf("notRelevantParam" to "some value")),
+        arrayOf(
+            mapOf(
+                "activateLicense" to "true",
+                "unityLicenseScope" to "buildConfiguration",
+            ),
+        ),
     )
 
-    @Test(dataProvider = "should not issue any license commands")
-    fun `should not issue any license commands`(params: Map<String, String>) {
+    @Test(dataProvider = "does not modify the original commands when activation isn't enabled")
+    fun `does not modify the original commands when activation isn't enabled`(params: Map<String, String>) {
         // arrange
         every { buildFeature.parameters } returns params
 
+        val buildCommands = sequenceOf(commandExecutionStub())
+
         // act
-        val commands = act()
+        val commands = act(buildCommands)
 
         // assert
-        commands.shouldBeEmpty()
+        commands.shouldContainExactly(buildCommands.toList())
     }
 
     @Test

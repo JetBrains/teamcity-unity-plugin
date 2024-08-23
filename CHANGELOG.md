@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## 1.4.2 - 2024-08-23
+
+### Fixed
+
+- Build commands running twice when the license scope is set for the entire build or when no license activation is enabled at all.
+This bug was introduced in version 1.4.1 [TW-89422](https://youtrack.jetbrains.com/issue/TW-89422)
+
 ## 1.4.1 - 2024-07-19
 
 ### Fixed
