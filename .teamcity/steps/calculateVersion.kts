@@ -1,7 +1,5 @@
 #!/usr/bin/env kotlin
 
-
-
 import kotlin.system.exitProcess
 import kotlin.text.*
 
