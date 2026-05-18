@@ -14,10 +14,8 @@ version = "2026.1"
 
 project {
     vcsRoot(TagReleaseVcs)
-    vcsRoot(PullRequestVcs)
 
     buildType(ReleaseBuildConfiguration)
-    buildType(PullRequestBuildConfiguration)
     buildType(MasterBuildConfiguration)
 }
 
@@ -70,31 +68,24 @@ object ReleaseBuildConfiguration : BuildType({
     }
 })
 
-object PullRequestVcs : GitVcsRoot({
-    id("TeamCityUnityPlugin_PullRequestVcs")
-    name = "PullRequestVcs"
-    url = "https://github.com/JetBrains/teamcity-unity-plugin.git"
-    branchSpec = """
-        -:<default>
-    """.trimIndent()
-})
+object MasterBuildConfiguration : BuildType({
+    id("TeamCityUnityPlugin_MasterBuild")
+    name = "Unity Plugin: master and PRs"
 
-object PullRequestBuildConfiguration : BuildType({
-    id("TeamCityUnityPlugin_PullRequestBuild")
-    name = "PullRequestBuild"
+    allowExternalStatus = true
+
+    vcs {
+        root(DslContext.settingsRoot)
+    }
 
     val githubTokenParameter = "GITHUB_TOKEN"
     params {
         password(githubTokenParameter, "credentialsJSON:da577601-ec6c-4387-8996-e14771fe5ca2", readOnly = true)
     }
 
-    vcs {
-        root(PullRequestVcs)
-    }
-
     features {
         pullRequests {
-            vcsRootExtId = PullRequestVcs.id?.value
+            vcsRootExtId = DslContext.settingsRoot.id?.value
             provider = github {
                 filterTargetBranch = "refs/heads/master"
                 filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
@@ -104,7 +95,7 @@ object PullRequestBuildConfiguration : BuildType({
             }
         }
         commitStatusPublisher {
-            vcsRootExtId = PullRequestVcs.id?.value
+            vcsRootExtId = DslContext.settingsRoot.id?.value
             publisher = github {
                 githubUrl = "https://api.github.com"
                 authType = personalToken {
@@ -112,30 +103,6 @@ object PullRequestBuildConfiguration : BuildType({
                 }
             }
         }
-    }
-
-    triggers {
-        vcs {
-            branchFilter = "+:*"
-        }
-    }
-
-    steps {
-        gradle {
-            name = "build"
-            tasks = "clean build serverPlugin"
-        }
-    }
-})
-
-object MasterBuildConfiguration : BuildType({
-    id("TeamCityUnityPlugin_MasterBuild")
-    name = "MasterBuild"
-
-    allowExternalStatus = true
-
-    vcs {
-        root(DslContext.settingsRoot)
     }
 
     triggers {
