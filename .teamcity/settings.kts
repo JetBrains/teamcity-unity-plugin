@@ -1,4 +1,5 @@
 import jetbrains.buildServer.configs.kotlin.BuildType
+import jetbrains.buildServer.configs.kotlin.DslContext
 import jetbrains.buildServer.configs.kotlin.buildFeatures.PullRequests
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.pullRequests
@@ -9,12 +10,11 @@ import jetbrains.buildServer.configs.kotlin.triggers.vcs
 import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.version
 
-version = "2024.03"
+version = "2026.1"
 
 project {
     vcsRoot(TagReleaseVcs)
     vcsRoot(PullRequestVcs)
-    vcsRoot(MasterVcs)
 
     buildType(ReleaseBuildConfiguration)
     buildType(PullRequestBuildConfiguration)
@@ -128,13 +128,6 @@ object PullRequestBuildConfiguration : BuildType({
     }
 })
 
-object MasterVcs : GitVcsRoot({
-    id("TeamCityUnityPlugin_MasterVcs")
-    name = "MasterVcs"
-    url = "https://github.com/JetBrains/teamcity-unity-plugin.git"
-    branch = "master"
-})
-
 object MasterBuildConfiguration : BuildType({
     id("TeamCityUnityPlugin_MasterBuild")
     name = "MasterBuild"
@@ -142,7 +135,7 @@ object MasterBuildConfiguration : BuildType({
     allowExternalStatus = true
 
     vcs {
-        root(MasterVcs)
+        root(DslContext.settingsRoot)
     }
 
     triggers {
