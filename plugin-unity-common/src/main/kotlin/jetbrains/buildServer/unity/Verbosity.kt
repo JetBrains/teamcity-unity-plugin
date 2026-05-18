@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 enum class Verbosity(val id: String, val description: String) {

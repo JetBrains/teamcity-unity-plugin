@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.fetchers
 
 import com.intellij.openapi.diagnostic.Logger

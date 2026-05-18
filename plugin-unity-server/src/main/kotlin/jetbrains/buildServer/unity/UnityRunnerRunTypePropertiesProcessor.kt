@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.serverSide.InvalidProperty
@@ -15,6 +13,16 @@ class UnityRunnerRunTypePropertiesProcessor : PropertiesProcessor {
             if (PropertiesUtil.isEmptyOrNull(unityRoot)) {
                 invalidProperties.add(InvalidProperty(UnityConstants.PARAM_UNITY_ROOT, "Unity version must be specified"))
             }
+        }
+
+        val buildProfile = properties?.get(UnityConstants.PARAM_BUILD_PROFILE)?.trim()
+        if (!buildProfile.isNullOrEmpty() && !buildProfile.endsWith(UnityConstants.ASSET_FILE_EXTENSION)) {
+            invalidProperties.add(
+                InvalidProperty(
+                    UnityConstants.PARAM_BUILD_PROFILE,
+                    "Build Profile path should point to a .asset file (e.g. Assets/Settings/Build Profiles/MyProfile.asset)",
+                )
+            )
         }
 
         return invalidProperties

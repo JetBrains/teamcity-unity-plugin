@@ -1,7 +1,6 @@
-
-
 package jetbrains.buildServer.unity
 
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
@@ -12,6 +11,8 @@ import io.mockk.every
 import io.mockk.mockk
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
+import jetbrains.buildServer.agent.BuildProgressLogger
+import jetbrains.buildServer.agent.FlowLogger
 import jetbrains.buildServer.agent.VirtualContext
 import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
 import jetbrains.buildServer.unity.UnityVersion.Companion.parseVersion
@@ -241,6 +242,132 @@ class UnityRunnerBuildServiceTest {
         val commandString = commandLine.arguments.joinToString(" ")
         commandString shouldBeEqual "-batchmode -projectPath /converted/project " +
             "-player /converted/player -nographics -quit -logFile /converted/logs"
+    }
+
+    @Test
+    fun `buildProfile set adds -activeBuildProfile argument and omits -buildTarget`() {
+        unityBuildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+            )
+        }
+
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+
+        val args = buildService.makeProgramCommandLine().arguments.joinToString(" ")
+        args shouldContain "-activeBuildProfile Assets/Settings/Build Profiles/Android.asset"
+        args shouldNotContain "-buildTarget"
+    }
+
+    @Test
+    fun `buildProfile with buildPlayerPath adds -build argument`() {
+        unityBuildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+                UnityConstants.PARAM_BUILD_PLAYER_PATH to File("output/game.apk").absolutePath,
+            )
+        }
+
+        val buildService = UnityRunnerBuildService(defaultUnityEnvironment, createUnityProject(), emptyMap(), fileSystemServiceMock)
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+
+        val args = buildService.makeProgramCommandLine().arguments.joinToString(" ")
+        args shouldContain "-build"
+    }
+
+    @Test
+    fun `createAdapters returns prewarm service first when buildProfile and buildTarget both set`() {
+        every { unityBuildRunnerContextMock.runnerParameters } returns mapOf(
+            UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+            UnityConstants.PARAM_BUILD_TARGET to "Android",
+        )
+        every { unityBuildRunnerContextMock.unityProject } returns createUnityProject()
+
+        val adapters = UnityRunnerBuildService.createAdapters(
+            defaultUnityEnvironment,
+            unityBuildRunnerContextMock,
+            fileSystemServiceMock,
+        ).toList()
+
+        adapters shouldHaveSize 2
+    }
+
+    @Test
+    fun `createAdapters returns prewarm service when buildProfile set without buildTarget`() {
+        every { unityBuildRunnerContextMock.runnerParameters } returns mapOf(
+            UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+        )
+        every { unityBuildRunnerContextMock.unityProject } returns createUnityProject()
+
+        val adapters = UnityRunnerBuildService.createAdapters(
+            defaultUnityEnvironment,
+            unityBuildRunnerContextMock,
+            fileSystemServiceMock,
+        ).toList()
+
+        adapters shouldHaveSize 2
+    }
+
+    @Test
+    fun `buildProfile with Unity version below 6000 logs version warning`() {
+        val oldVersion = parseVersion("2021.3.16")!!
+        val logMessages = mutableListOf<String>()
+        val flowLoggerMock = mockFlowLogger(logMessages)
+        every { agentRunningBuildMock.buildLogger } returns flowLoggerMock
+
+        unityBuildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+            )
+        }
+
+        val buildService = UnityRunnerBuildService(
+            UnityEnvironment(defaultEditorPath, oldVersion),
+            createUnityProject(),
+            emptyMap(),
+            fileSystemServiceMock,
+        )
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+        buildService.makeProgramCommandLine()
+
+        assert(logMessages.any { it.contains("Build Profiles require Unity 6") }) {
+            "Expected a warning about Unity 6 requirement, got: $logMessages"
+        }
+    }
+
+    @Test
+    fun `buildProfile with no output path and no execute method logs informational warning`() {
+        val unity6Version = parseVersion("6000.0.0")!!
+        val logMessages = mutableListOf<String>()
+        val flowLoggerMock = mockFlowLogger(logMessages)
+        every { agentRunningBuildMock.buildLogger } returns flowLoggerMock
+
+        unityBuildRunnerContextMock.apply {
+            every { runnerParameters } returns mapOf(
+                UnityConstants.PARAM_BUILD_PROFILE to "Assets/Settings/Build Profiles/Android.asset",
+            )
+        }
+
+        val buildService = UnityRunnerBuildService(
+            UnityEnvironment(defaultEditorPath, unity6Version),
+            createUnityProject(),
+            emptyMap(),
+            fileSystemServiceMock,
+        )
+        buildService.initialize(agentRunningBuildMock, unityBuildRunnerContextMock)
+        buildService.makeProgramCommandLine()
+
+        assert(logMessages.any { it.contains("Build Profile is set but no") }) {
+            "Expected an informational warning about missing output path, got: $logMessages"
+        }
+    }
+
+    private fun mockFlowLogger(logMessages: MutableList<String>): FlowLogger {
+        val mock = mockk<FlowLogger>(relaxed = true)
+        every { mock.message(any()) } answers { logMessages.add(firstArg()) }
+        every { mock.getFlowLogger(any()) } returns mock
+        return mock
     }
 
     private fun createUnityProject() = UnityProject(mockk())

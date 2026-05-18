@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.util
 
 import com.intellij.execution.configurations.GeneralCommandLine

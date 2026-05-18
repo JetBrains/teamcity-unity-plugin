@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.detectors
 
 import com.intellij.openapi.util.TCSystemInfo

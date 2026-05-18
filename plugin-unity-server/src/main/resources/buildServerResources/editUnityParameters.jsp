@@ -10,6 +10,7 @@
 
 <script type="text/javascript">
     var buildPlayerId = BS.Util.escapeId('${params.buildPlayer}');
+    var buildProfileId = BS.Util.escapeId('${params.buildProfile}');
     var runTestsId = BS.Util.escapeId('${params.runEditorTests}');
 
     BS.UnityParametersForm = {
@@ -38,8 +39,9 @@
         },
         updateElements: function () {
             var buildPlayer = $j(buildPlayerId).val();
+            var buildProfile = $j(buildProfileId).val();
             var $buildPlayerPath = $j('label[for="${params.buildPlayerPath}"]').closest('tr');
-            if (buildPlayer) {
+            if (buildPlayer || buildProfile) {
                 $buildPlayerPath.show();
             } else {
                 $buildPlayerPath.hide();
@@ -52,6 +54,9 @@
     };
 
     $j(document).on('change', buildPlayerId + "," + runTestsId, function () {
+        BS.UnityParametersForm.updateElements();
+    });
+    $j(document).on('input change', buildProfileId, function () {
         BS.UnityParametersForm.updateElements();
     });
 </script>
@@ -93,6 +98,26 @@
 </tr>
 
 <tr class="advancedSetting">
+    <th><label for="${params.buildProfile}">Build profile:</label></th>
+    <td>
+        <props:textProperty name="${params.buildProfile}" className="longField">
+            <jsp:attribute name="afterTextField">
+                <bs:projectData type="UnityBuildProfile" sourceFieldId="${params.projectPath}" selectionMode="single"
+                                targetFieldId="${params.buildProfile}" popupTitle="Select build profile"/>
+            </jsp:attribute>
+        </props:textProperty>
+        <span class="error" id="error_${params.buildProfile}"></span>
+        <span class="smallNote">
+            Specify the project-relative path to a Unity Build Profile asset
+            (e.g. <code>Assets/Settings/Build Profiles/Android-Release.asset</code>).<br/>
+            When set, <code>-activeBuildProfile</code> is used instead of <code>-buildTarget</code>.
+            Accepts TeamCity parameter references (e.g. <code>%unity.build.profile%</code>).<br/>
+            <strong>Requires Unity 6 (6000.x) or later.</strong>
+        </span>
+    </td>
+</tr>
+
+<tr class="advancedSetting">
     <th><label for="${params.buildTarget}">Build target:</label></th>
     <td>
         <props:textProperty name="${params.buildTarget}" className="longField">
@@ -102,7 +127,7 @@
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.buildTarget}"></span>
-        <span class="smallNote">Specify an active build target before loading the project.</span>
+        <span class="smallNote">Specify an active build target before loading the project. Not used when Build Profile is set.</span>
     </td>
 </tr>
 
@@ -131,7 +156,7 @@
             </jsp:attribute>
         </props:textProperty>
         <span class="error" id="error_${params.buildPlayerPath}"></span>
-        <span class="smallNote">Specify the output path for the player binary.</span>
+        <span class="smallNote">Specify the output path for the player binary. When Build Profile is set, this path is passed to <code>-build</code> instead of <code>-buildPlayer</code>.</span>
     </td>
 </tr>
 

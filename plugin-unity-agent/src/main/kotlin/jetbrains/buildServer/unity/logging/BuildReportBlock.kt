@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.logging
 
 class BuildReportBlock : LogBlock {

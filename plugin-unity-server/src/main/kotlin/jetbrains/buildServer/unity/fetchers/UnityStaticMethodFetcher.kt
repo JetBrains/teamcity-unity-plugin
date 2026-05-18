@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.fetchers
 
 import jetbrains.buildServer.serverSide.DataItem

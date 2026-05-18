@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.logging
 
 import org.w3c.dom.Element

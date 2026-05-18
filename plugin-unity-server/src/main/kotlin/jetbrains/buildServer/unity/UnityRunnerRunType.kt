@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.requirements.Requirement
@@ -69,6 +67,11 @@ class UnityRunnerRunType(
         parameters[UnityConstants.PARAM_EXECUTE_METHOD]?.let {
             if (it.isNotBlank()) {
                 builder.addParameter("Execute method: $it")
+            }
+        }
+        parameters[UnityConstants.PARAM_BUILD_PROFILE]?.let {
+            if (it.isNotBlank()) {
+                builder.addParameter("Build profile: $it")
             }
         }
         parameters[UnityConstants.PARAM_BUILD_TARGET]?.let {

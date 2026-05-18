@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.unityhub
 
 import kotlinx.serialization.Serializable

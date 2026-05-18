@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 enum class DetectionMode(val id: String, val description: String) {

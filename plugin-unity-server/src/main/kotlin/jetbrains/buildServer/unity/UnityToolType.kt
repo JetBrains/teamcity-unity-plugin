@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 import jetbrains.buildServer.tools.ToolTypeAdapter

@@ -18,6 +18,12 @@
     </div>
 </c:if>
 
+<c:if test="${not empty propertiesBean.properties[params.buildProfile]}">
+    <div class="parameter">
+        Build profile: <props:displayValue name="${params.buildProfile}"/>
+    </div>
+</c:if>
+
 <c:if test="${not empty propertiesBean.properties[params.buildTarget]}">
     <div class="parameter">
         Build target: <props:displayValue name="${params.buildTarget}"/>

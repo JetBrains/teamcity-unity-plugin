@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.logging
 
 import io.kotest.matchers.equals.shouldBeEqual

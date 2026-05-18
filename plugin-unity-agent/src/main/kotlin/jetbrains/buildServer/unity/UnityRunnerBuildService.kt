@@ -1,9 +1,8 @@
-
-
 package jetbrains.buildServer.unity
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.TCSystemInfo
+import jetbrains.buildServer.agent.BuildFinishedStatus
 import jetbrains.buildServer.agent.BuildRunnerContext
 import jetbrains.buildServer.agent.runner.BuildServiceAdapter
 import jetbrains.buildServer.agent.runner.ProgramCommandLine
@@ -13,6 +12,7 @@ import jetbrains.buildServer.unity.UnityConstants.BUILD_FEATURE_TYPE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_ARGUMENTS
 import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_PLAYER
 import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_PLAYER_PATH
+import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_PROFILE
 import jetbrains.buildServer.unity.UnityConstants.PARAM_BUILD_TARGET
 import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
 import jetbrains.buildServer.unity.UnityConstants.PARAM_EXECUTE_METHOD
@@ -52,6 +52,7 @@ class UnityRunnerBuildService(
     private val unityProject: UnityProject,
     private val overriddenRunnerParameters: Map<String, String>,
     private val fileSystemService: FileSystemService,
+    private val isPrewarm: Boolean = false,
 ) : BuildServiceAdapter() {
 
     private var unityTestsReportFile: File? = null
@@ -73,7 +74,7 @@ class UnityRunnerBuildService(
             LOG.infoAndDebugDetails(message, e)
             LineStatusProvider()
         }
-        listOf(UnityLoggingListener(logger, problemsProvider))
+        listOf(UnityLoggingListener(logger, problemsProvider, suppressBuildProblems = isPrewarm))
     }
 
     private val parameters: Lazy<Map<String, String>>
@@ -95,14 +96,28 @@ class UnityRunnerBuildService(
         }
 
     override fun makeProgramCommandLine(): ProgramCommandLine {
+        if (isPrewarm) {
+            return makePrewarmCommandLine()
+        }
+
         val unityVersion = unityEnvironment.unityVersion
         val unityPath = unityEnvironment.unityPath
+
+        val buildProfile = parameters.value[PARAM_BUILD_PROFILE]?.trim()?.takeIf { it.isNotEmpty() }
+
+        buildProfile?.let { validateBuildProfile(it, unityVersion) }
 
         val arguments: MutableList<String> = sequence {
             yield(ARG_BATCH_MODE)
             projectPathArg(unityVersion)
-            argIfNotEmpty(PARAM_BUILD_TARGET, ARG_BUILD_TARGET)
-            buildPlayerArg()
+            if (buildProfile != null) {
+                yield(ARG_ACTIVE_BUILD_PROFILE)
+                yield(buildProfile)
+                buildArg()
+            } else {
+                argIfNotEmpty(PARAM_BUILD_TARGET, ARG_BUILD_TARGET)
+                buildPlayerArg()
+            }
             argIfTrue(PARAM_NO_GRAPHICS, ARG_NO_GRAPHICS)
             argIfTrue(PARAM_SILENT_CRASHES, ARG_SILENT_CRASHES)
             argIfNotEmpty(PARAM_EXECUTE_METHOD, ARG_EXECUTE_METHOD)
@@ -159,16 +174,48 @@ class UnityRunnerBuildService(
     }
 
     private suspend fun SequenceScope<String>.buildPlayerArg() {
-        parameters.value[PARAM_BUILD_PLAYER]?.let {
-            val playerPath = parameters.value[PARAM_BUILD_PLAYER_PATH]
-            if (it.isNotEmpty() && !playerPath.isNullOrEmpty()) {
-                var playerFile = fileSystemService.createPath(playerPath.trim())
-                if (!playerFile.isAbsolute) {
-                    playerFile = fileSystemService.createPath(workingDirectory.toPath(), playerPath.trim())
-                }
-                yield("-" + it.trim())
-                yield(resolvePath(playerFile.absolutePathString()))
+        val playerType = parameters.value[PARAM_BUILD_PLAYER]
+        if (!playerType.isNullOrEmpty()) {
+            buildArg("-" + playerType.trim())
+        }
+    }
+
+    private suspend fun SequenceScope<String>.buildArg(argName: String = ARG_BUILD) {
+        val playerPath = parameters.value[PARAM_BUILD_PLAYER_PATH]
+        if (!playerPath.isNullOrEmpty()) {
+            var playerFile = fileSystemService.createPath(playerPath.trim())
+            if (!playerFile.isAbsolute) {
+                playerFile = fileSystemService.createPath(workingDirectory.toPath(), playerPath.trim())
             }
+            yield(argName)
+            yield(resolvePath(playerFile.absolutePathString()))
+        }
+    }
+
+    private fun validateBuildProfile(buildProfile: String, unityVersion: UnityVersion) {
+        if (unityVersion.major < UNITY_6_MAJOR_VERSION) {
+            logger.message(
+                Message(
+                    "Build Profiles require Unity 6 (6000.x) or later. The current Unity version is $unityVersion.",
+                    WARNING.text,
+                    null,
+                ).asString()
+            )
+        }
+        val buildPlayerPath = parameters.value[PARAM_BUILD_PLAYER_PATH]?.trim()
+        val executeMethod = parameters.value[PARAM_EXECUTE_METHOD]?.trim()
+        val runTests = parameters.value[PARAM_RUN_EDITOR_TESTS]?.toBoolean() ?: false
+        if (buildPlayerPath.isNullOrEmpty() && executeMethod.isNullOrEmpty() && !runTests) {
+            logger.message(
+                Message(
+                    "Build Profile is set but no 'Player output path' or 'Execute method' is configured. " +
+                        "Unity will load the project with the active profile and then quit without performing a build. " +
+                        "Set 'Player output path' to produce a player build via '-build <path>', " +
+                        "or specify an 'Execute method' to invoke a custom build script.",
+                    WARNING.text,
+                    null,
+                ).asString()
+            )
         }
     }
 
@@ -271,6 +318,49 @@ class UnityRunnerBuildService(
         runnerContext.addRunnerParameter("xmlReportParsing.quietMode", "true")
     }
 
+    private fun makePrewarmCommandLine(): ProgramCommandLine {
+        val unityVersion = unityEnvironment.unityVersion
+        val unityPath = unityEnvironment.unityPath
+        val buildTarget = parameters.value[PARAM_BUILD_TARGET]?.trim()?.takeIf { it.isNotEmpty() }
+        val buildProfile = parameters.value[PARAM_BUILD_PROFILE]?.trim()?.takeIf { it.isNotEmpty() }
+
+        logger.message(
+            if (buildTarget != null) {
+                "Pre-warming build target '$buildTarget' before activating build profile."
+            } else {
+                "Pre-warming project for build profile '$buildProfile'."
+            }
+        )
+
+        val arguments = sequence {
+            yield(ARG_BATCH_MODE)
+            projectPathArg(unityVersion)
+            // On a clean checkout the Library hasn't been imported for this platform yet.
+            // Using -buildTarget (preferred) or -activeBuildProfile in a quit-only run lets Unity
+            // reimport assets before the real build; compilation errors here are expected and ignored.
+            if (buildTarget != null) {
+                yield(ARG_BUILD_TARGET)
+                yield(buildTarget)
+            } else if (buildProfile != null) {
+                yield(ARG_ACTIVE_BUILD_PROFILE)
+                yield(buildProfile)
+            }
+            argIfTrue(PARAM_NO_GRAPHICS, ARG_NO_GRAPHICS)
+            yield(ARG_QUIT)
+        }.toMutableList()
+
+        addLogArgIfNotExists(arguments, unityVersion)
+
+        return createProgramCommandline(unityPath, arguments)
+    }
+
+    override fun getRunResult(exitCode: Int): BuildFinishedStatus {
+        // Compilation errors during a build-target switch are expected on first run; treat as success
+        // so the actual build command always runs.
+        if (isPrewarm) return BuildFinishedStatus.FINISHED_SUCCESS
+        return super.getRunResult(exitCode)
+    }
+
     override fun isCommandLineLoggingEnabled() = true
 
     override fun afterProcessFinished() {
@@ -279,6 +369,7 @@ class UnityRunnerBuildService(
             Thread.sleep(TAIL_DELAY_DURATION.toMillis())
             close()
         }
+        if (isPrewarm) return
         unityTestsReportFile?.let {
             if (it.exists()) {
                 logger.message(ImportData("nunit", it.absolutePath).asString())
@@ -367,8 +458,12 @@ class UnityRunnerBuildService(
         private const val ARG_BATCH_MODE = "-batchmode"
         private const val ARG_PROJECT_PATH = "-projectPath"
         private const val ARG_BUILD_TARGET = "-buildTarget"
+        private const val ARG_ACTIVE_BUILD_PROFILE = "-activeBuildProfile"
+        private const val ARG_BUILD = "-build"
         private const val ARG_SILENT_CRASHES = "-silent-crashes"
         private const val ARG_EXECUTE_METHOD = "-executeMethod"
+
+        private const val UNITY_6_MAJOR_VERSION = 6000
 
         private const val ARG_RUN_TESTS = "-runTests"
         private const val ARG_TEST_PLATFORM = "-testPlatform"
@@ -396,18 +491,39 @@ class UnityRunnerBuildService(
             unityEnvironment: UnityEnvironment,
             context: UnityBuildRunnerContext,
             fileSystemService: FileSystemService,
-        ) = getParameterVariants(context)
-            .ifEmpty {
-                sequenceOf(emptyMap())
-            }
-            .map {
-                UnityRunnerBuildService(
-                    unityEnvironment,
-                    context.unityProject,
-                    it,
-                    fileSystemService,
+        ): Sequence<UnityRunnerBuildService> {
+            val buildProfile = context.runnerParameters[PARAM_BUILD_PROFILE]?.trim()?.takeIf { it.isNotEmpty() }
+            val buildTarget = context.runnerParameters[PARAM_BUILD_TARGET]?.trim()?.takeIf { it.isNotEmpty() }
+            val needsPrewarm = buildProfile != null
+
+            return sequence {
+                if (needsPrewarm) {
+                    yield(
+                        UnityRunnerBuildService(
+                            unityEnvironment,
+                            context.unityProject,
+                            emptyMap(),
+                            fileSystemService,
+                            isPrewarm = true,
+                        )
+                    )
+                }
+
+                val variants = getParameterVariants(context).ifEmpty { sequenceOf(emptyMap()) }
+                yieldAll(
+                    variants.map { overrides ->
+                        // Clear buildTarget for the actual build so it doesn't conflict with -activeBuildProfile
+                        val effectiveOverrides = if (needsPrewarm) overrides + mapOf(PARAM_BUILD_TARGET to "") else overrides
+                        UnityRunnerBuildService(
+                            unityEnvironment,
+                            context.unityProject,
+                            effectiveOverrides,
+                            fileSystemService,
+                        )
+                    }
                 )
             }
+        }
 
         private fun getParameterVariants(context: BuildRunnerContext) = sequence {
             if ("all".equals(context.runnerParameters[PARAM_TEST_PLATFORM], true)) {

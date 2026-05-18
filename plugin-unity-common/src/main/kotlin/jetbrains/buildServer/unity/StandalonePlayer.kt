@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity
 
 enum class StandalonePlayer(val id: String, val description: String) {

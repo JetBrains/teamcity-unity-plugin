@@ -1,5 +1,3 @@
-
-
 package jetbrains.buildServer.unity.messages
 
 import jetbrains.buildServer.messages.serviceMessages.MessageWithAttributes

@@ -28,8 +28,16 @@
                 The class should be located in the Assets/Editor project directory.
             </description>
         </param>
+        <param name="buildProfile" dslName="buildProfile">
+            <description>
+                Specify the project-relative path to a Unity Build Profile asset
+                (e.g. Assets/Settings/Build Profiles/Android-Release.asset).
+                When set, -activeBuildProfile is used instead of -buildTarget.
+                Requires Unity 6 (6000.x) or later.
+            </description>
+        </param>
         <param name="buildTarget" dslName="buildTarget">
-            <description>Specify an active build target before loading the project.</description>
+            <description>Specify an active build target before loading the project. Not used when Build Profile is set.</description>
         </param>
         <param name="buildPlayer" dslName="buildPlayer" type="compound">
             <option name="">
@@ -44,7 +52,12 @@
             <option name="Windows" value="buildWindowsPlayer"/>
             <option name="Windows64" value="buildWindows64Player"/>
         </param>
-        <param name="buildPlayerPath" dslName="playerPath"/>
+        <param name="buildPlayerPath" dslName="playerPath">
+            <description>
+                Specify the output path for the player binary. When Build Profile is set, this path is passed
+                to -build instead of -buildPlayer.
+            </description>
+        </param>
         <param name="runEditorTests" type="compound" dslName="runTests">
             <option name="editorTests" value="true">
                 <description>Run editor tests from the project</description>
