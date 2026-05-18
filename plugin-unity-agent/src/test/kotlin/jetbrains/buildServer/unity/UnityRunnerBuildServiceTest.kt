@@ -11,7 +11,6 @@ import io.mockk.every
 import io.mockk.mockk
 import jetbrains.buildServer.agent.AgentBuildFeature
 import jetbrains.buildServer.agent.AgentRunningBuild
-import jetbrains.buildServer.agent.BuildProgressLogger
 import jetbrains.buildServer.agent.FlowLogger
 import jetbrains.buildServer.agent.VirtualContext
 import jetbrains.buildServer.unity.UnityConstants.PARAM_CACHE_SERVER
