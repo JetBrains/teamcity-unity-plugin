@@ -66,7 +66,7 @@ object MasterBuildConfiguration : BuildType({
 
     val githubTokenParameter = "GITHUB_TOKEN"
     params {
-        password(githubTokenParameter, "credentialsJSON:da577601-ec6c-4387-8996-e14771fe5ca2", readOnly = true)
+        password(githubTokenParameter, "credentialsJSON:a7d02186-a589-46b0-b17b-7c1fbdd30b42", readOnly = true)
     }
 
     features {
