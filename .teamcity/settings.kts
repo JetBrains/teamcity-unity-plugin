@@ -7,29 +7,14 @@ import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.buildSteps.kotlinFile
 import jetbrains.buildServer.configs.kotlin.project
 import jetbrains.buildServer.configs.kotlin.triggers.vcs
-import jetbrains.buildServer.configs.kotlin.vcs.GitVcsRoot
 import jetbrains.buildServer.configs.kotlin.version
 
 version = "2026.1"
 
 project {
-    vcsRoot(TagReleaseVcs)
-
     buildType(ReleaseBuildConfiguration)
     buildType(MasterBuildConfiguration)
 }
-
-object TagReleaseVcs : GitVcsRoot({
-    id("TeamCityUnityPlugin_TagReleaseVcs")
-    name = "TagReleaseVcs"
-    url = "https://github.com/JetBrains/teamcity-unity-plugin.git"
-    branch = "master"
-    useTagsAsBranches = true
-    branchSpec = """
-        +:refs/(tags/*)
-        -:<default>
-    """.trimIndent()
-})
 
 object ReleaseBuildConfiguration : BuildType({
     id("TeamCityUnityPlugin_ReleaseBuild")
@@ -40,7 +25,8 @@ object ReleaseBuildConfiguration : BuildType({
     }
 
     vcs {
-        root(TagReleaseVcs)
+        root(DslContext.settingsRoot)
+        branchFilter = "+:tags/*"
     }
 
     steps {
