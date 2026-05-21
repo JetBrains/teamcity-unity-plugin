@@ -18,7 +18,7 @@ project {
 
 object ReleaseBuildConfiguration : BuildType({
     id("TeamCityUnityPlugin_ReleaseBuild")
-    name = "ReleaseBuild"
+    name = "Unity Plugin: release build"
 
     params {
         password("env.ORG_GRADLE_PROJECT_jetbrains.marketplace.token", "credentialsJSON:1a57eff8-4658-4747-a7ff-e6cdbb3dbb6e", readOnly = true)
