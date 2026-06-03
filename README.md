@@ -8,14 +8,14 @@ The plugin supports building Unity projects on TeamCity.
 
 ## Features
 
-* Unity versions detection on build agents
-* Unity build runner with smart completions
-* Automatic discovery of Unity build steps
-* Structured build log with problems highlighting
-* Unity Editor tests reporting
-* Unity build settings feature
-* Unity as Agent tool
-* Running Unity build step inside a container
+* Unity versions detection on build agents;
+* Unity build runner with smart completions;
+* Automatic discovery of Unity build steps;
+* Structured build log with problems highlighting;
+* Unity Editor tests reporting;
+* Unity build settings feature;
+* Unity as Agent tool;
+* Running Unity build step inside a container.
 
 ### Unity build settings feature
 
