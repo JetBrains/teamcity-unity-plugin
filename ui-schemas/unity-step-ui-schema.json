@@ -1,0 +1,219 @@
+{
+  "title": "Unity",
+  "description": "Provides build support for Unity projects",
+  "type": "VerticalLayout",
+  "elements": [
+    {
+      "type": "InputPathControl",
+      "label": "Working directory",
+      "scope": "#/properties/working-dir",
+      "options": {
+        "placeholder": "repository root",
+        "description": "Optional, set if differs from the checkout directory. [Learn more](https://www.jetbrains.com/help/teamcity/?Build+Working+Directory)."
+      }
+    },
+    {
+      "type": "InputPathControl",
+      "label": "Project path",
+      "scope": "#/properties/project",
+      "options": {
+        "onlyDirectories": true,
+        "description": "Specify the path to the target project. If unspecified, the working directory will be used."
+      }
+    },
+    {
+      "type": "Control",
+      "label": "Execute method",
+      "scope": "#/properties/execute-method",
+      "options": {
+        "description": "Specify a static method reference to execute after the project is loaded. The class should be located in an [Editor](https://docs.unity3d.com/Manual/SpecialFolders.html#Editor) folder."
+      }
+    },
+    {
+      "type": "Control",
+      "label": "Standalone player",
+      "scope": "#/properties/build-player",
+      "options": {
+        "emptyOption": {
+          "label": "No player"
+        },
+        "optionLabels": {
+          "linux": "Linux 32-bit",
+          "linux64": "Linux 64-bit",
+          "linux-universal": "Linux 32-bit and 64-bit",
+          "osx": "Mac OSX 32-bit",
+          "osx64": "Mac OSX 64-bit",
+          "osx-universal": "Mac OSX 32-bit and 64-bit",
+          "windows": "Windows 32-bit",
+          "windows64": "Windows 64-bit"
+        }
+      }
+    },
+    {
+      "type": "InputPathControl",
+      "label": "Player output path",
+      "scope": "#/properties/player-path",
+      "options": {
+        "onlyDirectories": false,
+        "description": "Specify the output path for the player binary. When Build Profile is set, this path is passed to -build instead of -buildPlayer."
+      },
+      "rule": {
+        "effect": "SHOW",
+        "condition": {
+          "type": "OR",
+          "conditions": [
+            {
+              "scope": "#/properties/build-player",
+              "schema": {"not": {"const": ""}},
+              "failWhenUndefined": true
+            },
+            {
+              "scope": "#/properties/build-profile",
+              "schema": {"not": {"const": ""}},
+              "failWhenUndefined": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Control",
+      "label": "Run tests from the project",
+      "scope": "#/properties/run-tests",
+      "options": {
+        "toggle": true,
+        "branches": {
+          "editor-tests": {
+            "type": "VerticalLayout",
+            "elements": [
+              {
+                "type": "Control",
+                "label": "Test platform",
+                "scope": "#/properties/platform",
+                "options": {
+                  "description": "[Learn more](https://docs.unity3d.com/Manual/testing-editortestsrunner.html).",
+                  "emptyOption": {
+                    "label": "Default"
+                  },
+                  "optionLabels": {
+                    "editmode": "Edit mode",
+                    "playmode": "Play mode"
+                  }
+                }
+              },
+              {
+                "type": "Control",
+                "label": "Test categories",
+                "scope": "#/properties/categories",
+                "options": {
+                  "multi": true,
+                  "description": "Specify list of test categories to execute."
+                }
+              },
+              {
+                "type": "Control",
+                "label": "Test names",
+                "scope": "#/properties/names",
+                "options": {
+                  "multi": true,
+                  "description": "Specify list of test names to execute."
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "type": "AdvancedSettingsSection",
+      "elements": [
+        {
+          "type": "Control",
+          "label": "Build profile",
+          "scope": "#/properties/build-profile",
+          "options": {
+            "description": "Specify the project-relative path to a Unity Build Profile asset (e.g. Assets/Settings/Build Profiles/Android-Release.asset). When set, -activeBuildProfile is used instead of -buildTarget. Accepts TeamCity parameter references (e.g. %unity.build.profile%). Requires Unity 6 (6000.x) or later."
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Build target",
+          "scope": "#/properties/build-target",
+          "options": {
+            "description": "Specify an active build target before loading the project. Not used when Build Profile is set."
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Do not initialize the graphics device",
+          "scope": "#/properties/no-graphics",
+          "options": {
+            "description": ""
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Do not display the error dialog when a standalone player crashes",
+          "scope": "#/properties/silent-crashes",
+          "options": {
+            "description": ""
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Do not quit the Unity Editor after other commands have finished executing",
+          "scope": "#/properties/no-quit",
+          "options": {
+            "description": ""
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Detection mode",
+          "scope": "#/properties/detection-mode",
+          "options": {
+            "description": "",
+            "branches": {
+              "auto": {
+                "type": "VerticalLayout",
+                "elements": [
+                  {
+                    "type": "Control",
+                    "label": "Unity version",
+                    "scope": "#/properties/version",
+                    "options": {
+                      "description": "Specify the required Unity version, e.g 2018.2. If left blank, the version specified in the project settings will be selected if available. Otherwise, the latest Unity installed on the agent will be chosen for the build."
+                    }
+                  }
+                ]
+              },
+              "manual": {
+                "type": "VerticalLayout",
+                "elements": [
+                  {
+                    "type": "ToolVersionControl",
+                    "label": "Unity",
+                    "scope": "#/properties/root",
+                    "options": {
+                      "toolType": "Unity",
+                      "required": true
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "type": "Control",
+          "label": "Command line arguments",
+          "scope": "#/properties/arguments",
+          "options": {
+            "multi": true,
+            "description": "Specify additional command line arguments for Unity. [Learn more](https://docs.unity3d.com/Manual/CommandLineArguments.html)."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -38,6 +38,9 @@ teamcity {
             into("kotlin-dsl") {
                 from("${rootProject.projectDir}/kotlin-dsl")
             }
+            into("ui-schemas") {
+                from("${rootProject.projectDir}/ui-schemas")
+            }
         }
 
         // preserving the old archive name
