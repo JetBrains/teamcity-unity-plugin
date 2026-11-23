@@ -35,7 +35,7 @@
       "scope": "#/properties/build-player",
       "options": {
         "emptyOption": {
-          "label": "Select"
+          "label": "No player"
         },
         "optionLabels": {
           "linux": "Linux 32-bit",
